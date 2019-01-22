@@ -18,24 +18,15 @@ GIT - https://github.com/pfory/solar-heating
 #include "Sender.h"
 #include <Wire.h>
 
-#define ota
 #ifdef ota
 #include <ArduinoOTA.h>
-#define HOSTNAMEOTA   "solar"
 #endif
 
-
-#define AUTOCONNECTNAME   HOSTNAMEOTA
-#define AUTOCONNECTPWD    "password"
-
-
-//#define serverHTTP
 #ifdef serverHTTP
 #include <ESP8266WebServer.h>
 ESP8266WebServer server(80);
 #endif
 
-//#define time
 #ifdef time
 #include <TimeLib.h>
 #include <Timezone.h>
@@ -50,31 +41,6 @@ unsigned int          localPort             = 8888;  // local port to listen for
 time_t getNtpTime();
 #endif
 
-
-#define verbose
-#ifdef verbose
- #define PORTSPEED 115200
- #define DEBUG_PRINT(x)         Serial.print (x)
- #define DEBUG_PRINTDEC(x)      Serial.print (x, DEC)
- #define DEBUG_PRINTLN(x)       Serial.println (x)
- #define DEBUG_PRINTF(x, y)     Serial.printf (x, y)
- #define SERIAL_BEGIN           Serial.begin(PORTSPEED)
-#else
- #define DEBUG_PRINT(x)
- #define DEBUG_PRINTDEC(x)
- #define DEBUG_PRINTLN(x)
- #define DEBUG_PRINTF(x, y)
- #define SERIAL_BEGIN
-#endif 
-
-char                  mqtt_server[40]       = "192.168.1.56";
-uint16_t              mqtt_port             = 1883;
-char                  mqtt_username[40]     = "datel";
-char                  mqtt_key[20]          = "hanka12";
-char                  mqtt_base[60]         = "/home/Corridor/esp07a";
-char                  static_ip[16]         = "192.168.1.148";
-char                  static_gw[16]         = "192.168.1.1";
-char                  static_sn[16]         = "255.255.255.0";
 
 #define DRD_TIMEOUT       1
 // RTC Memory Address for the DoubleResetDetector to use
@@ -94,56 +60,56 @@ unsigned long milisLastRunMinOld            = 0;
     
 uint32_t heartBeat                          = 0;
 bool dsMeasStarted                          = false;
+   
+float tP2In                                 = 0; //input medium temperature to solar panel roof
+float tP2Out                                = 0; //output medium temperature to solar panel roof`
+float tP1In                                 = 0; //input medium temperature to solar panel drevnik
+float tP1Out                                = 0; //output medium temperature to solar panel drevnik
+float tRoom                                 = 0; //room temperature
+float tBojler                               = 0; //boiler temperature
+float tControl                              = 0; //temperature which is used as control temperature
+float tBojlerIn                             = 0; //boiler input temperature
+float tBojlerOut                            = 0; //boiler output temperature
+   
+//maximal temperatures   
+float tMaxIn                                = 0; //maximal input temperature (just for statistics)
+float tMaxOut                               = 0; //maximal output temperature (just for statistics)
+float tMaxBojler                            = 0; //maximal boiler temperature (just for statistics)
+   
+//HIGH - relay OFF, LOW - relay ON   
+bool relay1                                 = HIGH; 
+bool relay2                                 = HIGH;
+   
+unsigned long msDayON                       = 0;  //number of miliseconds in ON state per day
+unsigned long lastOn                        = 0;     //ms posledniho behu ve stavu ON
+unsigned long lastOffOn                     = 0;
+unsigned long lastOff                       = 0;  //ms posledniho vypnuti rele
+unsigned long msDiff                        = 0; //pocet ms ve stavu ON od posledniho ulozeni do EEPROM
+unsigned long totalEnergy                   = 0; //total enery in Ws. To kWh ->> totalEnergy/1000.f/3600.f
+unsigned long totalSec                      = 0; //total time for pump ON in sec. To hours ->> totalSec/60/60
+unsigned int  power                         = 0; //actual power in W
+unsigned int  maxPower                      = 0; //maximal power in W
+unsigned long energyADay                    = 0; //energy a day in Ws
+float energyDiff                            = 0.f; //difference in Ws
+bool manualON                               = false;
+unsigned long lastWriteEEPROM               = 0;
+unsigned long lastOn4Delay                  = 0;
 
-float tP2In                               = 0; //input medium temperature to solar panel roof
-float tP2Out                              = 0; //output medium temperature to solar panel roof`
-float tP1In                               = 0; //input medium temperature to solar panel drevnik
-float tP1Out                              = 0; //output medium temperature to solar panel drevnik
-float tRoom                               = 0; //room temperature
-float tBojler                             = 0; //boiler temperature
-float tControl                            = 0; //temperature which is used as control temperature
-float tBojlerIn                           = 0; //boiler input temperature
-float tBojlerOut                          = 0; //boiler output temperature
 
-//maximal temperatures
-float tMaxIn                              = 0; //maximal input temperature (just for statistics)
-float tMaxOut                             = 0; //maximal output temperature (just for statistics)
-float tMaxBojler                          = 0; //maximal boiler temperature (just for statistics)
-
-//HIGH - relay OFF, LOW - relay ON
-bool relay1                               = HIGH; 
-bool relay2                               = HIGH;
-
-unsigned long msDayON                     = 0;  //number of miliseconds in ON state per day
-unsigned long lastOn                      = 0;     //ms posledniho behu ve stavu ON
-unsigned long lastOffOn                   = 0;
-unsigned long lastOff                     = 0;  //ms posledniho vypnuti rele
-unsigned long msDiff                      = 0; //pocet ms ve stavu ON od posledniho ulozeni do EEPROM
-unsigned long totalEnergy                 = 0; //total enery in Ws. To kWh ->> totalEnergy/1000.f/3600.f
-unsigned long totalSec                    = 0; //total time for pump ON in sec. To hours ->> totalSec/60/60
-unsigned int  power                       = 0; //actual power in W
-unsigned int  maxPower                    = 0; //maximal power in W
-unsigned long energyADay                  = 0; //energy a day in Ws
-float energyDiff                          = 0.f; //difference in Ws
-bool manualON                             = false;
-unsigned long lastWriteEEPROM             = 0;
-unsigned long lastOn4Delay                = 0;
-
-#define flowSensor
 #ifdef flowSensor
-volatile int      numberOfPulsesFlow      = 0; // Measures flow sensor pulses
-float             lMinCumul               = 0; // kumulovany prutok pro vypocet prumerneho
-float             lMin                    = 0; // Calculated litres/min
-byte              numberOfCyclesFlow      = 0; //pocet mereni prutoku pro prumerny prutok
-unsigned char     flowsensor              = 2; // Sensor Input
-unsigned long     cloopTime;
-#endif
-
-unsigned int display                      = 0;
-unsigned long showInfo                    = 0; //zobrazeni 4 radky na displeji
-
-byte status                               = STATUS_NORMAL0;
-
+volatile int      numberOfPulsesFlow        = 0; // Measures flow sensor pulses
+float             lMinCumul                 = 0; // kumulovany prutok pro vypocet prumerneho
+float             lMin                      = 0; // Calculated litres/min
+byte              numberOfCyclesFlow        = 0; //pocet mereni prutoku pro prumerny prutok
+unsigned char     flowsensor                = 2; // Sensor Input
+unsigned long     cloopTime;    
+#endif    
+    
+unsigned int display                        = 0;
+unsigned long showInfo                      = 0; //zobrazeni 4 radky na displeji
+    
+byte status                                 = STATUS_NORMAL0;
+    
 #include <LiquidCrystal_I2C.h>
 LiquidCrystal_I2C lcd(LCDADDRESS,LCDCOLS,LCDROWS);  // set the LCD
 
@@ -227,82 +193,11 @@ Ticker ticker;
 auto timer = timer_create_default(); // create a timer with default settings
 Timer<> default_timer; // save as above
 
-const byte interruptPin = D2;
-const byte analogPin    = A0;
 
-
-#ifdef serverHTTP
-void handleRoot() {
-	char temp[600];
-  // DEBUG_PRINT(year());
-  // DEBUG_PRINT(month());
-  // DEBUG_PRINT(day());
-  // DEBUG_PRINT(hour());
-  // DEBUG_PRINT(minute());
-  // DEBUG_PRINT(second());
-  printSystemTime();
-  DEBUG_PRINTLN(" Client request");
-  digitalWrite(BUILTIN_LED, LOW);
-  
-	// snprintf ( temp, 400,
-      // "<html>\
-        // <head>\
-          // <meta charset='UTF-8'>\
-        // </head>\
-        // <body>\
-          // T2899BDCF02000076,%4d-%02d-%02dT%02d:%02d:%02d.000000Z,%s%d.%02d<br />\
-          // Humidity,%4d-%02d-%02dT%02d:%02d:%02d.000000Z,%d.00<br />\
-          // Press,%4d-%02d-%02dT%02d:%02d:%02d.000000Z,%d.00<br />\
-          // DewPoint,%4d-%02d-%02dT%02d:%02d:%02d.000000Z,%s%d.%02d<br />\
-        // </body>\
-      // </html>",
-      // year(), month(), day(), hour(), minute(), second(),
-      // temperature<0 && temperature>-1 ? "-":"",
-      // (int)temperature, 
-      // abs((temperature - (int)temperature) * 100),
-      // year(), month(), day(), hour(), minute(), second(),
-      // (int)humidity,
-      // year(), month(), day(), hour(), minute(), second(),
-      // (int)pressure,
-      // year(), month(), day(), hour(), minute(), second(),
-      // dewPoint<0 && dewPoint>-1 ? "-":"",
-      // (int)dewPoint, 
-      // abs((dewPoint - (int)dewPoint) * 100)
-	// );
-	server.send ( 200, "text/html", temp );
-  digitalWrite(BUILTIN_LED, HIGH);
-}
-#endif
-
-void tick()
-{
-  //toggle state
-  int state = digitalRead(BUILTIN_LED);  // get the current state of GPIO1 pin
-  digitalWrite(BUILTIN_LED, !state);     // set pin to the opposite state
-}
-  
-//flag for saving data
-bool shouldSaveConfig = false;
-
-//callback notifying us of the need to save config
-void saveConfigCallback () {
-  DEBUG_PRINTLN("Should save config");
-  shouldSaveConfig = true;
-}
-
-//gets called when WiFiManager enters configuration mode
-void configModeCallback (WiFiManager *myWiFiManager) {
-  DEBUG_PRINTLN("Entered config mode");
-  DEBUG_PRINTLN(WiFi.softAPIP());
-  //if you used auto generated SSID, print it
-  DEBUG_PRINTLN(myWiFiManager->getConfigPortalSSID());
-  //entered config mode, make led toggle faster
-  ticker.attach(0.2, tick);
-}
-
+//----------------------------------------------------- S E T U P -----------------------------------------------------------
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(PORTSPEED);
+  SERIAL_BEGIN;
   DEBUG_PRINT(F(SW_NAME));
   DEBUG_PRINT(F(" "));
   DEBUG_PRINTLN(F(VERSION));
@@ -551,10 +446,10 @@ void setup() {
   ticker.detach();
   //keep LED on
   digitalWrite(BUILTIN_LED, HIGH);
-}
+} //setup
 
 
-
+//----------------------------------------------------- L O O P -----------------------------------------------------------
 void loop() {
   if (numberOfDevices>0) {
     tempMeas();
@@ -579,6 +474,77 @@ void loop() {
 #ifdef ota
   ArduinoOTA.handle();
 #endif
+} //loop
+
+
+//----------------------------------------------------- F U N C T I O N S -----------------------------------------------------------
+#ifdef serverHTTP
+void handleRoot() {
+	char temp[600];
+  // DEBUG_PRINT(year());
+  // DEBUG_PRINT(month());
+  // DEBUG_PRINT(day());
+  // DEBUG_PRINT(hour());
+  // DEBUG_PRINT(minute());
+  // DEBUG_PRINT(second());
+  printSystemTime();
+  DEBUG_PRINTLN(" Client request");
+  digitalWrite(BUILTIN_LED, LOW);
+  
+	// snprintf ( temp, 400,
+      // "<html>\
+        // <head>\
+          // <meta charset='UTF-8'>\
+        // </head>\
+        // <body>\
+          // T2899BDCF02000076,%4d-%02d-%02dT%02d:%02d:%02d.000000Z,%s%d.%02d<br />\
+          // Humidity,%4d-%02d-%02dT%02d:%02d:%02d.000000Z,%d.00<br />\
+          // Press,%4d-%02d-%02dT%02d:%02d:%02d.000000Z,%d.00<br />\
+          // DewPoint,%4d-%02d-%02dT%02d:%02d:%02d.000000Z,%s%d.%02d<br />\
+        // </body>\
+      // </html>",
+      // year(), month(), day(), hour(), minute(), second(),
+      // temperature<0 && temperature>-1 ? "-":"",
+      // (int)temperature, 
+      // abs((temperature - (int)temperature) * 100),
+      // year(), month(), day(), hour(), minute(), second(),
+      // (int)humidity,
+      // year(), month(), day(), hour(), minute(), second(),
+      // (int)pressure,
+      // year(), month(), day(), hour(), minute(), second(),
+      // dewPoint<0 && dewPoint>-1 ? "-":"",
+      // (int)dewPoint, 
+      // abs((dewPoint - (int)dewPoint) * 100)
+	// );
+	server.send ( 200, "text/html", temp );
+  digitalWrite(BUILTIN_LED, HIGH);
+}
+#endif
+
+void tick()
+{
+  //toggle state
+  int state = digitalRead(BUILTIN_LED);  // get the current state of GPIO1 pin
+  digitalWrite(BUILTIN_LED, !state);     // set pin to the opposite state
+}
+  
+//flag for saving data
+bool shouldSaveConfig = false;
+
+//callback notifying us of the need to save config
+void saveConfigCallback () {
+  DEBUG_PRINTLN("Should save config");
+  shouldSaveConfig = true;
+}
+
+//gets called when WiFiManager enters configuration mode
+void configModeCallback (WiFiManager *myWiFiManager) {
+  DEBUG_PRINTLN("Entered config mode");
+  DEBUG_PRINTLN(WiFi.softAPIP());
+  //if you used auto generated SSID, print it
+  DEBUG_PRINTLN(myWiFiManager->getConfigPortalSSID());
+  //entered config mode, make led toggle faster
+  ticker.attach(0.2, tick);
 }
 
 
@@ -731,7 +697,16 @@ bool sendDataHA(void *) {
   
 //Adafruit_MQTT_Subscribe restart                = Adafruit_MQTT_Subscribe(&mqtt, MQTTBASE "restart");
   SenderClass sender;
-  //sender.add("Smer", analogRead(analogPin));
+  sender.add("tP1IN", _tP1INSolar);
+  sender.add("tP1OUT", _tP1OUTSolar);
+  sender.add("tP2IN", _tP2INSolar);
+  sender.add("tP2OUT", _tP2OUTSolar);
+  sender.add("prutok", _qSolar);
+  sender.add("sPumpSolar/status", _pumpStatus);
+  sender.add("tRoom", _tRoom);
+  sender.add("tBojler", _tBojler);
+  sender.add("tBojlerIN", _tBojlerIN);
+  sender.add("tBojlerOUT", _tBojlerOUT);
   DEBUG_PRINTLN(F("Calling MQTT"));
 
   sender.sendMQTT(mqtt_server, mqtt_port, mqtt_username, mqtt_key, mqtt_base);
@@ -746,8 +721,8 @@ bool sendStatisticHA(void *) {
   DEBUG_PRINTLN(F(" - I am sending statistic to HA"));
 
   SenderClass sender;
-  sender.add("VersionSW", VERSION);
-  //sender.add("Napeti",  ESP.getVcc());
+  sender.add("VersionSWSolar", versionSW);
+  sender.add("Napeti",  ESP.getVcc());
   sender.add("HeartBeat", heartBeat++);
   sender.add("RSSI", WiFi.RSSI());
   DEBUG_PRINTLN(F("Calling MQTT"));

@@ -2,15 +2,26 @@
 #define CONFIGURATION_H
 
 //SW name & version
-#define     VERSION                      "1.41"
+#define     VERSION                      "1.5"
 #define     SW_NAME                      "Solar"
 
 //EEPROM config
 #define CONFIG_START 0
 #define CONFIG_VERSION "v04"
 
-
+#define ota
+#define time
 #define verbose
+#define flowSensor
+//#define serverHTTP
+
+#define AUTOCONNECTNAME   HOSTNAMEOTA
+#define AUTOCONNECTPWD    "password"
+
+#ifdef ota
+#define HOSTNAMEOTA   "solar"
+#endif
+
 #ifdef verbose
  #define DEBUG_PRINT(x)         Serial.print (x)
  #define DEBUG_PRINTDEC(x)      Serial.print (x, DEC)
@@ -28,9 +39,18 @@
  #define DEBUG_WRITE(x)
 #endif 
 
+char                  mqtt_server[40]       = "192.168.1.56";
+uint16_t              mqtt_port             = 1883;
+char                  mqtt_username[40]     = "datel";
+char                  mqtt_key[20]          = "hanka12";
+char                  mqtt_base[60]         = "/home/Corridor/esp07a";
+char                  static_ip[16]         = "192.168.1.148";
+char                  static_gw[16]         = "192.168.1.1";
+char                  static_sn[16]         = "255.255.255.0";
 
 /*
 Version history:
+1.5  -            first version with Wemos D1 Mini ESP8266
 1.41 - debug serial.print
 1.4  - 20.10.2017 doplneny hodiny RTC a zobrazeni uhlu kolektoru na displeji
 1.31 - change display to 4x20
@@ -60,51 +80,42 @@ Version history:
 0.60 - 16.3.2014
 0.50 - 1.12.2013
 0.41 - 20.10.2013
-TODO - odladit CRC kod
 --------------------------------------------------------------------------------------------------------------------------
 HW
-Pro Mini 328 with Optiboot!!!! data are sent via serial line to comunication unit
+ESP8266 - Wemos D1 Mini
 I2C display
 2 Relays module
-DALLAS
+DALLAS temperature sensor
 keyboard
-Pro Mini 328 Layout
+
+LOLIN Wemos D1 pinout
 ------------------------------------------
-A0              - DALLAS temperature sensors
-A1              - relay 1
-A2              - relay 2
-A3              - free
-A4              - I2C display SDA 0x20, keypad 0x27
-A5              - I2C display SCL 0x20, keypad 0x27
-D0              - Rx
+D0              - relay 1
 D1              - Tx
-D2              - flow sensor
-D3              - free
-D4              - free
-D5              - free
-D6              - free
-D7              - free
-D8              - free
-D9              - free
-D10             - Rx 
-D11             - Tx
-D12             - free
-D13             - free
+D2              - relay 2
+D3              - Rx
+D4              - I2C display SDA 0x20, keypad 0x27
+D5              - I2C display SCL 0x20, keypad 0x27
+D12
+D13
+D14             - flow sensor
+D15
+D16             - DALLAS temperature sensors
 --------------------------------------------------------------------------------------------------------------------------
 */
 
-#define mySERIAL_SPEED  9600
+// #define mySERIAL_SPEED  9600
 
-#define START_BLOCK       '#'
-#define DELIMITER         ';'
-#define END_BLOCK         '$'
-#define END_TRANSMITION   '*'
+// #define START_BLOCK       '#'
+// #define DELIMITER         ';'
+// #define END_BLOCK         '$'
+// #define END_TRANSMITION   '*'
 
-#define LEDPIN 13
+//#define LEDPIN 13
 
-//pins for softwareserial
-#define RX 10
-#define TX 11
+// //pins for softwareserial
+// #define RX 10
+// #define TX 11
 
 //display
 #define LCDADDRESS   0x27
@@ -112,21 +123,21 @@ D13             - free
 #define LCDCOLS      20
 
 //one wire bus
-#define ONE_WIRE_BUS A0
+#define ONE_WIRE_BUS D16
 
 //#define dallasMinimal           //-956 Bytes
 #ifndef NUMBER_OF_DEVICES
 #define NUMBER_OF_DEVICES 10
 
-#define STATUS_NORMAL0                        0
-#define STATUS_NORMAL1                        1
-#define STATUS_AFTER_START                    2
-#define STATUS_WRITETOTALTOEEPROM_DELAY       3
-#define STATUS_WRITETOTALTOEEPROM_ONOFF       4
-#define STATUS_WRITETOTALTOEEPROM_MANUAL      5
-#define STATUS_STARTAFTER_BROWNOUT            6
-#define STATUS_STARTAFTER_POWERON             7
-#define STATUS_STARTAFTER_WATCHDOGOREXTERNAL  8
+// #define STATUS_NORMAL0                        0
+// #define STATUS_NORMAL1                        1
+// #define STATUS_AFTER_START                    2
+// #define STATUS_WRITETOTALTOEEPROM_DELAY       3
+// #define STATUS_WRITETOTALTOEEPROM_ONOFF       4
+// #define STATUS_WRITETOTALTOEEPROM_MANUAL      5
+// #define STATUS_STARTAFTER_BROWNOUT            6
+// #define STATUS_STARTAFTER_POWERON             7
+// #define STATUS_STARTAFTER_WATCHDOGOREXTERNAL  8
 #endif
 
 
@@ -196,7 +207,7 @@ D13             - free
 #define RELAY2Y                              1
 */                          
                           
-#define RELAY1PIN                           D1
+#define RELAY1PIN                           D0
 #define RELAY2PIN                           D2
 
 //keypad i2c address
