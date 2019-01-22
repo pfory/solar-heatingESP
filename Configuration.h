@@ -2,8 +2,8 @@
 #define CONFIGURATION_H
 
 //SW name & version
-#define     VERSION                      "1.5"
-#define     SW_NAME                      "Solar"
+#define     VERSION                       "1.5"
+#define     SW_NAME                       "Solar"
 
 //EEPROM config
 #define CONFIG_START 0
@@ -23,13 +23,13 @@
 #endif
 
 #ifdef verbose
- #define DEBUG_PRINT(x)         Serial.print (x)
- #define DEBUG_PRINTDEC(x)      Serial.print (x, DEC)
- #define DEBUG_PRINTLN(x)       Serial.println (x)
- #define DEBUG_PRINTF(x, y)     Serial.printf (x, y)
- #define PORTSPEED 115200
- #define DEBUG_WRITE(x)         Serial.write (x)
- #define DEBUG_PRINTHEX(x)      Serial.print (x, HEX)
+ #define DEBUG_PRINT(x)                     Serial.print (x)
+ #define DEBUG_PRINTDEC(x)                  Serial.print (x, DEC)
+ #define DEBUG_PRINTLN(x)                   Serial.println (x)
+ #define DEBUG_PRINTF(x, y)                 Serial.printf (x, y)
+ #define PORTSPEED 115200             
+ #define DEBUG_WRITE(x)                     Serial.write (x)
+ #define DEBUG_PRINTHEX(x)                  Serial.print (x, HEX)
 
 #else
  #define DEBUG_PRINT(x)
@@ -90,54 +90,29 @@ keyboard
 
 LOLIN Wemos D1 pinout
 ------------------------------------------
-D0              - relay 1
-D1              - Tx
-D2              - relay 2
-D3              - Rx
-D4              - I2C display SDA 0x20, keypad 0x27
-D5              - I2C display SCL 0x20, keypad 0x27
-D12
-D13
-D14             - flow sensor
-D15
-D16             - DALLAS temperature sensors
+TX                                           - Tx
+RX                                           - Rx
+D1                                           - I2C display SCL 0x20, keypad 0x27
+D2                                           - I2C display SDA 0x20, keypad 0x27
+D3                                           - PIR sensor
+D4                                           - LED
+D5                                           - relay 1
+D6                                           - relay 2
+D7                                           - DALLAS temperature sensors
+D8                                           - flow sensor
 --------------------------------------------------------------------------------------------------------------------------
 */
 
-// #define mySERIAL_SPEED  9600
-
-// #define START_BLOCK       '#'
-// #define DELIMITER         ';'
-// #define END_BLOCK         '$'
-// #define END_TRANSMITION   '*'
-
-//#define LEDPIN 13
-
-// //pins for softwareserial
-// #define RX 10
-// #define TX 11
-
 //display
-#define LCDADDRESS   0x27
-#define LCDROWS      4
-#define LCDCOLS      20
+#define LCDADDRESS                           0x27
+#define LCDROWS                              4
+#define LCDCOLS                              20
 
 //one wire bus
-#define ONE_WIRE_BUS D16
+#define ONE_WIRE_BUS                         D7
 
-//#define dallasMinimal           //-956 Bytes
 #ifndef NUMBER_OF_DEVICES
-#define NUMBER_OF_DEVICES 10
-
-// #define STATUS_NORMAL0                        0
-// #define STATUS_NORMAL1                        1
-// #define STATUS_AFTER_START                    2
-// #define STATUS_WRITETOTALTOEEPROM_DELAY       3
-// #define STATUS_WRITETOTALTOEEPROM_ONOFF       4
-// #define STATUS_WRITETOTALTOEEPROM_MANUAL      5
-// #define STATUS_STARTAFTER_BROWNOUT            6
-// #define STATUS_STARTAFTER_POWERON             7
-// #define STATUS_STARTAFTER_WATCHDOGOREXTERNAL  8
+#define NUMBER_OF_DEVICES                    10
 #endif
 
 
@@ -187,7 +162,7 @@ D16             - DALLAS temperature sensors
 #define DISPLAY_MAX_BOJLER                   6
 #define DISPLAY_MAX_POWER_TODAY              7
 #define DISPLAY_CONTROL_SENSOR               8
-#define DISPLAY_TOTAL_TIME                   9      
+#define DISPLAY_TOTAL_TIME                   9
 #define DISPLAY_T_DIFF_ON_SETUP              100
 #define DISPLAY_T_DIFF_OFF_SETUP             101
 #define DISPLAY_P1IN_SETUP                   102
@@ -201,30 +176,32 @@ D16             - DALLAS temperature sensors
 #define DISPLAY_CONTROL_SENSOR_SETUP         110
 #define DISPLAY_CONTROL_SENSOR_SETUP_TEXT    111
                           
-#define RELAY1X                             19
+#define RELAY1X                              19
 #define RELAY1Y                              0
-/*#define RELAY2X                           15
+/*#define RELAY2X                            15
 #define RELAY2Y                              1
 */                          
                           
-#define RELAY1PIN                           D0
-#define RELAY2PIN                           D2
+#define RELAY1PIN                            D5
+#define RELAY2PIN                            D6
 
 //keypad i2c address
-#define I2CADDR                             0x20
-#define PRINT_SPACE           lcd.print(F(" "));
+#define I2CADDR                              0x20
+#define PRINT_SPACE                          lcd.print(F(" "));
 
 
-#define DS_MEASSURE_INTERVAL                750 //inteval between meassurements
-#define DELAY_AFTER_ON                      120000 //1000*60*2; //po tento cas zustane rele sepnute bez ohledu na stav teplotnich cidel
-
-#define DAY_INTERVAL                        43200000 //1000*60*60*12; //
-
-#define LAST_WRITE_EEPROM_DELAY             3600000 //in ms = 1 hod
-#define SAFETY_ON                           80.0 //teplota, pri niz rele vzdy sepne
-
-#define SEND_DELAY                          10000  //prodleva mezi poslanim dat v ms
-#define SHOW_INFO_DELAY                     5000  //prodleva mezi poslanim dat v ms
-
-#define T_MIN                               -128.0
+#define DS_MEASSURE_INTERVAL                 750 //inteval between meassurements
+#define DELAY_AFTER_ON                       120000 //1000*60*2; //po tento cas zustane rele sepnute bez ohledu na stav teplotnich cidel
+  
+#define DAY_INTERVAL                         43200000 //1000*60*60*12; //
+  
+#define LAST_WRITE_EEPROM_DELAY              3600000 //in ms = 1 hod
+#define SAFETY_ON                            80.0 //teplota, pri niz rele vzdy sepne
+  
+#define SEND_DELAY                           30000  //prodleva mezi poslanim dat v ms
+#define SHOW_INFO_DELAY                      5000  //
+#define SENDSTAT_DELAY                       60000 //poslani statistiky kazdou minutu
+#define MEAS_DELAY                           5000  //mereni teplot
+  
+#define T_MIN                                -128.0
 #endif

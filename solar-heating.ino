@@ -49,9 +49,6 @@ DoubleResetDetector drd(DRD_TIMEOUT, DRD_ADDRESS);
 
 #define CFGFILE "/config.json"
 
-const unsigned long   sendDelay             = 5000; //in ms
-const unsigned long   sendStatDelay         = 60000;
-
 unsigned int volatile pulseCount            = 0;
 unsigned int pulseCountLast                 = 0;
 unsigned long lastSend                      = 0;
@@ -94,7 +91,7 @@ float energyDiff                            = 0.f; //difference in Ws
 bool manualON                               = false;
 unsigned long lastWriteEEPROM               = 0;
 unsigned long lastOn4Delay                  = 0;
-
+bool shouldSaveConfig                       = false; //flag for saving data
 
 #ifdef flowSensor
 volatile int      numberOfPulsesFlow        = 0; // Measures flow sensor pulses
@@ -103,13 +100,18 @@ float             lMin                      = 0; // Calculated litres/min
 byte              numberOfCyclesFlow        = 0; //pocet mereni prutoku pro prumerny prutok
 unsigned char     flowsensor                = 2; // Sensor Input
 unsigned long     cloopTime;    
+
+
+void flow () { // Interrupt function
+   numberOfPulsesFlow++;
+}
+
 #endif    
     
 unsigned int display                        = 0;
 unsigned long showInfo                      = 0; //zobrazeni 4 radky na displeji
-    
-byte status                                 = STATUS_NORMAL0;
-    
+
+
 #include <LiquidCrystal_I2C.h>
 LiquidCrystal_I2C lcd(LCDADDRESS,LCDCOLS,LCDROWS);  // set the LCD
 
@@ -364,8 +366,8 @@ void setup() {
   ArduinoOTA.begin();
 #endif
 
-/*
-  loadConfig();
+
+  //loadConfig();
  
   DEBUG_PRINT(F("tON:"));  
   DEBUG_PRINTLN(storage.tDiffON);
@@ -378,16 +380,16 @@ void setup() {
   } else {
     DEBUG_PRINTLN(" - Room");
   }
-  DEBUG_PRINT(F("TotalEnergy from EEPROM:"));
-  DEBUG_PRINT(storage.totalEnergy);
-  DEBUG_PRINTLN(F("Ws"));
-  DEBUG_PRINT(F("TotalSec from EEPROM:"));
-  DEBUG_PRINT(storage.totalSec);
-  DEBUG_PRINTLN(F("s"));
+  //DEBUG_PRINT(F("TotalEnergy from EEPROM:"));
+  //DEBUG_PRINT(storage.totalEnergy);
+  //DEBUG_PRINTLN(F("Ws"));
+  //DEBUG_PRINT(F("TotalSec from EEPROM:"));
+  //DEBUG_PRINT(storage.totalSec);
+  //DEBUG_PRINTLN(F("s"));
   DEBUG_PRINT(F("backlight:"));
   DEBUG_PRINTLN(storage.backLight);
 
-  lcd.begin();               // initialize the lcd 
+  lcd.init();               // initialize the lcd 
   lcd.home();                   
   lcd.print(SW_NAME);  
   PRINT_SPACE
@@ -409,9 +411,7 @@ void setup() {
   keypad.begin();
   //keypad.addEventListener(keypadEvent); //add an event listener for this keypad  
   
-  mySerial.begin(mySERIAL_SPEED);
-  pinMode(LEDPIN,OUTPUT);
-  
+ 
   dsInit();
 
   pinMode(flowsensor, INPUT);
@@ -432,14 +432,15 @@ void setup() {
   }
   
   lcd.clear();
-*/
 
   //setup timers
   if (numberOfDevices>0) {
     timer.every(SEND_DELAY, sendDataHA);
+    timer.every(MEAS_DELAY, tempMeas);
   }
   
-  timer.every(sendStatDelay, sendStatisticHA);
+  timer.every(SENDSTAT_DELAY, sendStatisticHA);
+  timer.every(SENDSTAT_DELAY, countMinRun);
 
   DEBUG_PRINTLN(" Ready");
  
@@ -451,20 +452,13 @@ void setup() {
 
 //----------------------------------------------------- L O O P -----------------------------------------------------------
 void loop() {
-  if (numberOfDevices>0) {
-    tempMeas();
-    calcPowerAndEnergy();
-    mainControl();
-  }
+  calcPowerAndEnergy();
+  mainControl();
+
   calcFlow();
   lcdShow();
   
   keyBoard();
-  
-  if (millis() - milisLastRunMinOld > 60000) {
-    milisLastRunMinOld = millis();
-    lastRunMin += 1;
-  }
   
   timer.tick(); // tick the timer
 #ifdef serverHTTP
@@ -528,9 +522,6 @@ void tick()
   digitalWrite(BUILTIN_LED, !state);     // set pin to the opposite state
 }
   
-//flag for saving data
-bool shouldSaveConfig = false;
-
 //callback notifying us of the need to save config
 void saveConfigCallback () {
   DEBUG_PRINTLN("Should save config");
@@ -697,16 +688,16 @@ bool sendDataHA(void *) {
   
 //Adafruit_MQTT_Subscribe restart                = Adafruit_MQTT_Subscribe(&mqtt, MQTTBASE "restart");
   SenderClass sender;
-  sender.add("tP1IN", _tP1INSolar);
-  sender.add("tP1OUT", _tP1OUTSolar);
-  sender.add("tP2IN", _tP2INSolar);
-  sender.add("tP2OUT", _tP2OUTSolar);
-  sender.add("prutok", _qSolar);
-  sender.add("sPumpSolar/status", _pumpStatus);
-  sender.add("tRoom", _tRoom);
-  sender.add("tBojler", _tBojler);
-  sender.add("tBojlerIN", _tBojlerIN);
-  sender.add("tBojlerOUT", _tBojlerOUT);
+  sender.add("tP1IN", tP1In);
+  sender.add("tP1OUT", tP1Out);
+  sender.add("tP2IN", tP2In);
+  sender.add("tP2OUT", tP2Out);
+  sender.add("prutok", lMinCumul / (float)numberOfCyclesFlow);
+  sender.add("sPumpSolar/status", relay1==LOW ? 1 : 0);
+  sender.add("tRoom", tRoom);
+  sender.add("tBojler", tBojler);
+  sender.add("tBojlerIN", tBojlerIn);
+  sender.add("tBojlerOUT", tBojlerOut);
   DEBUG_PRINTLN(F("Calling MQTT"));
 
   sender.sendMQTT(mqtt_server, mqtt_port, mqtt_username, mqtt_key, mqtt_base);
@@ -721,7 +712,7 @@ bool sendStatisticHA(void *) {
   DEBUG_PRINTLN(F(" - I am sending statistic to HA"));
 
   SenderClass sender;
-  sender.add("VersionSWSolar", versionSW);
+  sender.add("VersionSWSolar", VERSION);
   sender.add("Napeti",  ESP.getVcc());
   sender.add("HeartBeat", heartBeat++);
   sender.add("RSSI", WiFi.RSSI());
@@ -810,30 +801,47 @@ void sendNTPpacket(IPAddress &address)
   EthernetUdp.endPacket();
 }
 
-void printDigits(int digits){
-  // utility function for digital clock display: prints preceding
-  // colon and leading 0
-  DEBUG_PRINT(":");
-  if(digits < 10)
-    DEBUG_PRINT('0');
-  DEBUG_PRINT(digits);
-}
-
-#endif
-
 void printSystemTime(){
-#ifdef time
   DEBUG_PRINT(day());
   DEBUG_PRINT(".");
   DEBUG_PRINT(month());
   DEBUG_PRINT(".");
   DEBUG_PRINT(year());
   DEBUG_PRINT(" ");
-  DEBUG_PRINT(hour());
-  printDigits(minute());
-  printDigits(second());
-#endif
+  print2digits(hour());
+  DEBUG_PRINT(":");
+  print2digits(minute());
+  DEBUG_PRINT(":");
+  print2digits(second());
 }
+
+void displayTime() {
+  lcd.setCursor(TIMEX, TIMEY); //col,row
+  lcd2digits(hour());
+  lcd.write(':');
+  lcd2digits(minute());
+  lcd.write(':');
+  lcd2digits(second());
+  //zobrazeni hlasky o zmene uhlu kolektoru
+}
+#endif
+
+//display time on LCD
+void lcd2digits(int number) {
+  if (number >= 0 && number < 10) {
+    lcd.write('0');
+  }
+  lcd.print(number);
+}
+
+void print2digits(int number) {
+  if (number >= 0 && number < 10) {
+    DEBUG_WRITE('0');
+  }
+  DEBUG_PRINT(number);
+}
+
+
 
 void pulseCountEvent() {
   digitalWrite(BUILTIN_LED, LOW);
@@ -842,7 +850,7 @@ void pulseCountEvent() {
 }
 
 
-void tempMeas() {
+bool tempMeas(void *) {
   dsSensors.requestTemperatures(); 
   for (byte i=0;i<numberOfDevices; i++) {
     float tempTemp=T_MIN;
@@ -854,61 +862,63 @@ void tempMeas() {
       }
     }
 
+    DEBUG_PRINTLN(tempTemp);
     sensor[i] = tempTemp;
-    // tP1In       = sensor[7];    
-    // tP1Out      = sensor[4];
-    // tP2In       = sensor[2];
-    // tP2Out      = sensor[1];
-    // tBojlerIn   = sensor[5];
-    // tBojlerOut  = sensor[3];
-    // tRoom       = sensor[6];
-    // tBojler     = sensor[0];
-    tP1In       = sensor[storage.sensorOrder[0]];    
-    tP1Out      = sensor[storage.sensorOrder[1]];
-    tP2In       = sensor[storage.sensorOrder[2]];
-    tP2Out      = sensor[storage.sensorOrder[3]];
-    tBojlerIn   = sensor[storage.sensorOrder[4]];
-    tBojlerOut  = sensor[storage.sensorOrder[5]];
-    tRoom       = sensor[storage.sensorOrder[6]];
-    tBojler     = sensor[storage.sensorOrder[7]];
-    tControl    = sensor[storage.controlSensor];
+  }
+  // tP1In       = sensor[7];    
+  // tP1Out      = sensor[4];
+  // tP2In       = sensor[2];
+  // tP2Out      = sensor[1];
+  // tBojlerIn   = sensor[5];
+  // tBojlerOut  = sensor[3];
+  // tRoom       = sensor[6];
+  // tBojler     = sensor[0];
+  tP1In       = sensor[storage.sensorOrder[0]];
+  tP1Out      = sensor[storage.sensorOrder[1]];
+  tP2In       = sensor[storage.sensorOrder[2]];
+  tP2Out      = sensor[storage.sensorOrder[3]];
+  tBojlerIn   = sensor[storage.sensorOrder[4]];
+  tBojlerOut  = sensor[storage.sensorOrder[5]];
+  tRoom       = sensor[storage.sensorOrder[6]];
+  tBojler     = sensor[storage.sensorOrder[7]];
+  tControl    = sensor[storage.controlSensor];
 
-    /*
-    DEBUG_PRINT(F("P1 In:"));
-    DEBUG_PRINTLN(tP1In);
-    DEBUG_PRINT(F("P1 Out:"));
-    DEBUG_PRINTLN(tP1Out);
-    DEBUG_PRINT(F("P2 In:"));
-    DEBUG_PRINTLN(tP2In);
-    DEBUG_PRINT(F("P2 Out:"));
-    DEBUG_PRINTLN(tP2Out);
-    DEBUG_PRINT(F("Room:"));
-    DEBUG_PRINTLN(tRoom);
-    DEBUG_PRINT(F("Bojler:"));
-    DEBUG_PRINTLN(tBojler);
-    DEBUG_PRINT(F("Bojler In:"));
-    DEBUG_PRINTLN(tBojlerIn);
-    DEBUG_PRINT(F("Bojler Out:"));
-    DEBUG_PRINTLN(tBojlerOut);
-    DEBUG_PRINT(F("Control:"));
-    DEBUG_PRINTLN(tControl);
-*/
-    
-    if (tP2Out>tMaxOut)       tMaxOut      = tP2Out;
-    if (tP2In>tMaxIn)         tMaxIn       = tP2In;
-    if (tBojler>tMaxBojler)   tMaxBojler   = tBojler;
-    //obcas se vyskytne chyba a vsechna cidla prestanou merit
-    //zkusim restartovat sbernici
-    bool reset=true;
-    for (byte i=0; i<numberOfDevices; i++) {
-      if (sensor[i]!=0.0) {
-        reset=false;
-      }
-    }
-    if (reset) {
-      dsInit();
+  
+  DEBUG_PRINT(F("P1 In:"));
+  DEBUG_PRINTLN(tP1In);
+  DEBUG_PRINT(F("P1 Out:"));
+  DEBUG_PRINTLN(tP1Out);
+  DEBUG_PRINT(F("P2 In:"));
+  DEBUG_PRINTLN(tP2In);
+  DEBUG_PRINT(F("P2 Out:"));
+  DEBUG_PRINTLN(tP2Out);
+  DEBUG_PRINT(F("Room:"));
+  DEBUG_PRINTLN(tRoom);
+  DEBUG_PRINT(F("Bojler:"));
+  DEBUG_PRINTLN(tBojler);
+  DEBUG_PRINT(F("Bojler In:"));
+  DEBUG_PRINTLN(tBojlerIn);
+  DEBUG_PRINT(F("Bojler Out:"));
+  DEBUG_PRINTLN(tBojlerOut);
+  DEBUG_PRINT(F("Control:"));
+  DEBUG_PRINTLN(tControl);
+
+  
+  if (tP2Out>tMaxOut)       tMaxOut      = tP2Out;
+  if (tP2In>tMaxIn)         tMaxIn       = tP2In;
+  if (tBojler>tMaxBojler)   tMaxBojler   = tBojler;
+  //obcas se vyskytne chyba a vsechna cidla prestanou merit
+  //zkusim restartovat sbernici
+  bool reset=true;
+  for (byte i=0; i<numberOfDevices; i++) {
+    if (sensor[i]!=0.0) {
+      reset=false;
     }
   }
+  if (reset) {
+    dsInit();
+  }
+  return true;
 }
 
 void calcPowerAndEnergy() {
@@ -1096,7 +1106,7 @@ void lcdShow() {
     }
     displayRelayStatus();
     lcd.setCursor(STATUSX, STATUSY);
-    lcd.print(status);
+//    lcd.print(status);
     lcd.setCursor(MINRUNX, MINRUNY);
     if (lastRunMin<100000) PRINT_SPACE
     if (lastRunMin<10000) PRINT_SPACE
@@ -1352,11 +1362,11 @@ void keyBoard() {
         display=DISPLAY_TOTAL_TIME;
       }
       else if (key=='B') { //Save total energy to EEPROM
-        saveConfig();
-        lcd.setCursor(0,3);
-        lcd.print(F("Energy "));
-        lcd.print(enegyWsTokWh(storage.totalEnergy));
-        lcd.print(F(" kWh"));
+        // saveConfig();
+        // lcd.setCursor(0,3);
+        // lcd.print(F("Energy "));
+        // lcd.print(enegyWsTokWh(storage.totalEnergy));
+        // lcd.print(F(" kWh"));
       }
     }
     key = ' ';
@@ -1369,14 +1379,15 @@ void dsInit(void) {
 
   lcd.setCursor(0,3);
   lcd.print(numberOfDevices);
+  DEBUG_PRINT(numberOfDevices);
   
-  if (numberOfDevices==1)
+  if (numberOfDevices==1) {
+    DEBUG_PRINTLN(" sensor found");
     lcd.print(F(" sensor found"));
-  else
+  } else {
+    DEBUG_PRINTLN(" sensor(s) found");
     lcd.print(F(" sensors found"));
-  
-  DEBUG_PRINT(F("Sensor(s):"));
-  DEBUG_PRINTLN(numberOfDevices);
+  }
 
   // Loop through each device, print out address
   for (byte i=0;i<numberOfDevices; i++) {
@@ -1481,4 +1492,9 @@ void displayInfoValue(char text1, float value, char text2) {
   lcd.print(" ");
   lcd.print(text2);
   lcd.print("          ");
+}
+
+bool countMinRun(void *) {
+  lastRunMin += 1;
+  return true;
 }
