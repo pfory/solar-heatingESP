@@ -23,20 +23,20 @@
 #endif
 
 #ifdef verbose
- #define DEBUG_PRINT(x)                     Serial.print (x)
- #define DEBUG_PRINTDEC(x)                  Serial.print (x, DEC)
- #define DEBUG_PRINTLN(x)                   Serial.println (x)
- #define DEBUG_PRINTF(x, y)                 Serial.printf (x, y)
- #define PORTSPEED 115200             
- #define DEBUG_WRITE(x)                     Serial.write (x)
- #define DEBUG_PRINTHEX(x)                  Serial.print (x, HEX)
-
+  #define DEBUG_PRINT(x)                     Serial.print (x)
+  #define DEBUG_PRINTDEC(x)                  Serial.print (x, DEC)
+  #define DEBUG_PRINTLN(x)                   Serial.println (x)
+  #define DEBUG_PRINTF(x, y)                 Serial.printf (x, y)
+  #define PORTSPEED 115200             
+  #define DEBUG_WRITE(x)                     Serial.write (x)
+  #define DEBUG_PRINTHEX(x)                  Serial.print (x, HEX)
+  #define SERIAL_BEGIN           Serial.begin(PORTSPEED)
 #else
- #define DEBUG_PRINT(x)
- #define DEBUG_PRINTDEC(x)
- #define DEBUG_PRINTLN(x)
- #define DEBUG_PRINTF(x, y)
- #define DEBUG_WRITE(x)
+  #define DEBUG_PRINT(x)
+  #define DEBUG_PRINTDEC(x)
+  #define DEBUG_PRINTLN(x)
+  #define DEBUG_PRINTF(x, y)
+  #define DEBUG_WRITE(x)
 #endif 
 
 char                  mqtt_server[40]       = "192.168.1.56";
@@ -110,6 +110,10 @@ D8                                           - flow sensor
 
 //one wire bus
 #define ONE_WIRE_BUS                         D7
+
+#ifdef flowSensor
+#define FLOWSENSORPIN                        D8
+#endif
 
 #ifndef NUMBER_OF_DEVICES
 #define NUMBER_OF_DEVICES                    10
@@ -202,6 +206,7 @@ D8                                           - flow sensor
 #define SHOW_INFO_DELAY                      5000  //
 #define SENDSTAT_DELAY                       60000 //poslani statistiky kazdou minutu
 #define MEAS_DELAY                           5000  //mereni teplot
+#define CALC_DELAY                           1000  //mereni prutoku a vypocet energie kazdou sekundu
   
 #define T_MIN                                -128.0
 #endif
