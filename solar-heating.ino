@@ -101,6 +101,7 @@ byte              numberOfCyclesFlow        = 0; //pocet mereni prutoku pro prum
 unsigned char     flowsensor                = 2; // Sensor Input
 unsigned long     cloopTime;    
 
+ADC_MODE(ADC_VCC); //vcc read
 
 void flow () { // Interrupt function
    numberOfPulsesFlow++;
