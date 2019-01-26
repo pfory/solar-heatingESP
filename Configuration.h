@@ -147,12 +147,12 @@ D8                                           - flow sensor
 #define TIMEY                                1
 #define FLOWX                                1
 #define FLOWY                                2
-#define STATUSX                              19
-#define STATUSY                              2
+// #define STATUSX                              19
+// #define STATUSY                              2
 #define MINRUNX                              14
 #define MINRUNY                              3
-#define TIMEX                                12
-#define TIMEY                                0
+#define TIMEX                                0
+#define TIMEY                                3
 #define POZ0X                                0
 #define POZ0Y                                0
 #define POZ1Y                                1
@@ -193,13 +193,9 @@ D8                                           - flow sensor
 #define I2CADDR                              0x20
 #define PRINT_SPACE                          lcd.print(F(" "));
 
-
 #define DS_MEASSURE_INTERVAL                 750 //inteval between meassurements
 #define DELAY_AFTER_ON                       120000 //1000*60*2; //po tento cas zustane rele sepnute bez ohledu na stav teplotnich cidel
   
-#define DAY_INTERVAL                         43200000 //1000*60*60*12; //
-  
-#define LAST_WRITE_EEPROM_DELAY              3600000 //in ms = 1 hod
 #define SAFETY_ON                            80.0 //teplota, pri niz rele vzdy sepne
   
 #define SEND_DELAY                           30000  //prodleva mezi poslanim dat v ms

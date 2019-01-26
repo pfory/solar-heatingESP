@@ -17,6 +17,7 @@ GIT - https://github.com/pfory/solar-heating
 #include "DoubleResetDetector.h" // https://github.com/datacute/DoubleResetDetector
 #include "Sender.h"
 #include <Wire.h>
+#include <PubSubClient.h>
 
 #ifdef ota
 #include <ArduinoOTA.h>
@@ -63,6 +64,12 @@ float tBojler                               = 0; //boiler temperature
 float tControl                              = 0; //temperature which is used as control temperature
 float tBojlerIn                             = 0; //boiler input temperature
 float tBojlerOut                            = 0; //boiler output temperature
+float lMin                                  = 0;
+unsigned long energyADay                    = 0; //energy a day in Ws
+unsigned long totalSec                      = 0;
+unsigned int  power                         = 0; //actual power in W
+float energyDiff                            = 0.f; //difference in Ws
+volatile bool showDoubleDot                 = false;
    
 //HIGH - relay OFF, LOW - relay ON   
 bool relay1                                 = HIGH; 
@@ -113,7 +120,7 @@ Keypad_I2C keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS, I2CADDR);
 byte            tDiffON                    = 5; //rozdil vystupni teploty panelu 1 tP1Out nebo panelu 2 tP2Out proti teplote bojleru nebo mistnosti tControl pri kterem dojde ke spusteni cerpadla
 byte            tDiffOFF                   = 2; //rozdil vystupni teploty panelu 2 tP2Out proti teplote bojleru nebo mistnosti tControl pri kterem dojde k vypnuti cerpadla
 byte            controlSensor              = 0; //index kontrolniho cidla
-bool            backLight                  = 0; //podsviceni 0 - off 1 - on
+bool            backLight                  = 1; //podsviceni 0 - off 1 - on
 bool            controlSensorBojler        = 0; //kontrolni cidlo true - Bojler false Room
 
 byte            sensorOrder[NUMBER_OF_DEVICES];
@@ -177,6 +184,19 @@ Ticker ticker;
 auto timer = timer_create_default(); // create a timer with default settings
 Timer<> default_timer; // save as above
 
+void callback(char* topic, byte* payload, unsigned int length) {
+  DEBUG_PRINT("Message arrived [");
+  DEBUG_PRINT(topic);
+  DEBUG_PRINT("] ");
+  for (int i=0;i<length;i++) {
+    DEBUG_PRINT((char)payload[i]);
+  }
+  DEBUG_PRINTLN();
+}
+
+WiFiClient espClient;
+PubSubClient client(espClient);
+
 
 //----------------------------------------------------- S E T U P -----------------------------------------------------------
 void setup() {
@@ -202,6 +222,9 @@ void setup() {
   DEBUG_PRINT("Boot-Mode: ");
   DEBUG_PRINTLN(_reset_reason);
   heartBeat = _reset_reason;
+
+  client.setServer(mqtt_server, mqtt_port);
+  client.setCallback(callback);
   
   // drd.stop();
 
@@ -371,8 +394,9 @@ void setup() {
   DEBUG_PRINT(F("backlight:"));
   DEBUG_PRINTLN(backLight);
 
-  //lcd.init();               // initialize the lcd 
-  lcd.begin();               // initialize the lcd 
+  lcd.init();               // initialize the lcd 
+  lcd.backlight();
+  //lcd.begin();               // initialize the lcd 
   lcd.home();                   
   lcd.print(SW_NAME);  
   PRINT_SPACE
@@ -414,14 +438,17 @@ void setup() {
   
   lcd.clear();
 
+ 
   //setup timers
   if (numberOfDevices>0) {
     timer.every(SEND_DELAY, sendDataHA);
     timer.every(MEAS_DELAY, tempMeas);
+    timer.every(CALC_DELAY, calcPowerAndEnergy);
   }
   
   timer.every(SENDSTAT_DELAY, sendStatisticHA);
   timer.every(SENDSTAT_DELAY, countMinRun);
+  timer.every(CALC_DELAY/2, displayTime);
 
   DEBUG_PRINTLN(" Ready");
  
@@ -447,10 +474,76 @@ void loop() {
 #ifdef ota
   ArduinoOTA.handle();
 #endif
+
+  if (!client.connected()) {
+    reconnect();
+  }
+  client.loop();
 } //loop
 
 
 //----------------------------------------------------- F U N C T I O N S -----------------------------------------------------------
+bool calcPowerAndEnergy(void *) {
+  float t1;
+  float t2;
+  
+  if (relay1==LOW) {  //pump is ON
+    if (controlSensorBojler) {
+      t1 = tBojlerIn;
+      t2 = tBojlerOut;
+    } else {
+      t1 = tP2Out;
+      t2 = tP1In;
+    }
+    if (t1>t2) {
+      // msDayON+=(millis()-lastOn);
+      // msDiff+=(millis()-lastOn);
+      // if (msDiff >= 1000) {
+        // totalSec+=msDiff/1000;
+        // msDiff=msDiff%1000;
+      // }
+      totalSec++;
+      power = getPower(t1, t2); //in W
+      //DEBUG_PRINTLN(F(power);
+      energyDiff += CALC_DELAY*(float)power/1000.f; //in Ws
+      if (energyDiff >= 3600.f) { //Wh
+        energyADay  += (unsigned long)energyDiff;
+        energyDiff = energyDiff - (long)energyDiff;
+      }
+    } else {
+      power=0;
+    }
+  } else {
+    power=0;
+  }
+}
+
+
+void reconnect() {
+  // Loop until we're reconnected
+  while (!client.connected()) {
+    DEBUG_PRINT("Attempting MQTT connection...");
+    // Attempt to connect
+    if (client.connect(mqtt_base, mqtt_username, mqtt_key)) {
+      DEBUG_PRINTLN("connected");
+      // Once connected, publish an announcement...
+      //client.publish("outTopic","hello world");
+      // ... and resubscribe
+      //client.subscribe(mqtt_base + '/' + 'inTopic');
+      client.subscribe((String(mqtt_base) + "/" + "inTopic").c_str());
+      client.subscribe((String(mqtt_base) + "/" + "inTopic2").c_str());
+      client.subscribe((String(mqtt_base) + "/" + "inTopic3").c_str());
+    } else {
+      DEBUG_PRINT("failed, rc=");
+      DEBUG_PRINT(client.state());
+      DEBUG_PRINTLN(" try again in 5 seconds");
+      // Wait 5 seconds before retrying
+      delay(5000);
+    }
+  }
+}
+
+
 #ifdef serverHTTP
 void handleRoot() {
 	char temp[600];
@@ -794,13 +887,19 @@ void printSystemTime(){
   print2digits(second());
 }
 
-void displayTime() {
+bool displayTime(void *) {
   lcd.setCursor(TIMEX, TIMEY); //col,row
   lcd2digits(hour());
-  lcd.write(':');
+  if (showDoubleDot) {
+    showDoubleDot = false;
+    lcd.write(':');
+  } else {
+    showDoubleDot = true;
+    lcd.write(' ');
+  }
   lcd2digits(minute());
-  lcd.write(':');
-  lcd2digits(second());
+/*  lcd.write(':');
+  lcd2digits(second());*/
   //zobrazeni hlasky o zmene uhlu kolektoru
 }
 #endif
@@ -951,13 +1050,13 @@ void lcdShow() {
   if (display>=100) { 
     lcd.setCursor(POZ0X,POZ0Y);
   }
-  if (millis() > SHOW_INFO_DELAY + showInfo) {
-    showInfo = millis();
-    lcd.setCursor(0,3);
-    for (byte i=0;i<14;i++) {
-      PRINT_SPACE;
-    }
-  }
+  // if (millis() > SHOW_INFO_DELAY + showInfo) {
+    // showInfo = millis();
+    // lcd.setCursor(0,3);
+    // for (byte i=0;i<14;i++) {
+      // PRINT_SPACE;
+    // }
+  // }
   
   if (display==DISPLAY_MAIN) {
     //    012345678901234567890
@@ -965,9 +1064,6 @@ void lcdShow() {
     //01   555W   12.3kWh 124m                    
     //02   2.1l/m  55 45 48  0
     //03                123456
-    #ifdef time
-      displayTime();
-    #endif
     displayTemp(TEMP1X,TEMP1Y, tP1In, false);
     displayTemp(TEMP2X,TEMP2Y, tP1Out, false);
     displayTemp(TEMP3X,TEMP3Y, tP2In, false);
@@ -999,24 +1095,13 @@ void lcdShow() {
       // }
       
     lcd.setCursor(ENERGYX,ENERGYY);
-      //lcd.print(enegyWsTokWh(energyADay)); //Ws -> kWh (show it in kWh)
-      //lcd.print(F("kWh"));
-      
-    lcd.setCursor(TIMEX,TIMEY);
-      // p=(int)(msDayON/1000/60);
-      // if (p<100) PRINT_SPACE
-      // if (p<10) PRINT_SPACE
-      // if (p<=999) {
-        // lcd.print(p); //ms->min (show it in minutes)
-        // lcd.print(F("m"));
-      // }
+      lcd.print(enegyWsTokWh(energyADay)); //Ws -> kWh (show it in kWh)
+      lcd.print(F("kWh"));
     lcd.setCursor(FLOWX,FLOWY);
-      // lcd.print(lMin);
-      // lcd.print(F("l/m"));
+      lcd.print(lMin);
+      lcd.print(F("l/m"));
     //}
     displayRelayStatus();
-    lcd.setCursor(STATUSX, STATUSY);
-//    lcd.print(status);
     lcd.setCursor(MINRUNX, MINRUNY);
     if (lastRunMin<100000) PRINT_SPACE
     if (lastRunMin<10000) PRINT_SPACE
@@ -1411,3 +1496,20 @@ bool countMinRun(void *) {
   lastRunMin += 1;
   return true;
 }
+
+float enegyWsTokWh(float e) {
+  return e/3600.f/1000.f;
+}
+
+unsigned int getPower(float t1, float t2) {
+  /*
+  Q	0,00006	m3/s
+  K	4184000	
+  t vstup	56,4	°C
+  t vystup	63,7	
+  P = Q x K x (t1 - t2)	1832,592	W
+  */
+  return (lMin / 1000.0 / 60.0) * 4184000.0 * (t1 - t2);
+  //return (float)energyKoef*(tBojlerOut-tBojlerIn); //in W
+}
+
