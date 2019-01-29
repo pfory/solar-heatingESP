@@ -120,8 +120,8 @@ Keypad_I2C keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS, I2CADDR);
 byte            tDiffON                    = 5; //rozdil vystupni teploty panelu 1 tP1Out nebo panelu 2 tP2Out proti teplote bojleru nebo mistnosti tControl pri kterem dojde ke spusteni cerpadla
 byte            tDiffOFF                   = 2; //rozdil vystupni teploty panelu 2 tP2Out proti teplote bojleru nebo mistnosti tControl pri kterem dojde k vypnuti cerpadla
 byte            controlSensor              = 0; //index kontrolniho cidla
-bool            backLight                  = 1; //podsviceni 0 - off 1 - on
-bool            controlSensorBojler        = 0; //kontrolni cidlo true - Bojler false Room
+byte            backLight                  = 1; //podsviceni 0 - off 1 - on
+byte            controlSensorBojler        = 0; //kontrolni cidlo 1 - Bojler 0 Room
 
 byte            sensorOrder[NUMBER_OF_DEVICES];
 
@@ -196,10 +196,29 @@ void callback(char* topic, byte* payload, unsigned int length) {
   }
   DEBUG_PRINTLN();
   //if (topic==mqtt_base + '/' + 'controlSensor') {
-  if (strcmp(topic, "/home/Corridor/esp07a/controlSensor")==0) {
-    DEBUG_PRINT("set controlSensor to value ");
-    //valL = strtol (val,&pEnd,10);
-    DEBUG_PRINTLN(val.toInt());
+  if (strcmp(topic, "/home/Corridor/esp07a/controlSensorBojler")==0) {
+    DEBUG_PRINT("set control sensor to ");
+    if (val.toInt()==1) {
+      DEBUG_PRINTLN(F("Bojler"));
+    } else {
+      DEBUG_PRINTLN(F("Room"));
+    }
+    controlSensorBojler=val.toInt();
+  } else if (strcmp(topic, "/home/Corridor/esp07a/tDiffOFF")==0) {
+    DEBUG_PRINT("set tDiffOFF to ");
+    tDiffOFF=val.toInt();
+  } else if (strcmp(topic, "/home/Corridor/esp07a/tDiffON")==0) {
+    DEBUG_PRINT("set tDiffON to ");
+    tDiffON=val.toInt();
+  } else if (strcmp(topic, "/home/Corridor/esp07a/backLight")==0) {
+    DEBUG_PRINT("set backlight ");
+    if (val.toInt()==1) {
+      lcd.backlight();
+      DEBUG_PRINTLN(F("ON"));
+    } else {
+      lcd.noBacklight();
+      DEBUG_PRINTLN(F("OFF"));
+    }
   }
 }
 
@@ -389,7 +408,7 @@ void setup() {
   DEBUG_PRINTLN(tDiffOFF);
   DEBUG_PRINT(F("Control:"));  
   DEBUG_PRINT(controlSensor);
-  if (controlSensorBojler) {
+  if (controlSensorBojler==1) {
     DEBUG_PRINTLN(" - Bojler");
   } else {
     DEBUG_PRINTLN(" - Room");
@@ -418,7 +437,7 @@ void setup() {
   lcd.setCursor(0,2);
   lcd.print(F("Control:"));  
   lcd.print(controlSensor);
-  if (controlSensorBojler) {
+  if (controlSensorBojler==1) {
     lcd.print(" - Bojler");
   } else {
     lcd.print(" - Room");
@@ -438,7 +457,7 @@ void setup() {
   
   digitalWrite(RELAY1PIN, relay1);
 
-  if (backLight==true) {
+  if (backLight==1) {
     lcd.backlight();
   }
   else {
@@ -504,7 +523,7 @@ bool calcPowerAndEnergy(void *) {
   float t2;
   
   if (relay1==LOW) {  //pump is ON
-    if (controlSensorBojler) {
+    if (controlSensorBojler==1) {
       t1 = tBojlerIn;
       t2 = tBojlerOut;
     } else {
@@ -548,7 +567,8 @@ void reconnect() {
       //client.subscribe(mqtt_base + '/' + 'inTopic');
       client.subscribe((String(mqtt_base) + "/" + "tDiffON ").c_str());
       client.subscribe((String(mqtt_base) + "/" + "tDiffOFF").c_str());
-      client.subscribe((String(mqtt_base) + "/" + "controlSensor").c_str());
+      client.subscribe((String(mqtt_base) + "/" + "controlSensorBojler").c_str());
+      client.subscribe((String(mqtt_base) + "/" + "backLight").c_str());
     } else {
       DEBUG_PRINT("failed, rc=");
       DEBUG_PRINT(client.state());
@@ -1125,6 +1145,12 @@ void lcdShow() {
     if (lastRunMin<100) PRINT_SPACE
     if (lastRunMin<10) PRINT_SPACE
     lcd.print(lastRunMin);
+    lcd.setCursor(CONTROLSENSORX, CONTROLSENSORY);
+    if (controlSensorBojler==1) {
+      lcd.print(F("B"));
+    } else {
+      lcd.print(F("R"));
+    }
   } else if (display==DISPLAY_TOTAL_ENERGY) {
     //displayInfoValue('Total energy', enegyWsTokWh(totalEnergy), 'kWh');
   } else if (display==DISPLAY_T_DIFF_ON) {
@@ -1154,7 +1180,7 @@ void lcdShow() {
     lcd.print(sensor[controlSensor]);
     lcd.print(F("]   "));
     lcd.setCursor(0,2);
-    if (controlSensorBojler) {
+    if (controlSensorBojler==1) {
       lcd.print(F("Bojler"));
     } else {
       lcd.print(F("Room"));

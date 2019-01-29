@@ -156,6 +156,8 @@ D8                                           - flow sensor
 #define POZ0X                                0
 #define POZ0Y                                0
 #define POZ1Y                                1
+#define CONTROLSENSORX                       19
+#define CONTROLSENSORY                       1
 
 #define DISPLAY_MAIN                         0
 #define DISPLAY_TOTAL_ENERGY                 1
