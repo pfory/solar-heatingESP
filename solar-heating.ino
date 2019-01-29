@@ -184,13 +184,23 @@ auto timer = timer_create_default(); // create a timer with default settings
 Timer<> default_timer; // save as above
 
 void callback(char* topic, byte* payload, unsigned int length) {
+  char * pEnd;
+  long int valL;
+  String val =  String();
   DEBUG_PRINT("Message arrived [");
   DEBUG_PRINT(topic);
   DEBUG_PRINT("] ");
   for (int i=0;i<length;i++) {
     DEBUG_PRINT((char)payload[i]);
+    val += (char)payload[i];
   }
   DEBUG_PRINTLN();
+  //if (topic==mqtt_base + '/' + 'controlSensor') {
+  if (strcmp(topic, "/home/Corridor/esp07a/controlSensor")==0) {
+    DEBUG_PRINT("set controlSensor to value ");
+    //valL = strtol (val,&pEnd,10);
+    DEBUG_PRINTLN(val.toInt());
+  }
 }
 
 WiFiClient espClient;
@@ -441,7 +451,7 @@ void setup() {
     DEBUG_PRINTLN("ERROR - real number of devices DS18B20 > NUMBER_OF_DEVICES. Change variable NUMBER_OF_DEVICES in configuration file!!!!!!!!");
   }
 
-  for (byte i=0; i<NUMBER_OF_DEVICES); i++) {
+  for (byte i=0; i<NUMBER_OF_DEVICES; i++) {
     sensorOrder[i] = i;
   }
   
@@ -536,9 +546,9 @@ void reconnect() {
       //client.publish("outTopic","hello world");
       // ... and resubscribe
       //client.subscribe(mqtt_base + '/' + 'inTopic');
-      client.subscribe((String(mqtt_base) + "/" + "inTopic").c_str());
-      client.subscribe((String(mqtt_base) + "/" + "inTopic2").c_str());
-      client.subscribe((String(mqtt_base) + "/" + "inTopic3").c_str());
+      client.subscribe((String(mqtt_base) + "/" + "tDiffON ").c_str());
+      client.subscribe((String(mqtt_base) + "/" + "tDiffOFF").c_str());
+      client.subscribe((String(mqtt_base) + "/" + "controlSensor").c_str());
     } else {
       DEBUG_PRINT("failed, rc=");
       DEBUG_PRINT(client.state());
