@@ -126,7 +126,6 @@ bool            controlSensorBojler        = 0; //kontrolni cidlo true - Bojler 
 byte            sensorOrder[NUMBER_OF_DEVICES];
 
 
-
 // struct StoreStruct {
   // // This is for mere detection if they are your settings
   // char            version[4];
@@ -438,7 +437,14 @@ void setup() {
   
   lcd.clear();
 
- 
+  if (numberOfDevices>NUMBER_OF_DEVICES) {
+    DEBUG_PRINTLN("ERROR - real number of devices DS18B20 > NUMBER_OF_DEVICES. Change variable NUMBER_OF_DEVICES in configuration file!!!!!!!!");
+  }
+
+  for (byte i=0; i<NUMBER_OF_DEVICES); i++) {
+    sensorOrder[i] = i;
+  }
+  
   //setup timers
   if (numberOfDevices>0) {
     timer.every(SEND_DELAY, sendDataHA);
