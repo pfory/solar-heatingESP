@@ -119,7 +119,7 @@ Keypad_I2C keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS, I2CADDR);
 
 byte            tDiffON                    = 5; //rozdil vystupni teploty panelu 1 tP1Out nebo panelu 2 tP2Out proti teplote bojleru nebo mistnosti tControl pri kterem dojde ke spusteni cerpadla
 byte            tDiffOFF                   = 2; //rozdil vystupni teploty panelu 2 tP2Out proti teplote bojleru nebo mistnosti tControl pri kterem dojde k vypnuti cerpadla
-byte            controlSensor              = 0; //index kontrolniho cidla
+//byte            controlSensor              = 0; //index kontrolniho cidla
 byte            backLight                  = 1; //podsviceni 0 - off 1 - on
 byte            controlSensorBojler        = 0; //kontrolni cidlo 1 - Bojler 0 Room
 
@@ -207,9 +207,11 @@ void callback(char* topic, byte* payload, unsigned int length) {
   } else if (strcmp(topic, "/home/Corridor/esp07a/tDiffOFF")==0) {
     DEBUG_PRINT("set tDiffOFF to ");
     tDiffOFF=val.toInt();
+    DEBUG_PRINT(tDiffOFF);
   } else if (strcmp(topic, "/home/Corridor/esp07a/tDiffON")==0) {
     DEBUG_PRINT("set tDiffON to ");
     tDiffON=val.toInt();
+    DEBUG_PRINT(tDiffON);
   } else if (strcmp(topic, "/home/Corridor/esp07a/backLight")==0) {
     DEBUG_PRINT("set backlight ");
     if (val.toInt()==1) {
@@ -219,6 +221,46 @@ void callback(char* topic, byte* payload, unsigned int length) {
       lcd.noBacklight();
       DEBUG_PRINTLN(F("OFF"));
     }
+  } else if (strcmp(topic, "/home/Corridor/esp07a/so0")==0) {
+    DEBUG_PRINT("set sensor order 0 to ");
+    sensorOrder[0]=val.toInt();
+    DEBUG_PRINT(val.toInt());
+  } else if (strcmp(topic, "/home/Corridor/esp07a/so1")==1) {
+    DEBUG_PRINT("set sensor order 1 to ");
+    sensorOrder[1]=val.toInt();
+    DEBUG_PRINT(val.toInt());
+  } else if (strcmp(topic, "/home/Corridor/esp07a/so2")==2) {
+    DEBUG_PRINT("set sensor order 2 to ");
+    sensorOrder[2]=val.toInt();
+    DEBUG_PRINT(val.toInt());
+  } else if (strcmp(topic, "/home/Corridor/esp07a/so3")==3) {
+    DEBUG_PRINT("set sensor order 3 to ");
+    sensorOrder[3]=val.toInt();
+    DEBUG_PRINT(val.toInt());
+  } else if (strcmp(topic, "/home/Corridor/esp07a/so4")==4) {
+    DEBUG_PRINT("set sensor order 4 to ");
+    sensorOrder[4]=val.toInt();
+    DEBUG_PRINT(val.toInt());
+  } else if (strcmp(topic, "/home/Corridor/esp07a/so5")==5) {
+    DEBUG_PRINT("set sensor order 5 to ");
+    sensorOrder[5]=val.toInt();
+    DEBUG_PRINT(val.toInt());
+  } else if (strcmp(topic, "/home/Corridor/esp07a/so6")==6) {
+    DEBUG_PRINT("set sensor order 6 to ");
+    sensorOrder[6]=val.toInt();
+    DEBUG_PRINT(val.toInt());
+  } else if (strcmp(topic, "/home/Corridor/esp07a/so7")==7) {
+    DEBUG_PRINT("set sensor order 7 to ");
+    sensorOrder[7]=val.toInt();
+    DEBUG_PRINT(val.toInt());
+  } else if (strcmp(topic, "/home/Corridor/esp07a/so8")==8) {
+    DEBUG_PRINT("set sensor order 8 to ");
+    sensorOrder[8]=val.toInt();
+    DEBUG_PRINT(val.toInt());
+  } else if (strcmp(topic, "/home/Corridor/esp07a/so9")==9) {
+    DEBUG_PRINT("set sensor order 9 to ");
+    sensorOrder[9]=val.toInt();
+    DEBUG_PRINT(val.toInt());
   }
 }
 
@@ -407,11 +449,11 @@ void setup() {
   DEBUG_PRINT(F("tOFF:"));  
   DEBUG_PRINTLN(tDiffOFF);
   DEBUG_PRINT(F("Control:"));  
-  DEBUG_PRINT(controlSensor);
+  //DEBUG_PRINT(controlSensor);
   if (controlSensorBojler==1) {
-    DEBUG_PRINTLN(" - Bojler");
+    DEBUG_PRINTLN("Bojler");
   } else {
-    DEBUG_PRINTLN(" - Room");
+    DEBUG_PRINTLN("Room");
   }
   //DEBUG_PRINT(F("TotalEnergy from EEPROM:"));
   //DEBUG_PRINT(totalEnergy);
@@ -436,11 +478,11 @@ void setup() {
   lcd.print(tDiffOFF);
   lcd.setCursor(0,2);
   lcd.print(F("Control:"));  
-  lcd.print(controlSensor);
+  //lcd.print(controlSensor);
   if (controlSensorBojler==1) {
-    lcd.print(" - Bojler");
+    lcd.print("Bojler");
   } else {
-    lcd.print(" - Room");
+    lcd.print("Room");
   }
 
   keypad.begin();
@@ -457,12 +499,7 @@ void setup() {
   
   digitalWrite(RELAY1PIN, relay1);
 
-  if (backLight==1) {
-    lcd.backlight();
-  }
-  else {
-    lcd.noBacklight();
-  }
+  backLight==1 ? lcd.backlight() : lcd.noBacklight();
   
   lcd.clear();
 
@@ -569,6 +606,16 @@ void reconnect() {
       client.subscribe((String(mqtt_base) + "/" + "tDiffOFF").c_str());
       client.subscribe((String(mqtt_base) + "/" + "controlSensorBojler").c_str());
       client.subscribe((String(mqtt_base) + "/" + "backLight").c_str());
+      client.subscribe((String(mqtt_base) + "/" + "so0").c_str());
+      client.subscribe((String(mqtt_base) + "/" + "so1").c_str());
+      client.subscribe((String(mqtt_base) + "/" + "so2").c_str());
+      client.subscribe((String(mqtt_base) + "/" + "so3").c_str());
+      client.subscribe((String(mqtt_base) + "/" + "so4").c_str());
+      client.subscribe((String(mqtt_base) + "/" + "so5").c_str());
+      client.subscribe((String(mqtt_base) + "/" + "so6").c_str());
+      client.subscribe((String(mqtt_base) + "/" + "so7").c_str());
+      client.subscribe((String(mqtt_base) + "/" + "so8").c_str());
+      client.subscribe((String(mqtt_base) + "/" + "so9").c_str());
     } else {
       DEBUG_PRINT("failed, rc=");
       DEBUG_PRINT(client.state());
@@ -972,24 +1019,17 @@ bool tempMeas(void *) {
     DEBUG_PRINTLN(tempTemp);
     sensor[i] = tempTemp;
   }
-  // tP1In       = sensor[7];    
-  // tP1Out      = sensor[4];
-  // tP2In       = sensor[2];
-  // tP2Out      = sensor[1];
-  // tBojlerIn   = sensor[5];
-  // tBojlerOut  = sensor[3];
-  // tRoom       = sensor[6];
-  // tBojler     = sensor[0];
-  tP1In       = sensor[sensorOrder[0]];
-  tP1Out      = sensor[sensorOrder[1]];
-  tP2In       = sensor[sensorOrder[2]];
-  tP2Out      = sensor[sensorOrder[3]];
-  tBojlerIn   = sensor[sensorOrder[4]];
-  tBojlerOut  = sensor[sensorOrder[5]];
-  tRoom       = sensor[sensorOrder[6]];
-  tBojler     = sensor[sensorOrder[7]];
-  tControl    = sensor[controlSensor];
 
+  tP1In       = sensor[sensorOrder[0]]; //so0
+  tP1Out      = sensor[sensorOrder[1]]; //so1
+  tP2In       = sensor[sensorOrder[2]]; //so2
+  tP2Out      = sensor[sensorOrder[3]]; //so3
+  tBojlerIn   = sensor[sensorOrder[4]]; //so4
+  tBojlerOut  = sensor[sensorOrder[5]]; //so5
+  tRoom       = sensor[sensorOrder[6]]; //so6
+  tBojler     = sensor[sensorOrder[7]]; //so7
+  
+  controlSensorBojler==1 ? tControl  = tBojler : tControl  = tRoom;
   
   DEBUG_PRINT(F("P1 In:"));
   DEBUG_PRINTLN(tP1In);
@@ -1146,11 +1186,7 @@ void lcdShow() {
     if (lastRunMin<10) PRINT_SPACE
     lcd.print(lastRunMin);
     lcd.setCursor(CONTROLSENSORX, CONTROLSENSORY);
-    if (controlSensorBojler==1) {
-      lcd.print(F("B"));
-    } else {
-      lcd.print(F("R"));
-    }
+    controlSensorBojler==1 ? lcd.print(F("B")) : lcd.print(F("R"));
   } else if (display==DISPLAY_TOTAL_ENERGY) {
     //displayInfoValue('Total energy', enegyWsTokWh(totalEnergy), 'kWh');
   } else if (display==DISPLAY_T_DIFF_ON) {
@@ -1177,12 +1213,14 @@ void lcdShow() {
     lcd.print(F("Control sensor"));
     lcd.setCursor(0,1);
     lcd.print(F(" ["));
-    lcd.print(sensor[controlSensor]);
-    lcd.print(F("]   "));
     lcd.setCursor(0,2);
     if (controlSensorBojler==1) {
+      lcd.print(tBojler);
+      lcd.print(F("]   "));
       lcd.print(F("Bojler"));
     } else {
+      lcd.print(tRoom);
+      lcd.print(F("]   "));
       lcd.print(F("Room"));
     }
   } else if (display==DISPLAY_TOTAL_TIME) { 
@@ -1407,12 +1445,7 @@ void keyBoard() {
     }
     else if (key=='A') {
       backLight=!backLight;
-      if (backLight==true) {
-        lcd.backlight();
-      }
-      else {
-        lcd.noBacklight();
-      }
+      backLight==true ? lcd.backlight() : lcd.noBacklight();
       saveConfig();
     }
     else if (key=='0') { 
