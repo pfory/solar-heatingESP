@@ -6,6 +6,14 @@ GIT - https://github.com/pfory/solar-heating
 //Wemos D1 R2 & mini
 */
 
+/*TODO
+zapojit LED pres odpor 220 ohmu a vyzkouset - musi svitit jako BUILTIN_LED
+vyzkouset prutokomer
+vyzkouset PIR sensor - ovlada podsvetleni displeje
+DS18B20 na 5V
+vyzkouset spinani RELE pomoci LED pres odpor 220ohmu
+*/
+
 #include "Configuration.h"
 
 
@@ -277,6 +285,13 @@ void setup() {
   DEBUG_PRINTLN(F(VERSION));
  
   pinMode(BUILTIN_LED, OUTPUT);
+  pinMode(LEDPIN, OUTPUT);
+  pinMode(FLOWSENSORPIN, INPUT);
+  pinMode(RELAY1PIN, OUTPUT);
+
+  digitalWrite(FLOWSENSORPIN, HIGH); // Optional Internal Pull-Up
+  digitalWrite(RELAY1PIN, relay1);
+
   ticker.attach(1, tick);
   bool _dblreset = drd.detectDoubleReset();
     
@@ -491,14 +506,8 @@ void setup() {
  
   dsInit();
 
-  pinMode(FLOWSENSORPIN, INPUT);
-  digitalWrite(FLOWSENSORPIN, HIGH); // Optional Internal Pull-Up
   attachInterrupt(0, flow, RISING); // Setup Interrupt
   
-  pinMode(RELAY1PIN, OUTPUT);
-  
-  digitalWrite(RELAY1PIN, relay1);
-
   backLight==1 ? lcd.backlight() : lcd.noBacklight();
   
   lcd.clear();
@@ -527,12 +536,17 @@ void setup() {
   ticker.detach();
   //keep LED on
   digitalWrite(BUILTIN_LED, HIGH);
+  digitalWrite(LEDPIN, HIGH);
 } //setup
 
 
 //----------------------------------------------------- L O O P -----------------------------------------------------------
 void loop() {
   mainControl();
+  
+  if (digitalRead(PIRPIN)==HIGH) {
+    backLight==1 ? lcd.backlight() : lcd.noBacklight();
+  }
 
   lcdShow();
   
@@ -675,6 +689,7 @@ void tick()
   //toggle state
   int state = digitalRead(BUILTIN_LED);  // get the current state of GPIO1 pin
   digitalWrite(BUILTIN_LED, !state);     // set pin to the opposite state
+  digitalWrite(LEDPIN, !state);          // set pin to the opposite state
 }
   
 //callback notifying us of the need to save config

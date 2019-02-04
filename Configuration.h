@@ -103,10 +103,20 @@ D8                                           - flow sensor
 --------------------------------------------------------------------------------------------------------------------------
 */
 
+//keypad i2c address
+#define I2CADDR                              0x20
+
 //display
 #define LCDADDRESS                           0x27
 #define LCDROWS                              4
 #define LCDCOLS                              20
+
+#define PIRPIN                               D3
+
+#define LEDPIN                               D4
+                          
+#define RELAY1PIN                            D5
+#define RELAY2PIN                            D6
 
 //one wire bus
 #define ONE_WIRE_BUS                         D7
@@ -188,11 +198,7 @@ D8                                           - flow sensor
 #define RELAY2Y                              1
 */                          
                           
-#define RELAY1PIN                            D5
-#define RELAY2PIN                            D6
 
-//keypad i2c address
-#define I2CADDR                              0x20
 #define PRINT_SPACE                          lcd.print(F(" "));
 
 #define DS_MEASSURE_INTERVAL                 750 //inteval between meassurements
