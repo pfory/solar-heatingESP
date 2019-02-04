@@ -7,11 +7,7 @@ GIT - https://github.com/pfory/solar-heating
 */
 
 /*TODO
-zapojit LED pres odpor 220 ohmu a vyzkouset - musi svitit jako BUILTIN_LED
-vyzkouset prutokomer
-vyzkouset PIR sensor - ovlada podsvetleni displeje
-DS18B20 na 5V
-vyzkouset spinani RELE pomoci LED pres odpor 220ohmu
+kalkulace prutoku
 */
 
 #include "Configuration.h"
@@ -78,6 +74,8 @@ unsigned long totalSec                      = 0;
 unsigned int  power                         = 0; //actual power in W
 float energyDiff                            = 0.f; //difference in Ws
 volatile bool showDoubleDot                 = false;
+bool firstTempMeasDone                      = false;
+
    
 //HIGH - relay OFF, LOW - relay ON   
 bool relay1                                 = HIGH; 
@@ -93,6 +91,7 @@ ADC_MODE(ADC_VCC); //vcc read
 volatile int      numberOfPulsesFlow        = 0; // Measures flow sensor pulses
 void flow () { // Interrupt function
    numberOfPulsesFlow++;
+   DEBUG_PRINTLN(".");
 }
 #endif    
     
@@ -283,14 +282,29 @@ void setup() {
   DEBUG_PRINT(F(SW_NAME));
   DEBUG_PRINT(F(" "));
   DEBUG_PRINTLN(F(VERSION));
- 
+
+  lcd.init();               // initialize the lcd 
+  lcd.backlight();
+  //lcd.begin();               // initialize the lcd 
+  lcd.home();                   
+  lcd.print(SW_NAME);  
+  PRINT_SPACE
+  lcd.print(VERSION);
+  
   pinMode(BUILTIN_LED, OUTPUT);
   pinMode(LEDPIN, OUTPUT);
-  pinMode(FLOWSENSORPIN, INPUT);
+  pinMode(PIRPIN, INPUT);
+#ifdef flowSensor
+  DEBUG_PRINTLN("Flow sensor");
+  pinMode(FLOWSENSORPIN, INPUT_PULLUP);
+  //digitalWrite(FLOWSENSORPIN, HIGH); // Optional Internal Pull-Up
+  attachInterrupt(FLOWSENSORPIN, flow, CHANGE); // Setup Interrupt
+#endif
   pinMode(RELAY1PIN, OUTPUT);
+  pinMode(RELAY2PIN, OUTPUT);
 
-  digitalWrite(FLOWSENSORPIN, HIGH); // Optional Internal Pull-Up
   digitalWrite(RELAY1PIN, relay1);
+  digitalWrite(RELAY2PIN, relay2);
 
   ticker.attach(1, tick);
   bool _dblreset = drd.detectDoubleReset();
@@ -324,7 +338,6 @@ void setup() {
   //reset settings - for testing
   //wifiManager.resetSettings();
   
-  //wifiManager.setSTAStaticIPConfig(_ip, _gw, _sn);
   IPAddress _ip,_gw,_sn;
   _ip.fromString(static_ip);
   _gw.fromString(static_gw);
@@ -336,9 +349,7 @@ void setup() {
   DEBUG_PRINTLN(_gw);
   DEBUG_PRINTLN(_sn);
 
-  //if (WiFi.SSID()!="") wifiManager.setConfigPortalTimeout(60); //If no access point name has been previously entered disable timeout.
-
-  
+  //wifiManager.setConfigPortalTimeout(60); 
   //set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
   wifiManager.setAPCallback(configModeCallback);
   
@@ -361,7 +372,7 @@ void setup() {
   //in seconds
   
   wifiManager.setTimeout(30);
-  wifiManager.setConnectTimeout(10); 
+  wifiManager.setConnectTimeout(30); 
   //wifiManager.setBreakAfterConfig(true);
   
   //set config save notify callback
@@ -479,13 +490,6 @@ void setup() {
   DEBUG_PRINT(F("backlight:"));
   DEBUG_PRINTLN(backLight);
 
-  lcd.init();               // initialize the lcd 
-  lcd.backlight();
-  //lcd.begin();               // initialize the lcd 
-  lcd.home();                   
-  lcd.print(SW_NAME);  
-  PRINT_SPACE
-  lcd.print(VERSION);
   lcd.setCursor(0,1);
   lcd.print(F("tON:"));  
   lcd.print(tDiffON);
@@ -542,10 +546,12 @@ void setup() {
 
 //----------------------------------------------------- L O O P -----------------------------------------------------------
 void loop() {
-  mainControl();
+  firstTempMeasDone ? mainControl() : void();
   
-  if (digitalRead(PIRPIN)==HIGH) {
-    backLight==1 ? lcd.backlight() : lcd.noBacklight();
+  if (digitalRead(PIRPIN)==1) {
+    lcd.backlight();
+  } else {
+    lcd.noBacklight();
   }
 
   lcdShow();
@@ -1077,6 +1083,7 @@ bool tempMeas(void *) {
   if (reset) {
     dsInit();
   }
+  firstTempMeasDone = true;
   return true;
 }
 
@@ -1603,3 +1610,22 @@ unsigned int getPower(float t1, float t2) {
   //return (float)energyKoef*(tBojlerOut-tBojlerIn); //in W
 }
 
+/*
+#ifdef flowSensor
+void calcFlow() {
+  // Every second, calculate and print litres/hour
+  if (millis() >= (cloopTime + 5000)) {
+    // Pulse frequency (Hz) = 7.5Q, Q is flow rate in L/min.
+    lMin = numberOfPulsesFlow / (7.5f * ((float)(millis() - cloopTime) / 1000.f));
+    cloopTime = millis(); // Updates cloopTime
+    lMinCumul += lMin;
+    numberOfCyclesFlow++;
+    DEBUG_PRINT(F("Pulsu: "));
+    DEBUG_PRINTLN(numberOfPulsesFlow);
+    Serial.print(lMin, DEC); // Print litres/min
+    DEBUG_PRINTLN(F(" L/min"));
+    numberOfPulsesFlow = 0; // Reset Counter
+  }
+}
+#endif
+*/

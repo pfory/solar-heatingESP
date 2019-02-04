@@ -92,14 +92,15 @@ LOLIN Wemos D1 pinout
 ------------------------------------------
 TX                                           - Tx
 RX                                           - Rx
+D0                                           - PIR sensor
 D1                                           - I2C display SCL 0x20, keypad 0x27
 D2                                           - I2C display SDA 0x20, keypad 0x27
-D3                                           - PIR sensor
+D3                                           - 
 D4                                           - LED
 D5                                           - relay 1
-D6                                           - relay 2
+D6                                           - flow sensor
 D7                                           - DALLAS temperature sensors
-D8                                           - flow sensor
+D8                                           - relay 2
 --------------------------------------------------------------------------------------------------------------------------
 */
 
@@ -111,19 +112,21 @@ D8                                           - flow sensor
 #define LCDROWS                              4
 #define LCDCOLS                              20
 
-#define PIRPIN                               D3
+#define PIRPIN                               D0
 
 #define LEDPIN                               D4
                           
 #define RELAY1PIN                            D5
-#define RELAY2PIN                            D6
+
+#ifdef flowSensor
+#define FLOWSENSORPIN                        D6
+#endif
 
 //one wire bus
 #define ONE_WIRE_BUS                         D7
 
-#ifdef flowSensor
-#define FLOWSENSORPIN                        D8
-#endif
+#define RELAY2PIN                            D8
+
 
 #ifndef NUMBER_OF_DEVICES
 #define NUMBER_OF_DEVICES                    10
@@ -204,7 +207,7 @@ D8                                           - flow sensor
 #define DS_MEASSURE_INTERVAL                 750 //inteval between meassurements
 #define DELAY_AFTER_ON                       120000 //1000*60*2; //po tento cas zustane rele sepnute bez ohledu na stav teplotnich cidel
   
-#define SAFETY_ON                            80.0 //teplota, pri niz rele vzdy sepne
+#define SAFETY_ON                            86.0 //teplota, pri niz rele vzdy sepne
   
 #define SEND_DELAY                           30000  //prodleva mezi poslanim dat v ms
 #define SHOW_INFO_DELAY                      5000  //

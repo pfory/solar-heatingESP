@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE eagle SYSTEM "eagle.dtd">
-<eagle version="9.1.3">
+<eagle version="9.2.2">
 <drawing>
 <settings>
 <setting alwaysvectorfont="no"/>
@@ -1527,70 +1527,93 @@ design rules under a new name.</description>
 </pass>
 </autorouter>
 <elements>
-<element name="DS18B20" library="con-wago-508" package="W237-133" value="" x="6.35" y="10.16" rot="R270">
-<attribute name="MF" value="" x="6.35" y="10.16" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="MPN" value="" x="6.35" y="10.16" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="OC_FARNELL" value="unknown" x="6.35" y="10.16" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="OC_NEWARK" value="unknown" x="6.35" y="10.16" size="1.778" layer="27" rot="R270" display="off"/>
+<element name="DS18B20" library="con-wago-508" package="W237-133" value="" x="6.35" y="5.08" smashed="yes" rot="R270">
+<attribute name="MF" value="" x="6.35" y="5.08" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="MPN" value="" x="6.35" y="5.08" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="NAME" x="-0.508" y="12.065" size="1.27" layer="25" ratio="10" rot="R270"/>
+<attribute name="OC_FARNELL" value="unknown" x="6.35" y="5.08" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="OC_NEWARK" value="unknown" x="6.35" y="5.08" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="VALUE" x="2.032" y="11.684" size="1.27" layer="27" ratio="10" rot="R270"/>
 </element>
-<element name="FLOW" library="con-wago-508" package="W237-133" value="" x="45.72" y="10.16" rot="R90">
+<element name="FLOW" library="con-wago-508" package="W237-133" value="" x="45.72" y="10.16" smashed="yes" rot="R90">
 <attribute name="MF" value="" x="45.72" y="10.16" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="MPN" value="" x="45.72" y="10.16" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="NAME" x="52.578" y="3.175" size="1.27" layer="25" ratio="10" rot="R90"/>
 <attribute name="OC_FARNELL" value="unknown" x="45.72" y="10.16" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="OC_NEWARK" value="unknown" x="45.72" y="10.16" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="VALUE" x="50.038" y="3.556" size="1.27" layer="27" ratio="10" rot="R90"/>
 </element>
-<element name="I2C" library="con-wago-508" package="W237-4P" value="" x="6.35" y="48.26" rot="R270">
+<element name="I2C" library="con-wago-508" package="W237-4P" value="" x="6.35" y="48.26" smashed="yes" rot="R270">
 <attribute name="MF" value="" x="6.35" y="48.26" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="MPN" value="" x="6.35" y="48.26" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="NAME" x="-0.508" y="57.15" size="1.27" layer="25" ratio="10" rot="R270"/>
 <attribute name="OC_FARNELL" value="unknown" x="6.35" y="48.26" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="OC_NEWARK" value="unknown" x="6.35" y="48.26" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="VALUE" x="2.032" y="57.15" size="1.27" layer="27" ratio="10" rot="R270"/>
 </element>
-<element name="LED" library="con-wago-508" package="W237-132" value="" x="45.72" y="22.86" rot="R90">
+<element name="LED" library="con-wago-508" package="W237-132" value="" x="45.72" y="22.86" smashed="yes" rot="R90">
 <attribute name="MF" value="" x="45.72" y="22.86" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="MPN" value="" x="45.72" y="22.86" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="NAME" x="50.038" y="19.05" size="1.27" layer="25" ratio="10" rot="R90"/>
 <attribute name="OC_FARNELL" value="unknown" x="45.72" y="22.86" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="OC_NEWARK" value="unknown" x="45.72" y="22.86" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="VALUE" x="52.705" y="19.05" size="1.27" layer="27" ratio="10" rot="R90"/>
 </element>
-<element name="PIR" library="con-wago-508" package="W237-133" value="" x="45.72" y="35.56" rot="R90">
-<attribute name="MF" value="" x="45.72" y="35.56" size="1.778" layer="27" rot="R90" display="off"/>
-<attribute name="MPN" value="" x="45.72" y="35.56" size="1.778" layer="27" rot="R90" display="off"/>
-<attribute name="OC_FARNELL" value="unknown" x="45.72" y="35.56" size="1.778" layer="27" rot="R90" display="off"/>
-<attribute name="OC_NEWARK" value="unknown" x="45.72" y="35.56" size="1.778" layer="27" rot="R90" display="off"/>
+<element name="PIR" library="con-wago-508" package="W237-133" value="" x="6.35" y="30.48" smashed="yes" rot="R270">
+<attribute name="MF" value="" x="6.35" y="30.48" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="MPN" value="" x="6.35" y="30.48" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="NAME" x="-0.508" y="37.465" size="1.27" layer="25" ratio="10" rot="R270"/>
+<attribute name="OC_FARNELL" value="unknown" x="6.35" y="30.48" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="OC_NEWARK" value="unknown" x="6.35" y="30.48" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="VALUE" x="2.032" y="37.084" size="1.27" layer="27" ratio="10" rot="R270"/>
 </element>
-<element name="RELAY1" library="con-wago-508" package="W237-132" value="" x="6.35" y="33.02" rot="R270">
-<attribute name="MF" value="" x="6.35" y="33.02" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="MPN" value="" x="6.35" y="33.02" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="OC_FARNELL" value="unknown" x="6.35" y="33.02" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="OC_NEWARK" value="unknown" x="6.35" y="33.02" size="1.778" layer="27" rot="R270" display="off"/>
+<element name="RELAY1" library="con-wago-508" package="W237-132" value="" x="45.72" y="33.02" smashed="yes" rot="R90">
+<attribute name="MF" value="" x="45.72" y="33.02" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="MPN" value="" x="45.72" y="33.02" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="NAME" x="50.038" y="29.21" size="1.27" layer="25" ratio="10" rot="R90"/>
+<attribute name="OC_FARNELL" value="unknown" x="45.72" y="33.02" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="OC_NEWARK" value="unknown" x="45.72" y="33.02" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="VALUE" x="52.705" y="29.21" size="1.27" layer="27" ratio="10" rot="R90"/>
 </element>
-<element name="RELAY2" library="con-wago-508" package="W237-132" value="" x="6.35" y="22.86" rot="R270">
-<attribute name="MF" value="" x="6.35" y="22.86" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="MPN" value="" x="6.35" y="22.86" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="OC_FARNELL" value="unknown" x="6.35" y="22.86" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="OC_NEWARK" value="unknown" x="6.35" y="22.86" size="1.778" layer="27" rot="R270" display="off"/>
+<element name="RELAY2" library="con-wago-508" package="W237-132" value="" x="6.35" y="17.78" smashed="yes" rot="R270">
+<attribute name="MF" value="" x="6.35" y="17.78" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="MPN" value="" x="6.35" y="17.78" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="NAME" x="2.032" y="21.59" size="1.27" layer="25" ratio="10" rot="R270"/>
+<attribute name="OC_FARNELL" value="unknown" x="6.35" y="17.78" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="OC_NEWARK" value="unknown" x="6.35" y="17.78" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="VALUE" x="-0.635" y="21.59" size="1.27" layer="27" ratio="10" rot="R270"/>
 </element>
-<element name="SERIAL" library="con-wago-508" package="W237-133" value="" x="45.72" y="50.8" rot="R90">
-<attribute name="MF" value="" x="45.72" y="50.8" size="1.778" layer="27" rot="R90" display="off"/>
-<attribute name="MPN" value="" x="45.72" y="50.8" size="1.778" layer="27" rot="R90" display="off"/>
-<attribute name="OC_FARNELL" value="unknown" x="45.72" y="50.8" size="1.778" layer="27" rot="R90" display="off"/>
-<attribute name="OC_NEWARK" value="unknown" x="45.72" y="50.8" size="1.778" layer="27" rot="R90" display="off"/>
+<element name="SERIAL" library="con-wago-508" package="W237-133" value="" x="45.72" y="45.72" smashed="yes" rot="R90">
+<attribute name="MF" value="" x="45.72" y="45.72" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="MPN" value="" x="45.72" y="45.72" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="NAME" x="52.578" y="38.735" size="1.27" layer="25" ratio="10" rot="R90"/>
+<attribute name="OC_FARNELL" value="unknown" x="45.72" y="45.72" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="OC_NEWARK" value="unknown" x="45.72" y="45.72" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="VALUE" x="50.038" y="39.116" size="1.27" layer="27" ratio="10" rot="R90"/>
 </element>
-<element name="WEMOS1" library="esp8266modules" package="WEMOS-D1-MINI" value="" x="25.4" y="35.56"/>
-<element name="R1" library="rcl" package="0207/10" value="4k7" x="13.97" y="13.97" rot="R90"/>
-<element name="R2" library="rcl" package="0207/10" value="220" x="33.02" y="25.4" rot="R270"/>
+<element name="WEMOS1" library="esp8266modules" package="WEMOS-D1-MINI" value="" x="25.4" y="35.56" smashed="yes">
+<attribute name="NAME" x="38.1" y="17.78" size="1.4224" layer="25" align="bottom-right"/>
+</element>
+<element name="R1" library="rcl" package="0207/10" value="4k7" x="19.05" y="12.7" smashed="yes" rot="R90">
+<attribute name="NAME" x="17.526" y="9.652" size="1.27" layer="25" ratio="10" rot="R90"/>
+<attribute name="VALUE" x="19.685" y="10.4394" size="1.27" layer="27" ratio="10" rot="R90"/>
+</element>
+<element name="R2" library="rcl" package="0207/10" value="220" x="33.02" y="25.4" smashed="yes" rot="R270">
+<attribute name="NAME" x="34.544" y="28.448" size="1.27" layer="25" ratio="10" rot="R270"/>
+<attribute name="VALUE" x="32.385" y="27.6606" size="1.27" layer="27" ratio="10" rot="R270"/>
+</element>
 </elements>
 <signals>
 <signal name="N$1">
 <contactref element="WEMOS1" pad="TX"/>
 <contactref element="SERIAL" pad="2"/>
-<wire x1="46.355" y1="50.8" x2="38.1" y2="50.8" width="1.016" layer="16"/>
-<wire x1="38.1" y1="50.8" x2="38.1" y2="43.18" width="1.016" layer="16"/>
+<wire x1="46.355" y1="45.72" x2="38.1" y2="45.72" width="1.016" layer="16"/>
+<wire x1="38.1" y1="45.72" x2="38.1" y2="43.18" width="1.016" layer="16"/>
 </signal>
 <signal name="N$2">
 <contactref element="WEMOS1" pad="RX"/>
 <contactref element="SERIAL" pad="1"/>
-<wire x1="38.1" y1="40.64" x2="41.275" y2="40.64" width="1.016" layer="16"/>
-<wire x1="41.275" y1="40.64" x2="46.355" y2="45.72" width="1.016" layer="16"/>
+<wire x1="38.1" y1="40.64" x2="46.355" y2="40.64" width="1.016" layer="16"/>
 </signal>
 <signal name="GND">
 <contactref element="SERIAL" pad="3"/>
@@ -1600,49 +1623,45 @@ design rules under a new name.</description>
 <contactref element="I2C" pad="4"/>
 <contactref element="WEMOS1" pad="GND"/>
 <contactref element="DS18B20" pad="1"/>
-<wire x1="49.53" y1="40.64" x2="49.53" y2="33.02" width="1.016" layer="16"/>
-<wire x1="49.53" y1="33.02" x2="49.53" y2="25.4" width="1.016" layer="16"/>
-<wire x1="49.53" y1="55.88" x2="49.53" y2="40.64" width="1.016" layer="16"/>
-<wire x1="2.54" y1="20.32" x2="2.54" y2="30.48" width="1.016" layer="16"/>
-<wire x1="2.54" y1="30.48" x2="2.54" y2="40.64" width="1.016" layer="16"/>
+<wire x1="49.53" y1="50.8" x2="49.53" y2="35.56" width="1.016" layer="16"/>
+<wire x1="2.54" y1="15.24" x2="2.54" y2="25.4" width="1.016" layer="16"/>
+<wire x1="2.54" y1="25.4" x2="2.54" y2="40.64" width="1.016" layer="16"/>
 <wire x1="2.54" y1="40.64" x2="2.54" y2="48.26" width="1.016" layer="16"/>
-<wire x1="5.715" y1="20.32" x2="2.54" y2="20.32" width="1.016" layer="16"/>
-<wire x1="5.715" y1="30.48" x2="2.54" y2="30.48" width="1.016" layer="16"/>
+<wire x1="5.715" y1="15.24" x2="2.54" y2="15.24" width="1.016" layer="16"/>
 <wire x1="5.715" y1="40.64" x2="2.54" y2="40.64" width="1.016" layer="16"/>
 <contactref element="FLOW" pad="3"/>
-<wire x1="38.1" y1="27.94" x2="24.13" y2="27.94" width="1.016" layer="16"/>
-<wire x1="24.13" y1="27.94" x2="24.13" y2="48.26" width="1.016" layer="16"/>
-<wire x1="24.13" y1="48.26" x2="2.54" y2="48.26" width="1.016" layer="16"/>
-<wire x1="46.355" y1="55.88" x2="49.53" y2="55.88" width="1.016" layer="16"/>
-<wire x1="46.355" y1="40.64" x2="49.53" y2="40.64" width="1.016" layer="16"/>
+<wire x1="38.1" y1="27.94" x2="26.67" y2="27.94" width="1.016" layer="16"/>
+<wire x1="26.67" y1="27.94" x2="26.67" y2="48.26" width="1.016" layer="16"/>
+<wire x1="26.67" y1="48.26" x2="2.54" y2="48.26" width="1.016" layer="16"/>
+<wire x1="46.355" y1="50.8" x2="49.53" y2="50.8" width="1.016" layer="16"/>
 <wire x1="46.355" y1="15.24" x2="49.53" y2="15.24" width="1.016" layer="16"/>
-<wire x1="49.53" y1="15.24" x2="49.53" y2="25.4" width="1.016" layer="16"/>
-<wire x1="38.1" y1="27.94" x2="39.37" y2="27.94" width="1.016" layer="16"/>
-<wire x1="39.37" y1="27.94" x2="44.45" y2="33.02" width="1.016" layer="16"/>
-<wire x1="44.45" y1="33.02" x2="49.53" y2="33.02" width="1.016" layer="16"/>
-<wire x1="5.715" y1="15.24" x2="2.54" y2="15.24" width="1.016" layer="16"/>
-<wire x1="2.54" y1="15.24" x2="2.54" y2="20.32" width="1.016" layer="16"/>
+<wire x1="49.53" y1="15.24" x2="49.53" y2="27.94" width="1.016" layer="16"/>
+<wire x1="49.53" y1="27.94" x2="49.53" y2="35.56" width="1.016" layer="16"/>
+<wire x1="5.715" y1="10.16" x2="2.54" y2="10.16" width="1.016" layer="16"/>
+<wire x1="2.54" y1="10.16" x2="2.54" y2="15.24" width="1.016" layer="16"/>
+<wire x1="46.355" y1="35.56" x2="49.53" y2="35.56" width="1.016" layer="16"/>
+<wire x1="5.715" y1="25.4" x2="2.54" y2="25.4" width="1.016" layer="16"/>
+<wire x1="38.1" y1="27.94" x2="49.53" y2="27.94" width="1.016" layer="16"/>
 </signal>
 <signal name="N$3">
 <contactref element="I2C" pad="1"/>
 <contactref element="WEMOS1" pad="D1"/>
-<wire x1="5.715" y1="55.88" x2="29.21" y2="55.88" width="1.016" layer="16"/>
-<wire x1="29.21" y1="55.88" x2="29.21" y2="38.1" width="1.016" layer="16"/>
-<wire x1="29.21" y1="38.1" x2="38.1" y2="38.1" width="1.016" layer="16"/>
+<wire x1="5.715" y1="55.88" x2="31.75" y2="55.88" width="1.016" layer="16"/>
+<wire x1="31.75" y1="55.88" x2="31.75" y2="38.1" width="1.016" layer="16"/>
+<wire x1="31.75" y1="38.1" x2="38.1" y2="38.1" width="1.016" layer="16"/>
 </signal>
 <signal name="N$4">
 <contactref element="WEMOS1" pad="D2"/>
 <contactref element="I2C" pad="2"/>
-<wire x1="5.715" y1="50.8" x2="26.67" y2="50.8" width="1.016" layer="16"/>
-<wire x1="26.67" y1="50.8" x2="26.67" y2="35.56" width="1.016" layer="16"/>
-<wire x1="26.67" y1="35.56" x2="38.1" y2="35.56" width="1.016" layer="16"/>
+<wire x1="5.715" y1="50.8" x2="29.21" y2="50.8" width="1.016" layer="16"/>
+<wire x1="29.21" y1="50.8" x2="29.21" y2="35.56" width="1.016" layer="16"/>
+<wire x1="29.21" y1="35.56" x2="38.1" y2="35.56" width="1.016" layer="16"/>
 </signal>
 <signal name="N$5">
-<contactref element="WEMOS1" pad="D3"/>
 <contactref element="PIR" pad="2"/>
-<wire x1="43.18" y1="35.56" x2="40.64" y2="33.02" width="1.016" layer="16"/>
-<wire x1="43.18" y1="35.56" x2="46.355" y2="35.56" width="1.016" layer="16"/>
-<wire x1="40.64" y1="33.02" x2="38.1" y2="33.02" width="1.016" layer="16"/>
+<contactref element="WEMOS1" pad="D0"/>
+<wire x1="5.715" y1="30.48" x2="13.335" y2="38.1" width="1.016" layer="16"/>
+<wire x1="13.335" y1="38.1" x2="15.24" y2="38.1" width="1.016" layer="16"/>
 </signal>
 <signal name="N$6">
 <contactref element="WEMOS1" pad="D4"/>
@@ -1653,57 +1672,63 @@ design rules under a new name.</description>
 <contactref element="WEMOS1" pad="5V"/>
 <contactref element="PIR" pad="1"/>
 <contactref element="I2C" pad="3"/>
-<wire x1="38.1" y1="25.4" x2="21.59" y2="25.4" width="1.016" layer="16"/>
-<wire x1="21.59" y1="25.4" x2="21.59" y2="45.72" width="1.016" layer="16"/>
-<wire x1="21.59" y1="45.72" x2="5.715" y2="45.72" width="1.016" layer="16"/>
+<wire x1="38.1" y1="25.4" x2="24.13" y2="25.4" width="1.016" layer="16"/>
+<wire x1="24.13" y1="25.4" x2="24.13" y2="45.72" width="1.016" layer="16"/>
+<wire x1="24.13" y1="45.72" x2="10.16" y2="45.72" width="1.016" layer="16"/>
 <contactref element="LED" pad="2"/>
-<wire x1="46.355" y1="25.4" x2="38.1" y2="25.4" width="1.016" layer="16"/>
-<wire x1="46.355" y1="30.48" x2="46.355" y2="25.4" width="1.016" layer="16"/>
+<wire x1="10.16" y1="45.72" x2="5.715" y2="45.72" width="1.016" layer="16"/>
 <contactref element="R1" pad="1"/>
 <contactref element="DS18B20" pad="3"/>
-<wire x1="5.715" y1="5.08" x2="13.97" y2="5.08" width="1.016" layer="16"/>
-<wire x1="13.97" y1="5.08" x2="13.97" y2="8.89" width="1.016" layer="16"/>
+<wire x1="5.715" y1="0" x2="13.97" y2="0" width="1.016" layer="16"/>
+<wire x1="13.97" y1="0" x2="13.97" y2="5.08" width="1.016" layer="16"/>
+<wire x1="19.05" y1="5.08" x2="19.05" y2="7.62" width="1.016" layer="16"/>
 <contactref element="FLOW" pad="1"/>
-<wire x1="13.97" y1="5.08" x2="46.355" y2="5.08" width="1.016" layer="16"/>
-<wire x1="21.59" y1="12.7" x2="49.53" y2="12.7" width="1.016" layer="16"/>
+<wire x1="13.97" y1="5.08" x2="19.05" y2="5.08" width="1.016" layer="16"/>
+<wire x1="19.05" y1="5.08" x2="46.355" y2="5.08" width="1.016" layer="16"/>
+<wire x1="24.13" y1="12.7" x2="49.53" y2="12.7" width="1.016" layer="16"/>
 <wire x1="49.53" y1="12.7" x2="49.53" y2="5.08" width="1.016" layer="16"/>
-<wire x1="21.59" y1="25.4" x2="21.59" y2="12.7" width="1.016" layer="16"/>
+<wire x1="24.13" y1="25.4" x2="24.13" y2="12.7" width="1.016" layer="16"/>
 <wire x1="49.53" y1="5.08" x2="46.355" y2="5.08" width="1.016" layer="16"/>
+<wire x1="5.715" y1="35.56" x2="7.62" y2="35.56" width="1.016" layer="16"/>
+<wire x1="7.62" y1="35.56" x2="10.16" y2="38.1" width="1.016" layer="16"/>
+<wire x1="10.16" y1="38.1" x2="10.16" y2="45.72" width="1.016" layer="16"/>
+<wire x1="38.1" y1="25.4" x2="46.355" y2="25.4" width="1.016" layer="16"/>
 </signal>
 <signal name="N$7">
 <contactref element="RELAY1" pad="1"/>
-<contactref element="WEMOS1" pad="D5"/>
-<wire x1="15.24" y1="35.56" x2="5.715" y2="35.56" width="1.016" layer="16"/>
+<contactref element="WEMOS1" pad="D3"/>
+<wire x1="46.355" y1="30.48" x2="43.815" y2="33.02" width="1.016" layer="16"/>
+<wire x1="43.815" y1="33.02" x2="38.1" y2="33.02" width="1.016" layer="16"/>
 </signal>
 <signal name="N$8">
 <contactref element="RELAY2" pad="1"/>
-<contactref element="WEMOS1" pad="D6"/>
-<wire x1="5.715" y1="25.4" x2="5.715" y2="26.035" width="1.016" layer="16"/>
-<wire x1="5.715" y1="26.035" x2="8.89" y2="29.21" width="1.016" layer="16"/>
-<wire x1="8.89" y1="29.21" x2="8.89" y2="31.75" width="1.016" layer="16"/>
-<wire x1="8.89" y1="31.75" x2="10.16" y2="33.02" width="1.016" layer="16"/>
-<wire x1="10.16" y1="33.02" x2="15.24" y2="33.02" width="1.016" layer="16"/>
+<contactref element="WEMOS1" pad="D8"/>
+<wire x1="15.24" y1="27.94" x2="12.7" y2="27.94" width="1.016" layer="16"/>
+<wire x1="12.7" y1="27.94" x2="10.16" y2="25.4" width="1.016" layer="16"/>
+<wire x1="10.16" y1="25.4" x2="10.16" y2="22.86" width="1.016" layer="16"/>
+<wire x1="10.16" y1="22.86" x2="7.62" y2="20.32" width="1.016" layer="16"/>
+<wire x1="7.62" y1="20.32" x2="5.715" y2="20.32" width="1.016" layer="16"/>
 </signal>
 <signal name="N$9">
 <contactref element="DS18B20" pad="2"/>
 <contactref element="WEMOS1" pad="D7"/>
 <contactref element="R1" pad="2"/>
-<wire x1="15.24" y1="30.48" x2="12.7" y2="30.48" width="1.016" layer="16"/>
-<wire x1="12.7" y1="30.48" x2="11.43" y2="29.21" width="1.016" layer="16"/>
-<wire x1="11.43" y1="29.21" x2="11.43" y2="21.59" width="1.016" layer="16"/>
-<wire x1="11.43" y1="21.59" x2="13.97" y2="19.05" width="1.016" layer="16"/>
-<wire x1="5.715" y1="10.16" x2="11.43" y2="10.16" width="1.016" layer="16"/>
-<wire x1="11.43" y1="10.16" x2="13.97" y2="12.7" width="1.016" layer="16"/>
-<wire x1="13.97" y1="12.7" x2="13.97" y2="19.05" width="1.016" layer="16"/>
+<wire x1="15.24" y1="30.48" x2="17.78" y2="30.48" width="1.016" layer="16"/>
+<wire x1="17.78" y1="30.48" x2="19.05" y2="29.21" width="1.016" layer="16"/>
+<wire x1="19.05" y1="29.21" x2="19.05" y2="17.78" width="1.016" layer="16"/>
+<wire x1="5.715" y1="5.08" x2="10.16" y2="5.08" width="1.016" layer="16"/>
+<wire x1="10.16" y1="5.08" x2="13.97" y2="8.89" width="1.016" layer="16"/>
+<wire x1="13.97" y1="8.89" x2="13.97" y2="13.97" width="1.016" layer="16"/>
+<wire x1="13.97" y1="13.97" x2="17.78" y2="17.78" width="1.016" layer="16"/>
+<wire x1="17.78" y1="17.78" x2="19.05" y2="17.78" width="1.016" layer="16"/>
 </signal>
 <signal name="N$10">
-<contactref element="WEMOS1" pad="D8"/>
-<wire x1="15.24" y1="27.94" x2="19.05" y2="27.94" width="1.016" layer="16"/>
 <contactref element="FLOW" pad="2"/>
-<wire x1="19.05" y1="27.94" x2="19.05" y2="10.16" width="1.016" layer="16"/>
-<wire x1="30.48" y1="10.16" x2="31.75" y2="10.16" width="1.016" layer="16"/>
-<wire x1="19.05" y1="10.16" x2="30.48" y2="10.16" width="1.016" layer="16"/>
-<wire x1="31.75" y1="10.16" x2="46.355" y2="10.16" width="1.016" layer="16"/>
+<wire x1="21.59" y1="10.16" x2="46.355" y2="10.16" width="1.016" layer="16"/>
+<wire x1="17.78" y1="33.02" x2="21.59" y2="29.21" width="1.016" layer="16"/>
+<wire x1="21.59" y1="29.21" x2="21.59" y2="10.16" width="1.016" layer="16"/>
+<contactref element="WEMOS1" pad="D6"/>
+<wire x1="15.24" y1="33.02" x2="17.78" y2="33.02" width="1.016" layer="16"/>
 </signal>
 <signal name="N$12">
 <contactref element="LED" pad="1"/>
