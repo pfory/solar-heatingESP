@@ -633,41 +633,51 @@ void reconnect() {
 #ifdef serverHTTP
 void handleRoot() {
 	char temp[600];
-  // DEBUG_PRINT(year());
-  // DEBUG_PRINT(month());
-  // DEBUG_PRINT(day());
-  // DEBUG_PRINT(hour());
-  // DEBUG_PRINT(minute());
-  // DEBUG_PRINT(second());
   printSystemTime();
   DEBUG_PRINTLN(" Client request");
   digitalWrite(BUILTIN_LED, LOW);
   
-	// snprintf ( temp, 400,
-      // "<html>\
-        // <head>\
-          // <meta charset='UTF-8'>\
-        // </head>\
-        // <body>\
-          // T2899BDCF02000076,%4d-%02d-%02dT%02d:%02d:%02d.000000Z,%s%d.%02d<br />\
-          // Humidity,%4d-%02d-%02dT%02d:%02d:%02d.000000Z,%d.00<br />\
-          // Press,%4d-%02d-%02dT%02d:%02d:%02d.000000Z,%d.00<br />\
-          // DewPoint,%4d-%02d-%02dT%02d:%02d:%02d.000000Z,%s%d.%02d<br />\
-        // </body>\
-      // </html>",
-      // year(), month(), day(), hour(), minute(), second(),
-      // temperature<0 && temperature>-1 ? "-":"",
-      // (int)temperature, 
-      // abs((temperature - (int)temperature) * 100),
-      // year(), month(), day(), hour(), minute(), second(),
-      // (int)humidity,
-      // year(), month(), day(), hour(), minute(), second(),
-      // (int)pressure,
-      // year(), month(), day(), hour(), minute(), second(),
-      // dewPoint<0 && dewPoint>-1 ? "-":"",
-      // (int)dewPoint, 
-      // abs((dewPoint - (int)dewPoint) * 100)
-	// );
+	snprintf ( temp, 400,
+      "<html>\
+        <head>\
+          <meta charset='UTF-8'>\
+        </head>\
+        <body>\
+          sensor[0],%s%d.%02d<br />\
+          sensor[1],%s%d.%02d<br />\
+          sensor[2],%s%d.%02d<br />\
+          sensor[3],%s%d.%02d<br />\
+          sensor[4],%s%d.%02d<br />\
+          sensor[5],%s%d.%02d<br />\
+          sensor[6],%s%d.%02d<br />\
+          sensor[7],%s%d.%02d<br />\
+        </body>\
+      </html>",
+      sensor[0]<0 && sensor[0]>-1 ? "-":"",
+      (int)sensor[0], 
+      abs((sensor[0] - (int)sensor[0]) * 100),
+      sensor[1]<0 && sensor[1]>-1 ? "-":"",
+      (int)sensor[1], 
+      abs((sensor[1] - (int)sensor[1]) * 100),
+      sensor[2]<0 && sensor[2]>-1 ? "-":"",
+      (int)sensor[2], 
+      abs((sensor[2] - (int)sensor[2]) * 100),
+      sensor[3]<0 && sensor[3]>-1 ? "-":"",
+      (int)sensor[3], 
+      abs((sensor[3] - (int)sensor[3]) * 100),
+      sensor[4]<0 && sensor[4]>-1 ? "-":"",
+      (int)sensor[4], 
+      abs((sensor[4] - (int)sensor[4]) * 100),
+      sensor[5]<0 && sensor[5]>-1 ? "-":"",
+      (int)sensor[5], 
+      abs((sensor[5] - (int)sensor[5]) * 100),
+      sensor[6]<0 && sensor[6]>-1 ? "-":"",
+      (int)sensor[6], 
+      abs((sensor[6] - (int)sensor[6]) * 100),
+      sensor[7]<0 && sensor[7]>-1 ? "-":"",
+      (int)sensor[7], 
+      abs((sensor[7] - (int)sensor[7]) * 100),
+	);
 	server.send ( 200, "text/html", temp );
   digitalWrite(BUILTIN_LED, HIGH);
 }

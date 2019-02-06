@@ -13,7 +13,7 @@
 #define time
 #define verbose
 #define flowSensor
-//#define serverHTTP
+#define serverHTTP
 
 #define AUTOCONNECTNAME   HOSTNAMEOTA
 #define AUTOCONNECTPWD    "password"
