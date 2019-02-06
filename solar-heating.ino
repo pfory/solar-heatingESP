@@ -7,6 +7,7 @@ GIT - https://github.com/pfory/solar-heating
 */
 
 /*TODO
+ulozeni konfigurace cidel
 kalkulace prutoku
 */
 
@@ -124,43 +125,15 @@ Keypad_I2C keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS, I2CADDR);
 // enum modeDisplay                          {SETUP, INFO};
 // modeDisplay displayMode                    = INFO;
 
+
+//promenne ulozene v pameti (viz CFGFILE "/config.json")
 byte            tDiffON                    = 5; //rozdil vystupni teploty panelu 1 tP1Out nebo panelu 2 tP2Out proti teplote bojleru nebo mistnosti tControl pri kterem dojde ke spusteni cerpadla
 byte            tDiffOFF                   = 2; //rozdil vystupni teploty panelu 2 tP2Out proti teplote bojleru nebo mistnosti tControl pri kterem dojde k vypnuti cerpadla
-//byte            controlSensor              = 0; //index kontrolniho cidla
-byte            backLight                  = 1; //podsviceni 0 - off 1 - on
 byte            controlSensorBojler        = 0; //kontrolni cidlo 1 - Bojler 0 Room
 
 byte            sensorOrder[NUMBER_OF_DEVICES];
 
-
-// struct StoreStruct {
-  // // This is for mere detection if they are your settings
-  // char            version[4];
-  // // The variables of your settings
-  // byte            tDiffON;     
-  // byte            tDiffOFF;
-  // byte            controlSensor;
-  // bool            backLight;
-  // unsigned long   totalEnergy;
-  // unsigned long   totalSec;
-  // byte            sensorOrder[NUMBER_OF_DEVICES];
-  // bool            controlSensorBojler;
-// #ifdef time
-  // tmElements_t    lastPumpRun;
-// #endif
-// } storage = {
-  // CONFIG_VERSION,
-  // 5,
-  // 2, 
-  // 1,
-  // 0,
-  // 0,
-  // 0,
-  // 0,
-  // 1
-// };
-
-
+//DALLAS temperature sensors
 #include <OneWire.h>
 OneWire onewire(ONE_WIRE_BUS);  // pin for onewire DALLAS bus
 #include <DallasTemperature.h>
@@ -190,6 +163,8 @@ Ticker ticker;
 auto timer = timer_create_default(); // create a timer with default settings
 Timer<> default_timer; // save as above
 
+
+//MQTT callback
 void callback(char* topic, byte* payload, unsigned int length) {
   char * pEnd;
   long int valL;
@@ -202,7 +177,6 @@ void callback(char* topic, byte* payload, unsigned int length) {
     val += (char)payload[i];
   }
   DEBUG_PRINTLN();
-  //if (topic==mqtt_base + '/' + 'controlSensor') {
   if (strcmp(topic, "/home/Corridor/esp07a/controlSensorBojler")==0) {
     DEBUG_PRINT("set control sensor to ");
     if (val.toInt()==1) {
@@ -211,63 +185,67 @@ void callback(char* topic, byte* payload, unsigned int length) {
       DEBUG_PRINTLN(F("Room"));
     }
     controlSensorBojler=val.toInt();
+    saveConfig();
   } else if (strcmp(topic, "/home/Corridor/esp07a/tDiffOFF")==0) {
     DEBUG_PRINT("set tDiffOFF to ");
     tDiffOFF=val.toInt();
     DEBUG_PRINT(tDiffOFF);
+    saveConfig();
   } else if (strcmp(topic, "/home/Corridor/esp07a/tDiffON")==0) {
     DEBUG_PRINT("set tDiffON to ");
     tDiffON=val.toInt();
     DEBUG_PRINT(tDiffON);
-  } else if (strcmp(topic, "/home/Corridor/esp07a/backLight")==0) {
-    DEBUG_PRINT("set backlight ");
-    if (val.toInt()==1) {
-      lcd.backlight();
-      DEBUG_PRINTLN(F("ON"));
-    } else {
-      lcd.noBacklight();
-      DEBUG_PRINTLN(F("OFF"));
-    }
+    saveConfig();
   } else if (strcmp(topic, "/home/Corridor/esp07a/so0")==0) {
     DEBUG_PRINT("set sensor order 0 to ");
     sensorOrder[0]=val.toInt();
     DEBUG_PRINT(val.toInt());
+    saveConfig();
   } else if (strcmp(topic, "/home/Corridor/esp07a/so1")==1) {
     DEBUG_PRINT("set sensor order 1 to ");
     sensorOrder[1]=val.toInt();
     DEBUG_PRINT(val.toInt());
+    saveConfig();
   } else if (strcmp(topic, "/home/Corridor/esp07a/so2")==2) {
     DEBUG_PRINT("set sensor order 2 to ");
     sensorOrder[2]=val.toInt();
     DEBUG_PRINT(val.toInt());
+    saveConfig();
   } else if (strcmp(topic, "/home/Corridor/esp07a/so3")==3) {
     DEBUG_PRINT("set sensor order 3 to ");
     sensorOrder[3]=val.toInt();
     DEBUG_PRINT(val.toInt());
+    saveConfig();
   } else if (strcmp(topic, "/home/Corridor/esp07a/so4")==4) {
     DEBUG_PRINT("set sensor order 4 to ");
     sensorOrder[4]=val.toInt();
     DEBUG_PRINT(val.toInt());
+    saveConfig();
   } else if (strcmp(topic, "/home/Corridor/esp07a/so5")==5) {
     DEBUG_PRINT("set sensor order 5 to ");
     sensorOrder[5]=val.toInt();
     DEBUG_PRINT(val.toInt());
+    saveConfig();
   } else if (strcmp(topic, "/home/Corridor/esp07a/so6")==6) {
     DEBUG_PRINT("set sensor order 6 to ");
     sensorOrder[6]=val.toInt();
     DEBUG_PRINT(val.toInt());
+    saveConfig();
   } else if (strcmp(topic, "/home/Corridor/esp07a/so7")==7) {
     DEBUG_PRINT("set sensor order 7 to ");
     sensorOrder[7]=val.toInt();
     DEBUG_PRINT(val.toInt());
+    saveConfig();
   } else if (strcmp(topic, "/home/Corridor/esp07a/so8")==8) {
     DEBUG_PRINT("set sensor order 8 to ");
     sensorOrder[8]=val.toInt();
     DEBUG_PRINT(val.toInt());
+    saveConfig();
   } else if (strcmp(topic, "/home/Corridor/esp07a/so9")==9) {
     DEBUG_PRINT("set sensor order 9 to ");
     sensorOrder[9]=val.toInt();
     DEBUG_PRINT(val.toInt());
+    saveConfig();
   }
 }
 
@@ -360,12 +338,18 @@ void setup() {
   WiFiManagerParameter custom_mqtt_uname("mqtt_uname", "MQTT username", mqtt_username, 40);
   WiFiManagerParameter custom_mqtt_key("mqtt_key", "MQTT password", mqtt_key, 20);
   WiFiManagerParameter custom_mqtt_base("mqtt_base", "MQTT topic end without /", mqtt_base, 60);
+  WiFiManagerParameter custom_tDiffON("tDiffON", "temperature difference ON", String(tDiffON).c_str(), 2);
+  WiFiManagerParameter custom_tDiffOFF("tDiffOFF", "temperature difference OFF", String(tDiffOFF).c_str(), 2);
+  WiFiManagerParameter custom_controlSensor("controlSensor", "1 = Bojler 0 = Room", String(controlSensorBojler).c_str(), 1);
 
   wifiManager.addParameter(&custom_mqtt_server);
   wifiManager.addParameter(&custom_mqtt_port);
   wifiManager.addParameter(&custom_mqtt_uname);
   wifiManager.addParameter(&custom_mqtt_key);
   wifiManager.addParameter(&custom_mqtt_base);
+  wifiManager.addParameter(&custom_tDiffON);
+  wifiManager.addParameter(&custom_tDiffOFF);
+  wifiManager.addParameter(&custom_controlSensor);
 
   //sets timeout until configuration portal gets turned off
   //useful to make it all retry or go to sleep
@@ -395,6 +379,9 @@ void setup() {
   validateInput(custom_mqtt_uname.getValue(), mqtt_username);
   validateInput(custom_mqtt_key.getValue(), mqtt_key);
   validateInput(custom_mqtt_base.getValue(), mqtt_base);
+  tDiffON = String(custom_tDiffON.getValue()).toInt();
+  tDiffOFF = String(custom_tDiffOFF.getValue()).toInt();
+  controlSensorBojler = String(custom_controlSensor.getValue()).toInt();
   
   if (shouldSaveConfig) {
     saveConfig();
@@ -487,8 +474,6 @@ void setup() {
   //DEBUG_PRINT(F("TotalSec from EEPROM:"));
   //DEBUG_PRINT(totalSec);
   //DEBUG_PRINTLN(F("s"));
-  DEBUG_PRINT(F("backlight:"));
-  DEBUG_PRINTLN(backLight);
 
   lcd.setCursor(0,1);
   lcd.print(F("tON:"));  
@@ -512,8 +497,7 @@ void setup() {
 
   attachInterrupt(0, flow, RISING); // Setup Interrupt
   
-  backLight==1 ? lcd.backlight() : lcd.noBacklight();
-  
+ 
   lcd.clear();
 
   if (numberOfDevices>NUMBER_OF_DEVICES) {
@@ -625,7 +609,6 @@ void reconnect() {
       client.subscribe((String(mqtt_base) + "/" + "tDiffON ").c_str());
       client.subscribe((String(mqtt_base) + "/" + "tDiffOFF").c_str());
       client.subscribe((String(mqtt_base) + "/" + "controlSensorBojler").c_str());
-      client.subscribe((String(mqtt_base) + "/" + "backLight").c_str());
       client.subscribe((String(mqtt_base) + "/" + "so0").c_str());
       client.subscribe((String(mqtt_base) + "/" + "so1").c_str());
       client.subscribe((String(mqtt_base) + "/" + "so2").c_str());
@@ -739,20 +722,29 @@ bool saveConfig() {
   DynamicJsonBuffer jsonBuffer;
   JsonObject &json = jsonBuffer.createObject();
 
-  json["MQTT_server"] = mqtt_server;
-  json["MQTT_port"]   = mqtt_port;
-  json["MQTT_uname"]  = mqtt_username;
-  json["MQTT_pwd"]    = mqtt_key;
-  json["MQTT_base"]   = mqtt_base;
+  json["MQTT_server"]             = mqtt_server;
+  json["MQTT_port"]               = mqtt_port;
+  json["MQTT_uname"]              = mqtt_username;
+  json["MQTT_pwd"]                = mqtt_key;
+  json["MQTT_base"]               = mqtt_base;
   
-  json["ip"] = WiFi.localIP().toString();
-  json["gateway"] = WiFi.gatewayIP().toString();
-  json["subnet"] = WiFi.subnetMask().toString();
+  json["ip"]                      = WiFi.localIP().toString();
+  json["gateway"]                 = WiFi.gatewayIP().toString();
+  json["subnet"]                  = WiFi.subnetMask().toString();
 
-  // Store current Wifi credentials
-  // json["SSID"]        = WiFi.SSID();
-  // json["PSK"]         = WiFi.psk();
-
+  json["tDiffON"]                 = tDiffON;
+  json["tDiffOFF"]                = tDiffON;
+  json["controlSensor"]           = controlSensorBojler;
+  json["sensorOrder[0]"]          = sensorOrder[0];
+  json["sensorOrder[1]"]          = sensorOrder[1];
+  json["sensorOrder[2]"]          = sensorOrder[2];
+  json["sensorOrder[3]"]          = sensorOrder[3];
+  json["sensorOrder[4]"]          = sensorOrder[4];
+  json["sensorOrder[5]"]          = sensorOrder[5];
+  json["sensorOrder[6]"]          = sensorOrder[6];
+  json["sensorOrder[7]"]          = sensorOrder[7];
+  
+  
   File configFile = SPIFFS.open(CFGFILE, "w+");
   if (!configFile) {
     DEBUG_PRINTLN(F("Failed to open config file for writing"));
@@ -817,13 +809,6 @@ bool readConfig() {
             DEBUG_PRINT(F("MQTT base: "));
             DEBUG_PRINTLN(mqtt_base);
           }
-          // if (json.containsKey("SSID")) {
-            // my_ssid = (const char *)json["SSID"];
-          // }
-          // if (json.containsKey("PSK")) {
-            // my_psk = (const char *)json["PSK"];
-          // }
-          
           if(json["ip"]) {
             DEBUG_PRINTLN("setting custom ip from config");
             strcpy(static_ip, json["ip"]);
@@ -834,6 +819,64 @@ bool readConfig() {
             DEBUG_PRINTLN("no custom ip in config");
           }
 
+          if (json.containsKey("tDiffON")) {
+            tDiffON = json["tDiffON"];
+            DEBUG_PRINT(F("tDiffON: "));
+            DEBUG_PRINTLN(tDiffON);
+          }
+          
+          if (json.containsKey("tDiffOFF")) {
+            tDiffOFF = json["tDiffOFF"];
+            DEBUG_PRINT(F("tDiffOFF: "));
+            DEBUG_PRINTLN(tDiffOFF);
+          }
+          
+          if (json.containsKey("controlSensor")) {
+            controlSensorBojler = json["controlSensor"];
+            DEBUG_PRINT(F("control sensor: "));
+            controlSensorBojler==1 ? DEBUG_PRINTLN(" bojler") : DEBUG_PRINTLN(" room");
+          }
+          
+          if (json.containsKey("sensorOrder[0]")) {
+            sensorOrder[0] = json["sensorOrder[0]"];
+            DEBUG_PRINT(F("sensorOrder[0]: "));
+            DEBUG_PRINTLN(sensorOrder[0]);
+          } 
+          if (json.containsKey("sensorOrder[1]")) {
+            sensorOrder[1] = json["sensorOrder[1]"];
+            DEBUG_PRINT(F("sensorOrder[1]: "));
+            DEBUG_PRINTLN(sensorOrder[1]);
+          } 
+          if (json.containsKey("sensorOrder[2]")) {
+            sensorOrder[2] = json["sensorOrder[2]"];
+            DEBUG_PRINT(F("sensorOrder[2]: "));
+            DEBUG_PRINTLN(sensorOrder[2]);
+          } 
+          if (json.containsKey("sensorOrder[3]")) {
+            sensorOrder[3] = json["sensorOrder[3]"];
+            DEBUG_PRINT(F("sensorOrder[3]: "));
+            DEBUG_PRINTLN(sensorOrder[3]);
+          } 
+          if (json.containsKey("sensorOrder[4]")) {
+            sensorOrder[4] = json["sensorOrder[4]"];
+            DEBUG_PRINT(F("sensorOrder[4]: "));
+            DEBUG_PRINTLN(sensorOrder[4]);
+          } 
+          if (json.containsKey("sensorOrder[5]")) {
+            sensorOrder[5] = json["sensorOrder[5]"];
+            DEBUG_PRINT(F("sensorOrder[5]: "));
+            DEBUG_PRINTLN(sensorOrder[5]);
+          } 
+          if (json.containsKey("sensorOrder[6]")) {
+            sensorOrder[6] = json["sensorOrder[6]"];
+            DEBUG_PRINT(F("sensorOrder[6]: "));
+            DEBUG_PRINTLN(sensorOrder[6]);
+          } 
+          if (json.containsKey("sensorOrder[7]")) {
+            sensorOrder[6] = json["sensorOrder[7]"];
+            DEBUG_PRINT(F("sensorOrder[7]: "));
+            DEBUG_PRINTLN(sensorOrder[7]);
+          } 
           
           DEBUG_PRINTLN(F("Parsed config:"));
           if (isDebugEnabled) {
@@ -1050,7 +1093,7 @@ bool tempMeas(void *) {
   tRoom       = sensor[sensorOrder[6]]; //so6
   tBojler     = sensor[sensorOrder[7]]; //so7
   
-  controlSensorBojler==1 ? tControl  = tBojler : tControl  = tRoom;
+  controlSensorBojler==1 ? tControl = tBojler : tControl = tRoom;
   
   DEBUG_PRINT(F("P1 In:"));
   DEBUG_PRINTLN(tP1In);
@@ -1115,7 +1158,7 @@ void mainControl() {
         //lastOff=millis();
         //lastOn4Delay=0;
         //save totalEnergy to EEPROM
-        saveConfig();
+        //saveConfig();
         //writeTotalEEPROM(STATUS_WRITETOTALTOEEPROM_ONOFF);
       }
     } else { //pump is OFF - relay OFF = HIGH
@@ -1355,7 +1398,6 @@ void keyBoard() {
     2 - TDiffON
     3 - TDiffOFF
     4 - prutok
-    A - BACKLIGHT ON/OFF
     5 - Max IN OUT temp
     6 - Max bojler
     B - Save total energy to EEPROM
@@ -1464,11 +1506,6 @@ void keyBoard() {
     if (key=='C') {
       saveConfig();
       //asm volatile ("  jmp 0");  
-    }
-    else if (key=='A') {
-      backLight=!backLight;
-      backLight==true ? lcd.backlight() : lcd.noBacklight();
-      saveConfig();
     }
     else if (key=='0') { 
       display=DISPLAY_MAIN;

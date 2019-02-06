@@ -2,7 +2,7 @@
 #define CONFIGURATION_H
 
 //SW name & version
-#define     VERSION                       "1.51"
+#define     VERSION                       "1.52"
 #define     SW_NAME                       "Solar"
 
 //EEPROM config
