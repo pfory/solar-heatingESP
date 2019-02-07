@@ -5,10 +5,6 @@
 #define     VERSION                       "1.52"
 #define     SW_NAME                       "Solar"
 
-//EEPROM config
-#define CONFIG_START 0
-#define CONFIG_VERSION "v04"
-
 #define ota
 #define time
 #define verbose
@@ -43,8 +39,8 @@ char                  mqtt_server[40]       = "192.168.1.56";
 uint16_t              mqtt_port             = 1883;
 char                  mqtt_username[40]     = "datel";
 char                  mqtt_key[20]          = "hanka12";
-char                  mqtt_base[60]         = "/home/Corridor/esp07a";
-char                  static_ip[16]         = "192.168.1.148";
+char                  mqtt_base[60]         = "/home/Corridor/esp07";
+char                  static_ip[16]         = "192.168.1.108";
 char                  static_gw[16]         = "192.168.1.1";
 char                  static_sn[16]         = "255.255.255.0";
 
@@ -156,8 +152,6 @@ D8                                           - relay 2
 #define POWERY                               1
 #define ENERGYX                              8
 #define ENERGYY                              1
-#define TIMEX                               16
-#define TIMEY                                1
 #define FLOWX                                1
 #define FLOWY                                2
 // #define STATUSX                              19

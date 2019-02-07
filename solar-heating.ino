@@ -176,7 +176,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
     val += (char)payload[i];
   }
   DEBUG_PRINTLN();
-  if (strcmp(topic, "/home/Corridor/esp07a/controlSensorBojler")==0) {
+  if (strcmp(topic, "/home/Corridor/esp07/controlSensorBojler")==0) {
     DEBUG_PRINT("set control sensor to ");
     if (val.toInt()==1) {
       DEBUG_PRINTLN(F("Bojler"));
@@ -185,62 +185,62 @@ void callback(char* topic, byte* payload, unsigned int length) {
     }
     controlSensorBojler=val.toInt();
     saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07a/tDiffOFF")==0) {
+  } else if (strcmp(topic, "/home/Corridor/esp07/tDiffOFF")==0) {
     DEBUG_PRINT("set tDiffOFF to ");
     tDiffOFF=val.toInt();
     DEBUG_PRINT(tDiffOFF);
     saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07a/tDiffON")==0) {
+  } else if (strcmp(topic, "/home/Corridor/esp07/tDiffON")==0) {
     DEBUG_PRINT("set tDiffON to ");
     tDiffON=val.toInt();
     DEBUG_PRINT(tDiffON);
     saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07a/so0")==0) {
+  } else if (strcmp(topic, "/home/Corridor/esp07/so0")==0) {
     DEBUG_PRINT("set sensor order 0 to ");
     sensorOrder[0]=val.toInt();
     DEBUG_PRINT(val.toInt());
     saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07a/so1")==1) {
+  } else if (strcmp(topic, "/home/Corridor/esp07/so1")==0) {
     DEBUG_PRINT("set sensor order 1 to ");
     sensorOrder[1]=val.toInt();
     DEBUG_PRINT(val.toInt());
     saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07a/so2")==2) {
+  } else if (strcmp(topic, "/home/Corridor/esp07/so2")==0) {
     DEBUG_PRINT("set sensor order 2 to ");
     sensorOrder[2]=val.toInt();
     DEBUG_PRINT(val.toInt());
     saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07a/so3")==3) {
+  } else if (strcmp(topic, "/home/Corridor/esp07/so3")==0) {
     DEBUG_PRINT("set sensor order 3 to ");
     sensorOrder[3]=val.toInt();
     DEBUG_PRINT(val.toInt());
     saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07a/so4")==4) {
+  } else if (strcmp(topic, "/home/Corridor/esp07/so4")==0) {
     DEBUG_PRINT("set sensor order 4 to ");
     sensorOrder[4]=val.toInt();
     DEBUG_PRINT(val.toInt());
     saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07a/so5")==5) {
+  } else if (strcmp(topic, "/home/Corridor/esp07/so5")==0) {
     DEBUG_PRINT("set sensor order 5 to ");
     sensorOrder[5]=val.toInt();
     DEBUG_PRINT(val.toInt());
     saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07a/so6")==6) {
+  } else if (strcmp(topic, "/home/Corridor/esp07/so6")==0) {
     DEBUG_PRINT("set sensor order 6 to ");
     sensorOrder[6]=val.toInt();
     DEBUG_PRINT(val.toInt());
     saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07a/so7")==7) {
+  } else if (strcmp(topic, "/home/Corridor/esp07/so7")==0) {
     DEBUG_PRINT("set sensor order 7 to ");
     sensorOrder[7]=val.toInt();
     DEBUG_PRINT(val.toInt());
     saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07a/so8")==8) {
+  } else if (strcmp(topic, "/home/Corridor/esp07/so8")==0) {
     DEBUG_PRINT("set sensor order 8 to ");
     sensorOrder[8]=val.toInt();
     DEBUG_PRINT(val.toInt());
     saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07a/so9")==9) {
+  } else if (strcmp(topic, "/home/Corridor/esp07/so9")==0) {
     DEBUG_PRINT("set sensor order 9 to ");
     sensorOrder[9]=val.toInt();
     DEBUG_PRINT(val.toInt());
@@ -676,7 +676,7 @@ void handleRoot() {
       abs((sensor[6] - (int)sensor[6]) * 100),
       sensor[7]<0 && sensor[7]>-1 ? "-":"",
       (int)sensor[7], 
-      abs((sensor[7] - (int)sensor[7]) * 100),
+      abs((sensor[7] - (int)sensor[7]) * 100)
 	);
 	server.send ( 200, "text/html", temp );
   digitalWrite(BUILTIN_LED, HIGH);
