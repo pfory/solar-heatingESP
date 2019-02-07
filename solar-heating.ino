@@ -1093,7 +1093,7 @@ bool tempMeas(void *) {
     DEBUG_PRINTLN(tempTemp);
     sensor[i] = tempTemp;
   }
-
+/*
   tP1In       = sensor[sensorOrder[0]]; //so0
   tP1Out      = sensor[sensorOrder[1]]; //so1
   tP2In       = sensor[sensorOrder[2]]; //so2
@@ -1102,6 +1102,16 @@ bool tempMeas(void *) {
   tBojlerOut  = sensor[sensorOrder[5]]; //so5
   tRoom       = sensor[sensorOrder[6]]; //so6
   tBojler     = sensor[sensorOrder[7]]; //so7
+*/
+  tP1In       = sensor[7]; //so0
+  tP1Out      = sensor[4]; //so1
+  tP2In       = sensor[1]; //so2
+  tP2Out      = sensor[2]; //so3
+  tBojlerIn   = sensor[5]; //so4
+  tBojlerOut  = sensor[3]; //so5
+  tRoom       = sensor[6]; //so6
+  tBojler     = sensor[0]; //so7
+
   
   controlSensorBojler==1 ? tControl = tBojler : tControl = tRoom;
   
@@ -1647,13 +1657,12 @@ unsigned int getPower(float t1, float t2) {
 
 #ifdef flowSensor
 bool calcFlow(void *) {
-    // Pulse frequency (Hz) = 7.5Q, Q is flow rate in L/min.
-    lMin = numberOfPulsesFlow / (CALC_DELAY / 1000.f) / 7.5f;
-    DEBUG_PRINT(F("Pulsu: "));
-    DEBUG_PRINTLN(numberOfPulsesFlow);
-    Serial.print(lMin, DEC); // Print litres/min
-    DEBUG_PRINTLN(F(" L/min"));
-    numberOfPulsesFlow = 0; // Reset Counter
-  }
+  // Pulse frequency (Hz) = 7.5Q, Q is flow rate in L/min.
+  lMin = numberOfPulsesFlow / (CALC_DELAY / 1000.f) / 7.5f;
+  DEBUG_PRINT(F("Pulsu: "));
+  DEBUG_PRINTLN(numberOfPulsesFlow);
+  Serial.print(lMin, DEC); // Print litres/min
+  DEBUG_PRINTLN(F(" L/min"));
+  numberOfPulsesFlow = 0; // Reset Counter
 }
 #endif
