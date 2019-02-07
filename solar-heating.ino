@@ -7,7 +7,6 @@ GIT - https://github.com/pfory/solar-heating
 */
 
 /*TODO
-ulozeni konfigurace cidel
 kalkulace prutoku
 */
 
@@ -945,6 +944,10 @@ bool sendStatisticHA(void *) {
   sender.add("Napeti",  ESP.getVcc());
   sender.add("HeartBeat", heartBeat++);
   sender.add("RSSI", WiFi.RSSI());
+  sender.add("tDiffON", tDiffON);
+  sender.add("tDiffOFF", tDiffOFF);
+  sender.add("controlSensorBojler", controlSensorBojler);
+  
   DEBUG_PRINTLN(F("Calling MQTT"));
   
   sender.sendMQTT(mqtt_server, mqtt_port, mqtt_username, mqtt_key, mqtt_base);
