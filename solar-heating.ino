@@ -92,7 +92,6 @@ ADC_MODE(ADC_VCC); //vcc read
 volatile int      numberOfPulsesFlow        = 0; // Measures flow sensor pulses
 void flow () { // Interrupt function
    numberOfPulsesFlow++;
-   DEBUG_PRINTLN(".");
 }
 #endif    
     
@@ -513,6 +512,7 @@ void setup() {
     timer.every(SEND_DELAY, sendDataHA);
     timer.every(MEAS_DELAY, tempMeas);
     timer.every(CALC_DELAY, calcPowerAndEnergy);
+    timer.every(CALC_DELAY, calcFlow);
   }
   
   timer.every(SENDSTAT_DELAY, sendStatisticHA);
@@ -921,7 +921,7 @@ bool sendDataHA(void *) {
   sender.add("tP1OUT", tP1Out);
   sender.add("tP2IN", tP2In);
   sender.add("tP2OUT", tP2Out);
-  sender.add("prutok", numberOfPulsesFlow);
+  sender.add("prutok", lMin);
   sender.add("sPumpSolar/status", relay1==LOW ? 1 : 0);
   sender.add("tRoom", tRoom);
   sender.add("tBojler", tBojler);
@@ -1586,19 +1586,6 @@ void dsInit(void) {
   dsSensors.setWaitForConversion(false);
 }
 
-// unsigned int getPower(float t1, float t2) {
-  // /*
-  // Q	0,00006	m3/s
-  // K	4184000	
-  // t vstup	56,4	°C
-  // t vystup	63,7	
-  // P = Q x K x (t1 - t2)	1832,592	W
-  // */
-  // return (lMin / 1000.0 / 60.0) * 4184000.0 * (t1 - t2);
-  // //return (float)energyKoef*(tBojlerOut-tBojlerIn); //in W
-// }
-
-
 // float enegyWsTokWh(float e) {
   // return e/3600.f/1000.f;
 // }
@@ -1657,16 +1644,11 @@ unsigned int getPower(float t1, float t2) {
   //return (float)energyKoef*(tBojlerOut-tBojlerIn); //in W
 }
 
-/*
+
 #ifdef flowSensor
-void calcFlow() {
-  // Every second, calculate and print litres/hour
-  if (millis() >= (cloopTime + 5000)) {
+bool calcFlow(void *) {
     // Pulse frequency (Hz) = 7.5Q, Q is flow rate in L/min.
-    lMin = numberOfPulsesFlow / (7.5f * ((float)(millis() - cloopTime) / 1000.f));
-    cloopTime = millis(); // Updates cloopTime
-    lMinCumul += lMin;
-    numberOfCyclesFlow++;
+    lMin = numberOfPulsesFlow / (CALC_DELAY / 1000.f) / 7.5f;
     DEBUG_PRINT(F("Pulsu: "));
     DEBUG_PRINTLN(numberOfPulsesFlow);
     Serial.print(lMin, DEC); // Print litres/min
@@ -1675,4 +1657,3 @@ void calcFlow() {
   }
 }
 #endif
-*/
