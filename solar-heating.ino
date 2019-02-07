@@ -22,6 +22,9 @@ kalkulace prutoku
 #include "Sender.h"
 #include <Wire.h>
 #include <PubSubClient.h>
+#include "ESP8266FtpServer.h"
+
+FtpServer ftpSrv;
 
 #ifdef ota
 #include <ArduinoOTA.h>
@@ -453,8 +456,6 @@ void setup() {
 #endif
 
 
-  //loadConfig();
- 
   DEBUG_PRINT(F("tON:"));  
   DEBUG_PRINTLN(tDiffON);
   DEBUG_PRINT(F("tOFF:"));  
@@ -502,8 +503,9 @@ void setup() {
     DEBUG_PRINTLN("ERROR - real number of devices DS18B20 > NUMBER_OF_DEVICES. Change variable NUMBER_OF_DEVICES in configuration file!!!!!!!!");
   }
 
-  for (byte i=0; i<NUMBER_OF_DEVICES; i++) {
-    sensorOrder[i] = i;
+  if (SPIFFS.begin()) {
+   DEBUG_PRINTLN("SPIFFS opened!");
+   ftpSrv.begin("esp8266", "esp8266"); // username, password for ftp. Set ports in ESP8266FtpServer.h (default 21, 50009 for PASV)
   }
   
   //setup timers
@@ -554,6 +556,9 @@ void loop() {
     reconnect();
   }
   client.loop();
+  
+  //handle ftp server
+  ftpSrv.handleFTP();
 } //loop
 
 
