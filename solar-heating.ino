@@ -130,7 +130,7 @@ Keypad_I2C keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS, I2CADDR);
 //promenne ulozene v pameti (viz CFGFILE "/config.json")
 byte            tDiffON                    = 5; //rozdil vystupni teploty panelu 1 tP1Out nebo panelu 2 tP2Out proti teplote bojleru nebo mistnosti tControl pri kterem dojde ke spusteni cerpadla
 byte            tDiffOFF                   = 2; //rozdil vystupni teploty panelu 2 tP2Out proti teplote bojleru nebo mistnosti tControl pri kterem dojde k vypnuti cerpadla
-byte            controlSensorBojler        = 0; //kontrolni cidlo 1 - Bojler 0 Room
+byte            controlSensorBojler        = 1; //kontrolni cidlo 1 - Bojler 0 Room
 
 byte            sensorOrder[NUMBER_OF_DEVICES];
 
@@ -1365,6 +1365,9 @@ void displayTemp(int x, int y, float value, bool des) {
   lcd.setCursor(x,y);
   
   //DEBUG_PRINTLN(F(value);
+  if (!des) {
+    value = round(value);
+  }
   
   if (value<10.f && value>=0.f) {
     //DEBUG_PRINT(F("_"));
