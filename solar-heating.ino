@@ -274,10 +274,14 @@ void setup() {
   pinMode(LEDPIN, OUTPUT);
   pinMode(PIRPIN, INPUT);
 #ifdef flowSensor
+  //pinMode(FLOWSENSORPIN, INPUT);
+  //digitalWrite(FLOWSENSORPIN, HIGH); // Optional Internal Pull-Up
+  attachInterrupt(digitalPinToInterrupt(FLOWSENSORPIN), flow, RISING); // Setup Interrupt
+/*
   DEBUG_PRINTLN("Flow sensor");
   pinMode(FLOWSENSORPIN, INPUT_PULLUP);
   //digitalWrite(FLOWSENSORPIN, HIGH); // Optional Internal Pull-Up
-  attachInterrupt(FLOWSENSORPIN, flow, CHANGE); // Setup Interrupt
+  attachInterrupt(FLOWSENSORPIN, flow, CHANGE); // Setup Interrupt*/
 #endif
   pinMode(RELAY1PIN, OUTPUT);
   pinMode(RELAY2PIN, OUTPUT);
@@ -494,9 +498,6 @@ void setup() {
  
   dsInit();
 
-  attachInterrupt(0, flow, RISING); // Setup Interrupt
-  
- 
   lcd.clear();
 
   if (numberOfDevices>NUMBER_OF_DEVICES) {
@@ -1113,8 +1114,8 @@ bool tempMeas(void *) {
 */
   tP1In       = sensor[7]; //so0
   tP1Out      = sensor[4]; //so1
-  tP2In       = sensor[1]; //so2
-  tP2Out      = sensor[2]; //so3
+  tP2In       = sensor[2]; //so2
+  tP2Out      = sensor[1]; //so3
   tBojlerIn   = sensor[5]; //so4
   tBojlerOut  = sensor[3]; //so5
   tRoom       = sensor[6]; //so6
@@ -1666,7 +1667,8 @@ unsigned int getPower(float t1, float t2) {
 #ifdef flowSensor
 bool calcFlow(void *) {
   // Pulse frequency (Hz) = 7.5Q, Q is flow rate in L/min.
-  lMin = numberOfPulsesFlow / (CALC_DELAY / 1000.f) / 7.5f;
+  //numberOfPulsesFlow = 31;
+  lMin = (float)numberOfPulsesFlow / (CALC_DELAY / 1000.f) / 7.5f;
   DEBUG_PRINT(F("Pulsu: "));
   DEBUG_PRINTLN(numberOfPulsesFlow);
   Serial.print(lMin, DEC); // Print litres/min
