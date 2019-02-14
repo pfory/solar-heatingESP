@@ -2,7 +2,7 @@
 #define CONFIGURATION_H
 
 //SW name & version
-#define     VERSION                       "1.54"
+#define     VERSION                       "1.55"
 #define     SW_NAME                       "Solar"
 
 #define ota
@@ -112,7 +112,7 @@ D8                                           - relay 2
 
 #define LEDPIN                               D4
                           
-#define RELAY1PIN                            D5
+#define RELAY1PIN                            D3
 
 #ifdef flowSensor
 #define FLOWSENSORPIN                        D6
