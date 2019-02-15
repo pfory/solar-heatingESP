@@ -116,8 +116,8 @@ char keys[ROWS][COLS]                       = {
                                             {'7','8','9','C'},
                                             {'*','0','#','D'}
 };
-byte rowPins[ROWS] = {7,6,5,4}; //connect to the row pinouts of the keypad
-byte colPins[COLS] = {3,2,1,0}; //connect to the column pinouts of the keypad
+byte rowPins[ROWS]                          = {7,6,5,4}; //connect to the row pinouts of the keypad
+byte colPins[COLS]                          = {3,2,1,0}; //connect to the column pinouts of the keypad
 
 //Keypad_I2C keypad = Keypad_I2C( makeKeymap(keys), rowPins, colPins, ROWS, COLS, I2CADDR );
 Keypad_I2C keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS, I2CADDR); 
@@ -146,6 +146,7 @@ unsigned int numberOfDevices                = 0; // Number of temperature device
 
 float sensor[NUMBER_OF_DEVICES];
 
+byte sunAngle[12]                           = {17,23,32,44,55,62,63,58,48,37}; //uhel slunce nad obzorem kdyz je na jihu
 
 bool isDebugEnabled()
 {
@@ -1281,6 +1282,10 @@ void lcdShow() {
     lcd.print(lastRunMin);
     lcd.setCursor(CONTROLSENSORX, CONTROLSENSORY);
     controlSensorBojler==1 ? lcd.print(F("B")) : lcd.print(F("R"));
+    lcd.setCursor(SUNANGLEX,SUNANGLEY);
+    lcd.print(sunAngle[month()-1]);
+    
+    
   } else if (display==DISPLAY_TOTAL_ENERGY) {
     //displayInfoValue('Total energy', enegyWsTokWh(totalEnergy), 'kWh');
   } else if (display==DISPLAY_T_DIFF_ON) {
