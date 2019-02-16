@@ -165,6 +165,8 @@ D8                                           - relay 2
 #define POZ1Y                                1
 #define CONTROLSENSORX                       19
 #define CONTROLSENSORY                       1
+#define SUNANGLEX                            10
+#define SUNANGLEY                            3
 
 #define DISPLAY_MAIN                         0
 #define DISPLAY_TOTAL_ENERGY                 1
