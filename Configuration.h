@@ -2,7 +2,7 @@
 #define CONFIGURATION_H
 
 //SW name & version
-#define     VERSION                       "1.55"
+#define     VERSION                       "1.57"
 #define     SW_NAME                       "Solar"
 
 #define ota
@@ -169,7 +169,7 @@ D8                                           - relay 2
 #define SUNANGLEY                            3
 
 #define DISPLAY_MAIN                         0
-#define DISPLAY_TOTAL_ENERGY                 1
+
 #define DISPLAY_T_DIFF_ON                    2
 #define DISPLAY_T_DIFF_OFF                   3
 #define DISPLAY_FLOW                         4
@@ -177,19 +177,7 @@ D8                                           - relay 2
 #define DISPLAY_MAX_BOJLER                   6
 #define DISPLAY_MAX_POWER_TODAY              7
 #define DISPLAY_CONTROL_SENSOR               8
-#define DISPLAY_TOTAL_TIME                   9
-#define DISPLAY_T_DIFF_ON_SETUP              100
-#define DISPLAY_T_DIFF_OFF_SETUP             101
-#define DISPLAY_P1IN_SETUP                   102
-#define DISPLAY_P1OUT_SETUP                  103
-#define DISPLAY_P2IN_SETUP                   104
-#define DISPLAY_P2OUT_SETUP                  105
-#define DISPLAY_BOJLERIN_SETUP               106
-#define DISPLAY_BOJLEROUT_SETUP              107
-#define DISPLAY_BOJLER_SETUP                 108
-#define DISPLAY_ROOM_SETUP                   109
-#define DISPLAY_CONTROL_SENSOR_SETUP         110
-#define DISPLAY_CONTROL_SENSOR_SETUP_TEXT    111
+
                           
 #define RELAY1X                              19
 #define RELAY1Y                              0
@@ -197,6 +185,7 @@ D8                                           - relay 2
 #define RELAY2Y                              1
 */                          
                           
+#define DAY_INTERVAL                         43200000 //1000*60*60*12; //ms
 
 #define PRINT_SPACE                          lcd.print(F(" "));
 

@@ -73,12 +73,18 @@ float tBojlerIn                             = 0; //boiler input temperature
 float tBojlerOut                            = 0; //boiler output temperature
 float lMin                                  = 0;
 unsigned long energyADay                    = 0; //energy a day in Ws
-unsigned long totalSec                      = 0;
+unsigned long secOnDay                      = 0; //sec in ON state per day
 unsigned int  power                         = 0; //actual power in W
 float energyDiff                            = 0.f; //difference in Ws
 volatile bool showDoubleDot                 = false;
 bool firstTempMeasDone                      = false;
 unsigned long lastOffOn                     = 0; //zamezuje cyklickemu zapinani a vypinani rele
+unsigned long lastOff                     = 0;  //ms posledniho vypnuti rele
+
+//maximal temperatures
+float tMaxIn                                = 0; //maximal input temperature (just for statistics)
+float tMaxOut                               = 0; //maximal output temperature (just for statistics)
+float tMaxBojler                            = 0; //maximal boiler temperature (just for statistics)
 
    
 //HIGH - relay OFF, LOW - relay ON   
@@ -249,6 +255,10 @@ void callback(char* topic, byte* payload, unsigned int length) {
     sensorOrder[9]=val.toInt();
     DEBUG_PRINT(val.toInt());
     saveConfig();
+  } else if (strcmp(topic, "/home/Corridor/esp07/restart")==1) {
+    DEBUG_PRINT("RESTART");
+    saveConfig();
+    ESP.restart();
   }
 }
 
@@ -562,6 +572,19 @@ void loop() {
   
   //handle ftp server
   ftpSrv.handleFTP();
+
+  if (minute()==0 && second()==0) { 
+    lcd.clear();
+  }
+  
+  if (hour()==0 && minute()==0) { //first ON in actual day
+    energyADay=0;
+    secOnDay=0;
+    tMaxOut=T_MIN;
+    tMaxIn=T_MIN;
+    tMaxBojler=T_MIN;
+  }
+
 } //loop
 
 
@@ -579,13 +602,7 @@ bool calcPowerAndEnergy(void *) {
       t2 = tP1In;
     }
     if (t1>t2) {
-      // msDayON+=(millis()-lastOn);
-      // msDiff+=(millis()-lastOn);
-      // if (msDiff >= 1000) {
-        // totalSec+=msDiff/1000;
-        // msDiff=msDiff%1000;
-      // }
-      totalSec++;
+      secOnDay++;
       power = getPower(t1, t2); //in W
       //DEBUG_PRINTLN(F(power);
       energyDiff += CALC_DELAY*(float)power/1000.f; //in Ws
@@ -613,7 +630,7 @@ void reconnect() {
       //client.publish("outTopic","hello world");
       // ... and resubscribe
       //client.subscribe(mqtt_base + '/' + 'inTopic');
-      client.subscribe((String(mqtt_base) + "/" + "tDiffON ").c_str());
+      client.subscribe((String(mqtt_base) + "/" + "tDiffON").c_str());
       client.subscribe((String(mqtt_base) + "/" + "tDiffOFF").c_str());
       client.subscribe((String(mqtt_base) + "/" + "controlSensorBojler").c_str());
       client.subscribe((String(mqtt_base) + "/" + "so0").c_str());
@@ -626,6 +643,7 @@ void reconnect() {
       client.subscribe((String(mqtt_base) + "/" + "so7").c_str());
       client.subscribe((String(mqtt_base) + "/" + "so8").c_str());
       client.subscribe((String(mqtt_base) + "/" + "so9").c_str());
+      client.subscribe((String(mqtt_base) + "/" + "restart").c_str());
     } else {
       DEBUG_PRINT("failed, rc=");
       DEBUG_PRINT(client.state());
@@ -922,7 +940,6 @@ bool sendDataHA(void *) {
   printSystemTime();
   DEBUG_PRINTLN(F(" - I am sending data to HA"));
   
-//Adafruit_MQTT_Subscribe restart                = Adafruit_MQTT_Subscribe(&mqtt, MQTTBASE "restart");
   SenderClass sender;
   sender.add("tP1IN", tP1In);
   sender.add("tP1OUT", tP1Out);
@@ -1126,6 +1143,11 @@ bool tempMeas(void *) {
   
   controlSensorBojler==1 ? tControl = tBojler : tControl = tRoom;
   
+  if (tP2Out>tMaxOut)       tMaxOut      = tP2Out;
+  if (tP2In>tMaxIn)         tMaxIn       = tP2In;
+  if (tBojler>tMaxBojler)   tMaxBojler   = tBojler;
+
+  
   DEBUG_PRINT(F("P1 In:"));
   DEBUG_PRINTLN(tP1In);
   DEBUG_PRINT(F("P1 Out:"));
@@ -1173,7 +1195,7 @@ void mainControl() {
   } else {
     //pump is ON - relay ON = LOW
     if (relay1==LOW) { 
-      if (((tP2Out - tControl) < tDiffOFF)) && (millis() - DELAY_AFTER_ON >= lastOffOn)) { //switch pump ON->OFF
+      if ((((tP2Out - tControl) < tDiffOFF)) && (millis() - DELAY_AFTER_ON >= lastOffOn)) { //switch pump ON->OFF
         DEBUG_PRINT(F("millis()="));
         DEBUG_PRINT(millis());
         DEBUG_PRINT(F(" delayAfterON="));
@@ -1185,32 +1207,12 @@ void mainControl() {
         DEBUG_PRINT(F("tControl="));
         DEBUG_PRINTLN(tControl);
         relay1=HIGH; //relay OFF = HIGH
-        //digitalWrite(RELAY1PIN, relay1);
-        //lastOff=millis();
-        //lastOn4Delay=0;
-        //save totalEnergy to EEPROM
-        //saveConfig();
-        //writeTotalEEPROM(STATUS_WRITETOTALTOEEPROM_ONOFF);
+        lastOff=millis();
       }
     } else { //pump is OFF - relay OFF = HIGH
       if ((tP1Out - tControl) >= tDiffON || (tP2Out - tControl) >= tDiffON) { //switch pump OFF->ON
         relay1=LOW; //relay ON = LOW
-        //digitalWrite(RELAY1PIN, relay1);
-        //lastOn = millis();
         lastOffOn = millis();
-        // if (lastOn4Delay==0) {
-          // lastOn4Delay = lastOn;
-        // }
-        // if ((millis()-lastOff)>=DAY_INTERVAL) { //first ON in actual day
-          // lcd.clear();
-          // lastOff=millis();
-          // energyADay=0;
-          // //energyDiff=0.0;
-          // msDayON=0;
-          // tMaxOut=T_MIN;
-          // tMaxIn=T_MIN;
-          // tMaxBojler=T_MIN;
-        // }
       }
     }
   }
@@ -1244,27 +1246,27 @@ void lcdShow() {
     displayTemp(TEMP6X,TEMP6Y, tBojlerIn, false);
     displayTemp(TEMP7X,TEMP7Y, tBojlerOut, false);
     displayTemp(TEMP8X,TEMP8Y, tBojler, false);
-    // if ((millis()-lastOff)>=DAY_INTERVAL) {
-      // lcd.setCursor(0,1);
-      // lcd.print(F("Bez slunce "));
-      // lcd.print((millis() - lastOff)/1000/3600);
-      // lcd.print(F(" h"));
-    // } else {
-      // //zobrazeni okamziteho vykonu ve W
-      // //zobrazeni celkoveho vykonu za den v kWh
-      // //zobrazeni poctu minut behu cerpadla za aktualni den
-      // //0123456789012345
-      // // 636 0.1234 720T
-      // unsigned int p=(int)power;
-      // lcd.setCursor(POWERX,POWERY);
-      // if (p<10000) PRINT_SPACE
-      // if (p<1000) PRINT_SPACE
-      // if (p<100) PRINT_SPACE
-      // if (p<10) PRINT_SPACE
-      // if (power<=65534) {
-        // lcd.print(p);
-        // lcd.print(F("W"));
-      // }
+    lcd.setCursor(POWERX,POWERY);
+    if ((millis()-lastOff)>=DAY_INTERVAL) {
+      lcd.print(F("Bez slunce "));
+      lcd.print((millis() - lastOff)/1000/3600);
+      lcd.print(F(" h"));
+    } else {
+      //zobrazeni okamziteho vykonu ve W
+      //zobrazeni celkoveho vykonu za den v kWh
+      //zobrazeni poctu minut behu cerpadla za aktualni den
+      //0123456789012345
+      // 636 0.1234 720T
+      unsigned int p=(int)power;
+      if (p<10000) PRINT_SPACE
+      if (p<1000) PRINT_SPACE
+      if (p<100) PRINT_SPACE
+      if (p<10) PRINT_SPACE
+      if (power<=65534) {
+        lcd.print(p);
+        lcd.print(F("W"));
+      }
+    }
       
     lcd.setCursor(ENERGYX,ENERGYY);
       lcd.print(enegyWsTokWh(energyADay)); //Ws -> kWh (show it in kWh)
@@ -1287,8 +1289,6 @@ void lcdShow() {
     lcd.print(sunAngle[month()-1]);
     
     
-  } else if (display==DISPLAY_TOTAL_ENERGY) {
-    //displayInfoValue('Total energy', enegyWsTokWh(totalEnergy), 'kWh');
   } else if (display==DISPLAY_T_DIFF_ON) {
     displayInfoValue('TDiffON', tDiffON, 'C');
   } else if (display==DISPLAY_T_DIFF_OFF) { 
@@ -1296,16 +1296,16 @@ void lcdShow() {
   } else if (display==DISPLAY_FLOW) {
     //displayInfoValue('Flow', lMin, 'l/min');
   } else if (display==DISPLAY_MAX_IO_TEMP) {
-    // lcd.setCursor(POZ0X,POZ0Y);
-    // lcd.print(F("Max IN:"));
-    // lcd.print(tMaxIn);
-    // lcd.print(F("     "));
-    // lcd.setCursor(0,1);
-    // lcd.print(F("Max OUT:"));
-    // lcd.print(tMaxOut);
-    // lcd.print(F("     "));
+    lcd.setCursor(POZ0X,POZ0Y);
+    lcd.print(F("Max IN:"));
+    lcd.print(tMaxIn);
+    lcd.print(F("     "));
+    lcd.setCursor(0,1);
+    lcd.print(F("Max OUT:"));
+    lcd.print(tMaxOut);
+    lcd.print(F("     "));
   } else if (display==DISPLAY_MAX_BOJLER) {
-//    displayInfoValue('Max bojler', tMaxBojler, 'C');
+    displayInfoValue('Max bojler', tMaxBojler, 'C');
   } else if (display==DISPLAY_MAX_POWER_TODAY) { 
     //displayInfoValue('Max power today', maxPower, 'W');
   } else if (display==DISPLAY_CONTROL_SENSOR) {
@@ -1323,31 +1323,6 @@ void lcdShow() {
       lcd.print(F("]   "));
       lcd.print(F("Room"));
     }
-  } else if (display==DISPLAY_TOTAL_TIME) { 
-    //displayInfoValue('Total time', totalSec/60/60, 'hours');
-    
-  } else if (display==DISPLAY_T_DIFF_ON_SETUP) {
-    displayInfoValue('tDiffON', tDiffON, 'C');
-  } else if (display==DISPLAY_T_DIFF_OFF_SETUP) {
-    displayInfoValue('tDiffOFF', tDiffOFF, 'C');
-  } else if (display==DISPLAY_P1IN_SETUP) {
-    displayInfoValue('Panel1 IN', tP1In, 'C');
-  } else if (display==DISPLAY_P1OUT_SETUP) {
-    displayInfoValue('Panel1 OUT', tP1Out, 'C');
-  } else if (display==DISPLAY_P2IN_SETUP) {
-    displayInfoValue('Panel2 IN', tP2In, 'C');
-  } else if (display==DISPLAY_P2OUT_SETUP) {
-    displayInfoValue('Panel2 OUT', tP2Out, 'C');
-  } else if (display==DISPLAY_BOJLERIN_SETUP) {
-    displayInfoValue('Bojler IN', tBojlerIn, 'C');
-  } else if (display==DISPLAY_BOJLEROUT_SETUP) {
-    displayInfoValue('Bojler OUT', tBojlerOut, 'C');
-  } else if (display==DISPLAY_BOJLER_SETUP) {
-    displayInfoValue('Bojler', tBojler, 'C');
-  } else if (display==DISPLAY_ROOM_SETUP) {
-    displayInfoValue('Room', tRoom, 'C');
-  } else if (display==DISPLAY_CONTROL_SENSOR_SETUP) {
-    displayInfoValue('Control sensor', tControl, 'C');
   }
 }
 
@@ -1414,142 +1389,25 @@ void keyBoard() {
     | 7 8 9 C |
     | * 0 # D |
     -----------
-    SETUP - vstup do režimu *, dopredu B, dozadu A, nahoru D, dolu C, uložení hodnot a výstup #*/
-    // #define MAXSETUP      111
-    // #define MINSETUP      100
-    /*
-    100  - TDiffON           - nastavení teploty                     - klávesy C,D
-    101  - TDiffOFF          - nastavení teploty                     - klávesy C,D
-    102  - Panel1 vstup      - výběr čidla                           - klávesy C,D
-    103  - Panel1 výstup     - výběr čidla                           - klávesy C,D
-    104  - Panel2 vstup      - výběr čidla                           - klávesy C,D
-    105  - Panel2 výstup     - výběr čidla                           - klávesy C,D
-    106  - Bojler vstup      - výběr čidla                           - klávesy C,D
-    107  - Bojler výstup     - výběr čidla                           - klávesy C,D
-    108  - Bojler            - výběr čidla                           - klávesy C,D
-    109  - Teplota místnost  - výběr čidla                           - klávesy C,D 
-    110  - Control sensor    - výběr čidla podle kterého se spíná    - klávesy C,D
-    111  - Control sensor    - výběr čidla bojler/místnost           - klávesy C,D
-    
+   
     INFO
-    1 - total energy
+    1 - 
     2 - TDiffON
     3 - TDiffOFF
     4 - prutok
     5 - Max IN OUT temp
     6 - Max bojler
-    B - Save total energy to EEPROM
+    B - clear display
     7 - Max power today
     8 - Control sensor
-    9 - total time
-    C - RESET
-    * - SETUP
+    9 - 
+    C - RESTART
+    * -
     0 - main display
     D - manual/auto
     */
     
-    //SETUP MODE
-    // if (displayMode==SETUP) {
-      // if (key=='#') {
-        // displayMode=INFO;
-        // display = 0;
-        // saveConfig();
-      // }
-      // if (key=='B') {
-        // display++;
-        // //lcd.clear();
-        // if (display>MAXSETUP) {
-          // display = MINSETUP;
-        // }
-      // }
-      // if (key=='A') {
-        // display--;
-        // //lcd.clear();
-        // if (display<MINSETUP) {
-          // display = MAXSETUP;
-        // }
-      // }
-      // if (key=='D') {
-        // if (display==DISPLAY_T_DIFF_ON_SETUP) {
-          // tDiffON++;
-        // } else if (display==DISPLAY_T_DIFF_OFF_SETUP) {
-          // tDiffOFF++;
-        // } else if (display==DISPLAY_P1OUT_SETUP) {
-        // } else if (display==DISPLAY_P2IN_SETUP) {
-        // } else if (display==DISPLAY_P2OUT_SETUP) {
-        // } else if (display==DISPLAY_BOJLERIN_SETUP) {
-        // } else if (display==DISPLAY_BOJLEROUT_SETUP) {
-        // } else if (display==DISPLAY_BOJLER_SETUP) {
-        // } else if (display==DISPLAY_ROOM_SETUP) {
-        // } else if (display==DISPLAY_CONTROL_SENSOR_SETUP) {
-          // if (controlSensor>numberOfDevices) {
-            // controlSensor=0;
-          // } else {
-            // controlSensor++;
-          // }
-        // } else if (display==DISPLAY_CONTROL_SENSOR_SETUP_TEXT) {
-          // if (controlSensorBojler) {
-            // controlSensorBojler=false;
-          // } else {
-            // controlSensorBojler=true;
-          // }
-        // }
-      // }
-      // if (key=='C') {
-        // if (display==DISPLAY_T_DIFF_ON_SETUP) {
-          // tDiffON--;
-          // if (tDiffON<0) {
-            // tDiffON=0;
-          // }
-        // } else if (display==DISPLAY_T_DIFF_OFF_SETUP) {
-          // tDiffOFF--;
-          // if (tDiffOFF<0) {
-            // tDiffOFF=0;
-          // }
-        // } else if (display==DISPLAY_P1OUT_SETUP) {
-        // } else if (display==DISPLAY_P2IN_SETUP) {
-        // } else if (display==DISPLAY_P2OUT_SETUP) {
-        // } else if (display==DISPLAY_BOJLERIN_SETUP) {
-        // } else if (display==DISPLAY_BOJLEROUT_SETUP) {
-        // } else if (display==DISPLAY_BOJLER_SETUP) {
-        // } else if (display==DISPLAY_ROOM_SETUP) {
-        // } else if (display==DISPLAY_CONTROL_SENSOR_SETUP) {
-          // if (controlSensor==0) {
-            // controlSensor=numberOfDevices;
-          // } else {
-            // controlSensor--;
-          // }
-        // } else if (display==DISPLAY_CONTROL_SENSOR_SETUP_TEXT) {
-          // if (controlSensorBojler) {
-            // controlSensorBojler=false;
-          // } else {
-            // controlSensorBojler=true;
-          // }
-        // }
-      // }
-    // //INFO MODE
-    // } else {
-    if (key=='*') {
-      // displayMode=SETUP;
-      // display = MINSETUP;
-    }
-    if (key=='D') {
-      manualON = !manualON;
-      if (manualON) {
-        relay1=LOW;
-      } else {
-        relay1=HIGH;
-      }
-    }
-    if (key=='C') {
-      saveConfig();
-      //asm volatile ("  jmp 0");  
-    }
-    else if (key=='0') { 
-      display=DISPLAY_MAIN;
-    }
-    else if (key=='1') { 
-      display=DISPLAY_TOTAL_ENERGY;
+    if (key=='1') { 
     }
     else if (key=='2') { 
       display=DISPLAY_T_DIFF_ON;
@@ -1566,6 +1424,9 @@ void keyBoard() {
     else if (key=='6') { 
       display=DISPLAY_MAX_BOJLER;
     }
+    else if (key=='B') {
+      lcd.clear();
+    }
     else if (key=='7') { 
       display=DISPLAY_MAX_POWER_TODAY;
     }
@@ -1573,16 +1434,24 @@ void keyBoard() {
       display=DISPLAY_CONTROL_SENSOR;
     }
     else if (key=='9') { 
-      display=DISPLAY_TOTAL_TIME;
     }
-    else if (key=='B') { //Save total energy to EEPROM
-      // saveConfig();
-      // lcd.setCursor(0,3);
-      // lcd.print(F("Energy "));
-      // lcd.print(enegyWsTokWh(totalEnergy));
-      // lcd.print(F(" kWh"));
+    if (key=='C') {
+      saveConfig();
+      ESP.restart();
     }
-//    }
+    if (key=='*') {
+    }
+    if (key=='0') { 
+      display=DISPLAY_MAIN;
+    }
+    if (key=='D') {
+      manualON = !manualON;
+      if (manualON) {
+        relay1=LOW;
+      } else {
+        relay1=HIGH;
+      }
+    }
     key = ' ';
   }
 }
