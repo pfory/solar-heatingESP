@@ -78,6 +78,7 @@ unsigned int  power                         = 0; //actual power in W
 float energyDiff                            = 0.f; //difference in Ws
 volatile bool showDoubleDot                 = false;
 bool firstTempMeasDone                      = false;
+unsigned long lastOffOn                     = 0; //zamezuje cyklickemu zapinani a vypinani rele
 
    
 //HIGH - relay OFF, LOW - relay ON   
@@ -1172,13 +1173,13 @@ void mainControl() {
   } else {
     //pump is ON - relay ON = LOW
     if (relay1==LOW) { 
-      if (((tP2Out - tControl) < tDiffOFF)) { // && (millis() - DELAY_AFTER_ON >= lastOffOn)) { //switch pump ON->OFF
+      if (((tP2Out - tControl) < tDiffOFF)) && (millis() - DELAY_AFTER_ON >= lastOffOn)) { //switch pump ON->OFF
         DEBUG_PRINT(F("millis()="));
         DEBUG_PRINT(millis());
-        // DEBUG_PRINT(F(" delayAfterON="));
-        // DEBUG_PRINT(DELAY_AFTER_ON);
-        // DEBUG_PRINT(F(" lastOffOn="));
-        // DEBUG_PRINT(lastOffOn);
+        DEBUG_PRINT(F(" delayAfterON="));
+        DEBUG_PRINT(DELAY_AFTER_ON);
+        DEBUG_PRINT(F(" lastOffOn="));
+        DEBUG_PRINT(lastOffOn);
         DEBUG_PRINT(F(" tP2Out="));
         DEBUG_PRINT(tP2Out);
         DEBUG_PRINT(F("tControl="));
@@ -1196,7 +1197,7 @@ void mainControl() {
         relay1=LOW; //relay ON = LOW
         //digitalWrite(RELAY1PIN, relay1);
         //lastOn = millis();
-        //lastOffOn = lastOn;
+        lastOffOn = millis();
         // if (lastOn4Delay==0) {
           // lastOn4Delay = lastOn;
         // }
