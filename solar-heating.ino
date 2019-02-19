@@ -561,6 +561,10 @@ void loop() {
   
   //handle ftp server
   ftpSrv.handleFTP();
+  
+  if (minute()==0 && second()==0) {
+    lcd.clear();
+  }
 } //loop
 
 
