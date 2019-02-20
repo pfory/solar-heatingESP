@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE eagle SYSTEM "eagle.dtd">
-<eagle version="9.1.3">
+<eagle version="9.3.0">
 <drawing>
 <settings>
 <setting alwaysvectorfont="no"/>
@@ -4137,9 +4137,10 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 <part name="SERIAL" library="con-amp-quick" library_urn="urn:adsk.eagle:library:125" deviceset="M03" device="" package3d_urn="urn:adsk.eagle:package:5957/1"/>
 <part name="SL1" library="con-amp-quick" library_urn="urn:adsk.eagle:library:125" deviceset="M04" device="" package3d_urn="urn:adsk.eagle:package:5958/1"/>
 <part name="R3" library="rcl" deviceset="R-EU_" device="0207/10" value="220"/>
-<part name="RELAYS" library="con-amp-quick" library_urn="urn:adsk.eagle:library:125" deviceset="M04" device="" package3d_urn="urn:adsk.eagle:package:5958/1"/>
 <part name="GND3" library="supply1" deviceset="GND" device=""/>
 <part name="P+6" library="supply1" deviceset="+5V" device=""/>
+<part name="SOURCE" library="con-wago-508" deviceset="W237-02P" device=""/>
+<part name="RELAYS" library="con-wago-508" deviceset="W237-02P" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -4218,19 +4219,41 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 <instance part="P+5" gate="1" x="30.48" y="22.86" smashed="yes" rot="R270">
 <attribute name="VALUE" x="25.4" y="25.4" size="1.778" layer="96"/>
 </instance>
-<instance part="PIR" gate="G$1" x="20.32" y="33.02"/>
-<instance part="SERIAL" gate="G$1" x="20.32" y="-2.54"/>
-<instance part="SL1" gate="G$1" x="22.86" y="86.36"/>
+<instance part="PIR" gate="G$1" x="20.32" y="33.02" smashed="yes">
+<attribute name="VALUE" x="17.78" y="25.4" size="1.778" layer="96"/>
+<attribute name="NAME" x="17.78" y="38.862" size="1.778" layer="95"/>
+</instance>
+<instance part="SERIAL" gate="G$1" x="20.32" y="-2.54" smashed="yes">
+<attribute name="VALUE" x="17.78" y="-10.16" size="1.778" layer="96"/>
+<attribute name="NAME" x="17.78" y="3.302" size="1.778" layer="95"/>
+</instance>
+<instance part="SL1" gate="G$1" x="22.86" y="86.36" smashed="yes">
+<attribute name="VALUE" x="17.78" y="78.74" size="1.778" layer="96"/>
+<attribute name="NAME" x="17.78" y="94.742" size="1.778" layer="95"/>
+</instance>
 <instance part="R3" gate="G$1" x="45.72" y="12.7" smashed="yes" rot="R180">
 <attribute name="NAME" x="49.53" y="11.2014" size="1.778" layer="95" rot="R180"/>
 <attribute name="VALUE" x="49.53" y="16.002" size="1.778" layer="96" rot="R180"/>
 </instance>
-<instance part="RELAYS" gate="G$1" x="-5.08" y="58.42"/>
 <instance part="GND3" gate="1" x="0" y="53.34" smashed="yes">
 <attribute name="VALUE" x="-2.54" y="50.8" size="1.778" layer="96"/>
 </instance>
 <instance part="P+6" gate="1" x="5.08" y="55.88" smashed="yes" rot="R180">
 <attribute name="VALUE" x="7.62" y="60.96" size="1.778" layer="96" rot="R270"/>
+</instance>
+<instance part="SOURCE" gate="-1" x="-5.08" y="58.42" smashed="yes">
+<attribute name="NAME" x="-6.35" y="59.309" size="1.778" layer="95" rot="R180"/>
+</instance>
+<instance part="SOURCE" gate="-2" x="-5.08" y="55.88" smashed="yes">
+<attribute name="VALUE" x="-5.08" y="58.42" size="1.778" layer="96"/>
+<attribute name="NAME" x="-6.35" y="56.769" size="1.778" layer="95" rot="R180"/>
+</instance>
+<instance part="RELAYS" gate="-1" x="-5.08" y="63.5" smashed="yes">
+<attribute name="NAME" x="-6.35" y="64.389" size="1.778" layer="95" rot="R180"/>
+</instance>
+<instance part="RELAYS" gate="-2" x="-5.08" y="60.96" smashed="yes">
+<attribute name="VALUE" x="-5.08" y="63.5" size="1.778" layer="96"/>
+<attribute name="NAME" x="-6.35" y="61.849" size="1.778" layer="95" rot="R180"/>
 </instance>
 </instances>
 <busses>
@@ -4285,8 +4308,8 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 <pinref part="SL1" gate="G$1" pin="1"/>
 </segment>
 <segment>
-<pinref part="RELAYS" gate="G$1" pin="1"/>
 <pinref part="GND3" gate="1" pin="GND"/>
+<pinref part="SOURCE" gate="-2" pin="KL"/>
 </segment>
 </net>
 <net name="N$3" class="0">
@@ -4357,9 +4380,9 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 <wire x1="30.48" y1="15.24" x2="27.94" y2="15.24" width="0.1524" layer="91"/>
 </segment>
 <segment>
-<pinref part="RELAYS" gate="G$1" pin="2"/>
 <pinref part="P+6" gate="1" pin="+5V"/>
 <wire x1="0" y1="58.42" x2="5.08" y2="58.42" width="0.1524" layer="91"/>
+<pinref part="SOURCE" gate="-1" pin="KL"/>
 </segment>
 </net>
 <net name="N$7" class="0">
@@ -4367,8 +4390,8 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 <pinref part="WEMOS1" gate="D1" pin="D5"/>
 <wire x1="45.72" y1="53.34" x2="27.94" y2="53.34" width="0.1524" layer="91"/>
 <wire x1="27.94" y1="53.34" x2="27.94" y2="63.5" width="0.1524" layer="91"/>
-<pinref part="RELAYS" gate="G$1" pin="4"/>
 <wire x1="27.94" y1="63.5" x2="0" y2="63.5" width="0.1524" layer="91"/>
+<pinref part="RELAYS" gate="-1" pin="KL"/>
 </segment>
 </net>
 <net name="N$8" class="0">
@@ -4376,8 +4399,8 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 <pinref part="WEMOS1" gate="D1" pin="D8"/>
 <wire x1="38.1" y1="60.96" x2="38.1" y2="45.72" width="0.1524" layer="91"/>
 <wire x1="45.72" y1="45.72" x2="38.1" y2="45.72" width="0.1524" layer="91"/>
-<pinref part="RELAYS" gate="G$1" pin="3"/>
 <wire x1="0" y1="60.96" x2="38.1" y2="60.96" width="0.1524" layer="91"/>
+<pinref part="RELAYS" gate="-2" pin="KL"/>
 </segment>
 </net>
 <net name="N$9" class="0">
