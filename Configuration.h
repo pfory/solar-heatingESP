@@ -26,7 +26,7 @@
   #define PORTSPEED 115200             
   #define DEBUG_WRITE(x)                     Serial.write (x)
   #define DEBUG_PRINTHEX(x)                  Serial.print (x, HEX)
-  #define SERIAL_BEGIN           Serial.begin(PORTSPEED)
+  #define SERIAL_BEGIN                       Serial.begin(PORTSPEED)
 #else
   #define DEBUG_PRINT(x)
   #define DEBUG_PRINTDEC(x)
@@ -91,9 +91,9 @@ RX                                           - Rx
 D0                                           - PIR sensor
 D1                                           - I2C display SCL 0x20, keypad 0x27
 D2                                           - I2C display SDA 0x20, keypad 0x27
-D3                                           - 
+D3                                           - relay 1
 D4                                           - LED
-D5                                           - relay 1
+D5                                           - 
 D6                                           - flow sensor
 D7                                           - DALLAS temperature sensors
 D8                                           - relay 2
