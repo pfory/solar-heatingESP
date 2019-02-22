@@ -7,7 +7,8 @@ GIT - https://github.com/pfory/solar-heating
 */
 
 /*TODO
-kalkulace prutoku
+pripojit cidlo prutoku
+ukladani a nacitani hodnot z config.json
 */
 
 #include "Configuration.h"
@@ -80,6 +81,7 @@ volatile bool showDoubleDot                 = false;
 bool firstTempMeasDone                      = false;
 unsigned long lastOffOn                     = 0; //zamezuje cyklickemu zapinani a vypinani rele
 unsigned long lastOff                       = 0;  //ms posledniho vypnuti rele
+bool dispClear                              = false;
 
 //maximal temperatures
 float tMaxIn                                = 0; //maximal input temperature (just for statistics)
@@ -573,8 +575,13 @@ void loop() {
   //handle ftp server
   ftpSrv.handleFTP();
 
-  if (minute()==0 && second()==0) { 
-    lcd.clear();
+  if (minute()==0 && second()==0) {
+    if (!dispClear) { 
+      lcd.clear();
+      dispClear = true;
+    }
+  } else {
+    dispClear = false;
   }
   
   if (hour()==0 && minute()==0) { //first ON in actual day
@@ -1238,14 +1245,16 @@ void lcdShow() {
     //01   555W   12.3kWh 124m                    
     //02   2.1l/m  55 45 48  0
     //03                123456
-    displayTemp(TEMP1X,TEMP1Y, tP1In, false);
-    displayTemp(TEMP2X,TEMP2Y, tP1Out, false);
-    displayTemp(TEMP3X,TEMP3Y, tP2In, false);
-    displayTemp(TEMP4X,TEMP4Y, tP2Out, false);
-    displayTemp(TEMP5X,TEMP5Y, tControl, true);
-    displayTemp(TEMP6X,TEMP6Y, tBojlerIn, false);
-    displayTemp(TEMP7X,TEMP7Y, tBojlerOut, false);
-    displayTemp(TEMP8X,TEMP8Y, tBojler, false);
+    if (firstTempMeasDone) {
+      displayTemp(TEMP1X,TEMP1Y, tP1In, false);
+      displayTemp(TEMP2X,TEMP2Y, tP1Out, false);
+      displayTemp(TEMP3X,TEMP3Y, tP2In, false);
+      displayTemp(TEMP4X,TEMP4Y, tP2Out, false);
+      displayTemp(TEMP5X,TEMP5Y, tControl, true);
+      displayTemp(TEMP6X,TEMP6Y, tBojlerIn, false);
+      displayTemp(TEMP7X,TEMP7Y, tBojlerOut, false);
+      displayTemp(TEMP8X,TEMP8Y, tBojler, false);
+    }
     lcd.setCursor(POWERX,POWERY);
     if ((millis()-lastOff)>=DAY_INTERVAL) {
       lcd.print(F("Bez slunce "));
