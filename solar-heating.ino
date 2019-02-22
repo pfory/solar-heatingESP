@@ -7,7 +7,8 @@ GIT - https://github.com/pfory/solar-heating
 */
 
 /*TODO
-kalkulace prutoku
+pripojit cidlo prutoku
+ukladani a nacitani hodnot z config.json
 */
 
 #include "Configuration.h"
