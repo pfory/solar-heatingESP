@@ -1257,7 +1257,7 @@ void lcdShow() {
     }
     lcd.setCursor(POWERX,POWERY);
     if ((millis()-lastOff)>=DAY_INTERVAL) {
-      lcd.print(F("Bez slunce "));
+      lcd.print(F("Bez slunce      "));
       lcd.print((millis() - lastOff)/1000/3600);
       lcd.print(F(" h"));
     } else {
@@ -1275,15 +1275,14 @@ void lcdShow() {
         lcd.print(p);
         lcd.print(F("W"));
       }
-    }
       
-    lcd.setCursor(ENERGYX,ENERGYY);
+      lcd.setCursor(ENERGYX,ENERGYY);
       lcd.print(enegyWsTokWh(energyADay)); //Ws -> kWh (show it in kWh)
       lcd.print(F("kWh"));
-    lcd.setCursor(FLOWX,FLOWY);
+      lcd.setCursor(FLOWX,FLOWY);
       lcd.print(lMin);
       lcd.print(F("l/m"));
-    //}
+    }
     displayRelayStatus();
     lcd.setCursor(MINRUNX, MINRUNY);
     if (lastRunMin<100000) PRINT_SPACE
