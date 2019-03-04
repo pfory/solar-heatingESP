@@ -39,8 +39,10 @@ private:
   PubSubClient _mqttClient;
 
   // StaticJsonBuffer<200> _jsonBuffer;
-  DynamicJsonBuffer _jsonBuffer;
+  //DynamicJsonBuffer _jsonBuffer;
   // JsonObject data;
+  //DynamicJsonDocument doc(1024);
+  StaticJsonDocument<1024> doc;
   JsonVariant _jsonVariant;
 };
 
