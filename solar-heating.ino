@@ -761,9 +761,7 @@ bool saveConfig() {
     DEBUG_PRINTLN(SPIFFS.format());
   }
 
-  //DynamicJsonBuffer jsonBuffer;
   StaticJsonDocument<1024> doc;
-  //JsonObject &json = jsonBuffer.createObject();
 
   doc["MQTT_server"]             = mqtt_server;
   doc["MQTT_port"]               = mqtt_port;
@@ -787,7 +785,7 @@ bool saveConfig() {
   doc["sensorOrder[6]"]          = sensorOrder[6];
   doc["sensorOrder[7]"]          = sensorOrder[7];
   
-  
+ 
   File configFile = SPIFFS.open(CFGFILE, "w+");
   if (!configFile) {
     DEBUG_PRINTLN(F("Failed to open config file for writing"));
@@ -795,7 +793,6 @@ bool saveConfig() {
     return false;
   } else {
     if (isDebugEnabled) {
-      //json.printTo(Serial);
       serializeJson(doc, Serial);
     }
     serializeJson(doc, configFile);
@@ -824,7 +821,6 @@ bool readConfig() {
 
         configFile.readBytes(buf.get(), size);
         DynamicJsonDocument doc(1024);
-        //StaticJsonDocument doc<1024>;
         DeserializationError error = deserializeJson(doc, configFile);
         JsonObject obj=doc.as<JsonObject>();
         
@@ -834,7 +830,6 @@ bool readConfig() {
         } else {
           DEBUG_PRINTLN(F("Parsed json"));
           
-          //strcpy(mqtt_server, doc["MQTT_server"]);
           if (obj.containsKey("MQTT_server")) {
             strcpy(mqtt_server, obj["MQTT_server"]);
             DEBUG_PRINT(F("MQTT server: "));
@@ -930,101 +925,7 @@ bool readConfig() {
             DEBUG_PRINT(F("sensorOrder[7]: "));
             DEBUG_PRINTLN(sensorOrder[7]);
           } 
-          
-/*          if (doc.containsKey("MQTT_server")) {
-            strcpy(mqtt_server, doc["MQTT_server"]);
-            DEBUG_PRINT(F("MQTT server: "));
-            DEBUG_PRINTLN(mqtt_server);
-          }
-          if (doc.containsKey("MQTT_port")) {
-            mqtt_port = doc["MQTT_port"];
-            DEBUG_PRINT(F("MQTT port: "));
-            DEBUG_PRINTLN(mqtt_port);
-          }
-          if (doc.containsKey("MQTT_uname")) {
-            strcpy(mqtt_username, doc["MQTT_uname"]);
-            DEBUG_PRINT(F("MQTT username: "));
-            DEBUG_PRINTLN(mqtt_username);
-          }
-          if (doc.containsKey("MQTT_pwd")) {
-            strcpy(mqtt_key, doc["MQTT_pwd"]);
-            DEBUG_PRINT(F("MQTT password: "));
-            DEBUG_PRINTLN(mqtt_key);
-          }
-          if (doc.containsKey("MQTT_base")) {
-            strcpy(mqtt_base, doc["MQTT_base"]);
-            DEBUG_PRINT(F("MQTT base: "));
-            DEBUG_PRINTLN(mqtt_base);
-          }
-          if(json["ip"]) {
-            DEBUG_PRINTLN("setting custom ip from config");
-            strcpy(static_ip, doc["ip"]);
-            strcpy(static_gw, doc["gateway"]);
-            strcpy(static_sn, doc["subnet"]);
-            DEBUG_PRINTLN(static_ip);
-          } else {
-            DEBUG_PRINTLN("no custom ip in config");
-          }
 
-          if (doc.containsKey("tDiffON")) {
-            tDiffON = doc["tDiffON"];
-            DEBUG_PRINT(F("tDiffON: "));
-            DEBUG_PRINTLN(tDiffON);
-          }
-          
-          if (doc.containsKey("tDiffOFF")) {
-            tDiffOFF = doc["tDiffOFF"];
-            DEBUG_PRINT(F("tDiffOFF: "));
-            DEBUG_PRINTLN(tDiffOFF);
-          }
-          
-          if (doc.containsKey("controlSensor")) {
-            controlSensorBojler = doc["controlSensor"];
-            DEBUG_PRINT(F("control sensor: "));
-            controlSensorBojler==1 ? DEBUG_PRINTLN(" bojler") : DEBUG_PRINTLN(" room");
-          }
-          
-          if (doc.containsKey("sensorOrder[0]")) {
-            sensorOrder[0] = doc["sensorOrder[0]"];
-            DEBUG_PRINT(F("sensorOrder[0]: "));
-            DEBUG_PRINTLN(sensorOrder[0]);
-          } 
-          if (doc.containsKey("sensorOrder[1]")) {
-            sensorOrder[1] = doc["sensorOrder[1]"];
-            DEBUG_PRINT(F("sensorOrder[1]: "));
-            DEBUG_PRINTLN(sensorOrder[1]);
-          } 
-          if (doc.containsKey("sensorOrder[2]")) {
-            sensorOrder[2] = doc["sensorOrder[2]"];
-            DEBUG_PRINT(F("sensorOrder[2]: "));
-            DEBUG_PRINTLN(sensorOrder[2]);
-          } 
-          if (doc.containsKey("sensorOrder[3]")) {
-            sensorOrder[3] = doc["sensorOrder[3]"];
-            DEBUG_PRINT(F("sensorOrder[3]: "));
-            DEBUG_PRINTLN(sensorOrder[3]);
-          } 
-          if (doc.containsKey("sensorOrder[4]")) {
-            sensorOrder[4] = doc["sensorOrder[4]"];
-            DEBUG_PRINT(F("sensorOrder[4]: "));
-            DEBUG_PRINTLN(sensorOrder[4]);
-          } 
-          if (doc.containsKey("sensorOrder[5]")) {
-            sensorOrder[5] = doc["sensorOrder[5]"];
-            DEBUG_PRINT(F("sensorOrder[5]: "));
-            DEBUG_PRINTLN(sensorOrder[5]);
-          } 
-          if (doc.containsKey("sensorOrder[6]")) {
-            sensorOrder[6] = json["sensorOrder[6]"];
-            DEBUG_PRINT(F("sensorOrder[6]: "));
-            DEBUG_PRINTLN(sensorOrder[6]);
-          } 
-          if (doc.containsKey("sensorOrder[7]")) {
-            sensorOrder[6] = doc["sensorOrder[7]"];
-            DEBUG_PRINT(F("sensorOrder[7]: "));
-            DEBUG_PRINTLN(sensorOrder[7]);
-          } 
-          */
           DEBUG_PRINTLN(F("Parsed config:"));
           DEBUG_PRINTLN(error.c_str());
           DEBUG_PRINTLN();
