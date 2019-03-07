@@ -3,7 +3,7 @@
 SOLAR - control system for solar unit
 Petr Fory pfory@seznam.cz
 GIT - https://github.com/pfory/solar-heating
-//Wemos D1 R2 & mini
+//Wemos D1 R2 & mini  !!!!!!!!!!!! 1M SPIFSS !!!!!!!!!!!!!!!!!!!!!!!!!!!
 */
 
 /*TODO
@@ -188,6 +188,13 @@ void callback(char* topic, byte* payload, unsigned int length) {
     val += (char)payload[i];
   }
   DEBUG_PRINTLN();
+  lcd.clear();
+  lcd.print(topic);
+  lcd.print(": ");
+  lcd.print(val);
+  delay(2000);
+  lcd.clear();
+  
   if (strcmp(topic, "/home/Corridor/esp07/controlSensorBojler")==0) {
     DEBUG_PRINT("set control sensor to ");
     if (val.toInt()==1) {
@@ -257,7 +264,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
     sensorOrder[9]=val.toInt();
     DEBUG_PRINT(val.toInt());
     saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07/restart")==1) {
+  } else if (strcmp(topic, "/home/Corridor/esp07/restart")==0) {
     DEBUG_PRINT("RESTART");
     saveConfig();
     ESP.restart();
@@ -774,7 +781,7 @@ bool saveConfig() {
   doc["subnet"]                  = WiFi.subnetMask().toString();
 
   doc["tDiffON"]                 = tDiffON;
-  doc["tDiffOFF"]                = tDiffON;
+  doc["tDiffOFF"]                = tDiffOFF;
   doc["controlSensor"]           = controlSensorBojler;
   doc["sensorOrder[0]"]          = sensorOrder[0];
   doc["sensorOrder[1]"]          = sensorOrder[1];
@@ -784,12 +791,16 @@ bool saveConfig() {
   doc["sensorOrder[5]"]          = sensorOrder[5];
   doc["sensorOrder[6]"]          = sensorOrder[6];
   doc["sensorOrder[7]"]          = sensorOrder[7];
-  
+
+  lcd.clear();
  
   File configFile = SPIFFS.open(CFGFILE, "w+");
   if (!configFile) {
     DEBUG_PRINTLN(F("Failed to open config file for writing"));
     SPIFFS.end();
+    lcd.print("Failed to open config file for writing");
+    delay(2000);
+    lcd.clear();
     return false;
   } else {
     if (isDebugEnabled) {
@@ -800,6 +811,9 @@ bool saveConfig() {
     configFile.close();
     SPIFFS.end();
     DEBUG_PRINTLN(F("\nSaved successfully"));
+    lcd.print("Config saved.");
+    delay(2000);
+    lcd.clear();
     return true;
   }
 }
