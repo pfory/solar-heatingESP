@@ -1567,7 +1567,7 @@ unsigned int getPower(float t1, float t2) {
 }
 
 
-//#ifdef flowSensor
+#ifdef flowSensor
 bool calcFlow(void *) {
   // Pulse frequency (Hz) = 7.5Q, Q is flow rate in L/min.
   //numberOfPulsesFlow = 31;
@@ -1579,4 +1579,4 @@ bool calcFlow(void *) {
   numberOfPulsesFlow = 0; // Reset Counter
   return true;
 }
-//#endif
+#endif
