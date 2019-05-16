@@ -80,7 +80,7 @@ float energyDiff                            = 0.f; //difference in Ws
 volatile bool showDoubleDot                 = false;
 bool firstTempMeasDone                      = false;
 unsigned long lastOffOn                     = 0; //zamezuje cyklickemu zapinani a vypinani rele
-unsigned long lastOff                       = 0;  //ms posledniho vypnuti rele
+//unsigned long lastOff                       = 0;  //ms posledniho vypnuti rele
 bool dispClear                              = false;
 
 //maximal temperatures
@@ -284,6 +284,7 @@ void setup() {
   DEBUG_PRINTLN(F(VERSION));
 
   lcd.init();               // initialize the lcd 
+  lcd.noCursor();
   lcd.backlight();
   //lcd.begin();               // initialize the lcd 
   lcd.home();                   
@@ -630,6 +631,7 @@ bool calcPowerAndEnergy(void *) {
   } else {
     power=0;
   }
+  return true;
 }
 
 
@@ -1139,7 +1141,7 @@ bool tempMeas(void *) {
       }
     }
 
-    DEBUG_PRINTLN(tempTemp);
+    // DEBUG_PRINTLN(tempTemp);
     sensor[i] = tempTemp;
   }
 /*
@@ -1169,24 +1171,24 @@ bool tempMeas(void *) {
   if (tBojler>tMaxBojler)   tMaxBojler   = tBojler;
 
   
-  DEBUG_PRINT(F("P1 In:"));
-  DEBUG_PRINTLN(tP1In);
-  DEBUG_PRINT(F("P1 Out:"));
-  DEBUG_PRINTLN(tP1Out);
-  DEBUG_PRINT(F("P2 In:"));
-  DEBUG_PRINTLN(tP2In);
-  DEBUG_PRINT(F("P2 Out:"));
-  DEBUG_PRINTLN(tP2Out);
-  DEBUG_PRINT(F("Room:"));
-  DEBUG_PRINTLN(tRoom);
-  DEBUG_PRINT(F("Bojler:"));
-  DEBUG_PRINTLN(tBojler);
-  DEBUG_PRINT(F("Bojler In:"));
-  DEBUG_PRINTLN(tBojlerIn);
-  DEBUG_PRINT(F("Bojler Out:"));
-  DEBUG_PRINTLN(tBojlerOut);
-  DEBUG_PRINT(F("Control:"));
-  DEBUG_PRINTLN(tControl);
+  // DEBUG_PRINT(F("P1 In:"));
+  // DEBUG_PRINTLN(tP1In);
+  // DEBUG_PRINT(F("P1 Out:"));
+  // DEBUG_PRINTLN(tP1Out);
+  // DEBUG_PRINT(F("P2 In:"));
+  // DEBUG_PRINTLN(tP2In);
+  // DEBUG_PRINT(F("P2 Out:"));
+  // DEBUG_PRINTLN(tP2Out);
+  // DEBUG_PRINT(F("Room:"));
+  // DEBUG_PRINTLN(tRoom);
+  // DEBUG_PRINT(F("Bojler:"));
+  // DEBUG_PRINTLN(tBojler);
+  // DEBUG_PRINT(F("Bojler In:"));
+  // DEBUG_PRINTLN(tBojlerIn);
+  // DEBUG_PRINT(F("Bojler Out:"));
+  // DEBUG_PRINTLN(tBojlerOut);
+  // DEBUG_PRINT(F("Control:"));
+  // DEBUG_PRINTLN(tControl);
 
   
   //obcas se vyskytne chyba a vsechna cidla prestanou merit
@@ -1212,7 +1214,7 @@ void mainControl() {
     relay1=LOW; //relay ON
     DEBUG_PRINTLN(F("SAFETY CONTROL!!!!"));
   } else if (manualON) {
-    DEBUG_PRINTLN(F("MANUAL CONTROL!!!!"));
+    //DEBUG_PRINTLN(F("MANUAL CONTROL!!!!"));
   } else {
     //pump is ON - relay ON = LOW
     if (relay1==LOW) { 
@@ -1228,7 +1230,7 @@ void mainControl() {
         DEBUG_PRINT(F("tControl="));
         DEBUG_PRINTLN(tControl);
         relay1=HIGH; //relay OFF = HIGH
-        lastOff=millis();
+        //lastOff=millis();
       }
     } else { //pump is OFF - relay OFF = HIGH
       if ((tP1Out - tControl) >= tDiffON || (tP2Out - tControl) >= tDiffON) { //switch pump OFF->ON
@@ -1270,11 +1272,11 @@ void lcdShow() {
       displayTemp(TEMP8X,TEMP8Y, tBojler, false);
     }
     lcd.setCursor(POWERX,POWERY);
-    if ((millis()-lastOff)>=DAY_INTERVAL) {
-      lcd.print(F("Bez slunce      "));
-      lcd.print((millis() - lastOff)/1000/3600);
-      lcd.print(F(" h"));
-    } else {
+    // if ((millis()-lastOff)>=DAY_INTERVAL) {
+      // lcd.print(F("Bez slunce      "));
+      // lcd.print((millis() - lastOff)/1000/3600);
+      // lcd.print(F(" h"));
+    // } else {
       //zobrazeni okamziteho vykonu ve W
       //zobrazeni celkoveho vykonu za den v kWh
       //zobrazeni poctu minut behu cerpadla za aktualni den
@@ -1296,7 +1298,7 @@ void lcdShow() {
       lcd.setCursor(FLOWX,FLOWY);
       lcd.print(lMin);
       lcd.print(F("l/m"));
-    }
+    // }
     displayRelayStatus();
     lcd.setCursor(MINRUNX, MINRUNY);
     if (lastRunMin<100000) PRINT_SPACE
@@ -1462,6 +1464,7 @@ void keyBoard() {
       ESP.restart();
     }
     if (key=='*') {
+      lcd.clear();
     }
     if (key=='0') { 
       display=DISPLAY_MAIN;
@@ -1564,7 +1567,7 @@ unsigned int getPower(float t1, float t2) {
 }
 
 
-#ifdef flowSensor
+//#ifdef flowSensor
 bool calcFlow(void *) {
   // Pulse frequency (Hz) = 7.5Q, Q is flow rate in L/min.
   //numberOfPulsesFlow = 31;
@@ -1574,5 +1577,6 @@ bool calcFlow(void *) {
   Serial.print(lMin, DEC); // Print litres/min
   DEBUG_PRINTLN(F(" L/min"));
   numberOfPulsesFlow = 0; // Reset Counter
+  return true;
 }
-#endif
+//#endif
