@@ -2,7 +2,7 @@
 #define CONFIGURATION_H
 
 //SW name & version
-#define     VERSION                       "1.60"
+#define     VERSION                       "1.70"
 #define     SW_NAME                       "Solar"
 
 #define ota
@@ -108,21 +108,22 @@ D8                                           - relay 2
 #define LCDROWS                              4
 #define LCDCOLS                              20
 
-#define PIRPIN                               D0
-
-#define LEDPIN                               D4
-                          
-#define RELAY1PIN                            D3
-
+//All of the IO pins have interrupt/pwm/I2C/one-wire support except D0.
+#define STATUS_LED                           BUILTIN_LED //status LED
+#define PIRPIN                               D0 //                           GPIO16
+#define RELAY1PIN                            D3 //relay 10k Pull-up          GPIO0
 #ifdef flowSensor
-#define FLOWSENSORPIN                        D6
+#define FLOWSENSORPIN                        D6 //flow sensor MISO           GPIO12
 #endif
+#define ONE_WIRE_BUS                         D7 //MOSI                       GPIO13
+#define RELAY2PIN                            D8 //10k Pull-down, SS          GPIO15
+//SDA                                        D2 //                           GPIO4
+//SCL                                        D1 //                           GPIO5
+//BUILTIN_LED                                D4 //10k Pull-up, BUILTIN_LED   GPIO2
+//                                           D5 //SCK                        GPIO14
 
-//one wire bus
-#define ONE_WIRE_BUS                         D7
-
-#define RELAY2PIN                            D8
-
+#define RELAY_ON                            LOW
+#define RELAY_OFF                           HIGH
 
 #ifndef NUMBER_OF_DEVICES
 #define NUMBER_OF_DEVICES                    10
@@ -154,8 +155,6 @@ D8                                           - relay 2
 #define ENERGYY                              1
 #define FLOWX                                1
 #define FLOWY                                2
-// #define STATUSX                              19
-// #define STATUSY                              2
 #define MINRUNX                              14
 #define MINRUNY                              3
 #define TIMEX                                0
@@ -177,6 +176,9 @@ D8                                           - relay 2
 #define DISPLAY_MAX_BOJLER                   6
 #define DISPLAY_MAX_POWER_TODAY              7
 #define DISPLAY_CONTROL_SENSOR               8
+#define RELAY_STATUSX                       17
+#define RELAY_STATUSY                        3
+
 
                           
 #define RELAY1X                              19

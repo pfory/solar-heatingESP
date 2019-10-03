@@ -89,9 +89,8 @@ float tMaxOut                               = 0; //maximal output temperature (j
 float tMaxBojler                            = 0; //maximal boiler temperature (just for statistics)
 
    
-//HIGH - relay OFF, LOW - relay ON   
-bool relay1                                 = HIGH; 
-bool relay2                                 = HIGH;
+byte manualRelay                             = 2;
+byte relayStatus                             = RELAY_OFF;
    
 bool manualON                               = false;
 bool shouldSaveConfig                       = false; //flag for saving data
@@ -169,11 +168,9 @@ bool isDebugEnabled()
 #include <Ticker.h>
 Ticker ticker;
 
-
 #include <timer.h>
 auto timer = timer_create_default(); // create a timer with default settings
 Timer<> default_timer; // save as above
-
 
 //MQTT callback
 void callback(char* topic, byte* payload, unsigned int length) {
@@ -196,6 +193,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   lcd.clear();
   
   if (strcmp(topic, "/home/Corridor/esp07/controlSensorBojler")==0) {
+    printMessageToLCD(topic, val);
     DEBUG_PRINT("set control sensor to ");
     if (val.toInt()==1) {
       DEBUG_PRINTLN(F("Bojler"));
@@ -205,69 +203,91 @@ void callback(char* topic, byte* payload, unsigned int length) {
     controlSensorBojler=val.toInt();
     saveConfig();
   } else if (strcmp(topic, "/home/Corridor/esp07/tDiffOFF")==0) {
+    printMessageToLCD(topic, val);
     DEBUG_PRINT("set tDiffOFF to ");
     tDiffOFF=val.toInt();
     DEBUG_PRINT(tDiffOFF);
     saveConfig();
   } else if (strcmp(topic, "/home/Corridor/esp07/tDiffON")==0) {
+    printMessageToLCD(topic, val);
     DEBUG_PRINT("set tDiffON to ");
     tDiffON=val.toInt();
     DEBUG_PRINT(tDiffON);
     saveConfig();
   } else if (strcmp(topic, "/home/Corridor/esp07/so0")==0) {
+    printMessageToLCD(topic, val);
     DEBUG_PRINT("set sensor order 0 to ");
     sensorOrder[0]=val.toInt();
     DEBUG_PRINT(val.toInt());
     saveConfig();
   } else if (strcmp(topic, "/home/Corridor/esp07/so1")==0) {
+    printMessageToLCD(topic, val);
     DEBUG_PRINT("set sensor order 1 to ");
     sensorOrder[1]=val.toInt();
     DEBUG_PRINT(val.toInt());
     saveConfig();
   } else if (strcmp(topic, "/home/Corridor/esp07/so2")==0) {
+    printMessageToLCD(topic, val);
     DEBUG_PRINT("set sensor order 2 to ");
     sensorOrder[2]=val.toInt();
     DEBUG_PRINT(val.toInt());
     saveConfig();
   } else if (strcmp(topic, "/home/Corridor/esp07/so3")==0) {
+    printMessageToLCD(topic, val);
     DEBUG_PRINT("set sensor order 3 to ");
     sensorOrder[3]=val.toInt();
     DEBUG_PRINT(val.toInt());
     saveConfig();
   } else if (strcmp(topic, "/home/Corridor/esp07/so4")==0) {
+    printMessageToLCD(topic, val);
     DEBUG_PRINT("set sensor order 4 to ");
     sensorOrder[4]=val.toInt();
     DEBUG_PRINT(val.toInt());
     saveConfig();
   } else if (strcmp(topic, "/home/Corridor/esp07/so5")==0) {
+    printMessageToLCD(topic, val);
     DEBUG_PRINT("set sensor order 5 to ");
     sensorOrder[5]=val.toInt();
     DEBUG_PRINT(val.toInt());
     saveConfig();
   } else if (strcmp(topic, "/home/Corridor/esp07/so6")==0) {
+    printMessageToLCD(topic, val);
     DEBUG_PRINT("set sensor order 6 to ");
     sensorOrder[6]=val.toInt();
     DEBUG_PRINT(val.toInt());
     saveConfig();
   } else if (strcmp(topic, "/home/Corridor/esp07/so7")==0) {
+    printMessageToLCD(topic, val);
     DEBUG_PRINT("set sensor order 7 to ");
     sensorOrder[7]=val.toInt();
     DEBUG_PRINT(val.toInt());
     saveConfig();
   } else if (strcmp(topic, "/home/Corridor/esp07/so8")==0) {
+    printMessageToLCD(topic, val);
     DEBUG_PRINT("set sensor order 8 to ");
     sensorOrder[8]=val.toInt();
     DEBUG_PRINT(val.toInt());
     saveConfig();
   } else if (strcmp(topic, "/home/Corridor/esp07/so9")==0) {
+    printMessageToLCD(topic, val);
     DEBUG_PRINT("set sensor order 9 to ");
     sensorOrder[9]=val.toInt();
     DEBUG_PRINT(val.toInt());
     saveConfig();
   } else if (strcmp(topic, "/home/Corridor/esp07/restart")==0) {
+    printMessageToLCD(topic, val);
     DEBUG_PRINT("RESTART");
     saveConfig();
     ESP.restart();
+  } else if (strcmp(topic, "/home/Corridor/esp07/manualRelay")==0) {
+    printMessageToLCD(topic, val);
+    DEBUG_PRINT("set manual control relay to ");
+    manualRelay = val.toInt();
+    if (val.toInt()==1) {
+      DEBUG_PRINTLN(F("ON"));
+    } else {
+      DEBUG_PRINTLN(F("OFF"));
+    }
   }
 }
 
@@ -293,7 +313,7 @@ void setup() {
   lcd.print(VERSION);
   
   pinMode(BUILTIN_LED, OUTPUT);
-  pinMode(LEDPIN, OUTPUT);
+  pinMode(STATUS_LED, OUTPUT);
   pinMode(PIRPIN, INPUT);
 #ifdef flowSensor
   //pinMode(FLOWSENSORPIN, INPUT);
@@ -308,8 +328,8 @@ void setup() {
   pinMode(RELAY1PIN, OUTPUT);
   pinMode(RELAY2PIN, OUTPUT);
 
-  digitalWrite(RELAY1PIN, relay1);
-  digitalWrite(RELAY2PIN, relay2);
+  digitalWrite(RELAY1PIN, relayStatus);
+  //digitalWrite(RELAY2PIN, relay2);
 
   ticker.attach(1, tick);
   bool _dblreset = drd.detectDoubleReset();
@@ -548,13 +568,13 @@ void setup() {
   ticker.detach();
   //keep LED on
   digitalWrite(BUILTIN_LED, HIGH);
-  digitalWrite(LEDPIN, HIGH);
+  digitalWrite(STATUS_LED, HIGH);
 } //setup
 
 
 //----------------------------------------------------- L O O P -----------------------------------------------------------
 void loop() {
-  firstTempMeasDone ? mainControl() : void();
+  firstTempMeasDone ? relay() : void();
   
   if (digitalRead(PIRPIN)==1) {
     lcd.backlight();
@@ -604,11 +624,33 @@ void loop() {
 
 
 //----------------------------------------------------- F U N C T I O N S -----------------------------------------------------------
+void printMessageToLCD(char* t, String v) {
+  lcd.clear();
+  lcd.print(t);
+  lcd.print(": ");
+  lcd.print(v);
+  delay(2000);
+  lcd.clear();
+}
+
+void changeRelay(byte status) {
+  digitalWrite(RELAY1PIN, status);
+}
+
+void sendRelayHA(byte akce) {
+  digitalWrite(BUILTIN_LED, LOW);
+  SenderClass sender;
+  sender.add("relayChange", akce);
+ 
+  sender.sendMQTT(mqtt_server, mqtt_port, mqtt_username, mqtt_key, mqtt_base);
+  digitalWrite(BUILTIN_LED, HIGH);
+}
+
 bool calcPowerAndEnergy(void *) {
   float t1;
   float t2;
   
-  if (relay1==LOW) {  //pump is ON
+  if (relayStatus==RELAY_ON) {  //pump is ON
     if (controlSensorBojler==1) {
       t1 = tBojlerIn;
       t2 = tBojlerOut;
@@ -660,6 +702,7 @@ void reconnect() {
       client.subscribe((String(mqtt_base) + "/" + "so8").c_str());
       client.subscribe((String(mqtt_base) + "/" + "so9").c_str());
       client.subscribe((String(mqtt_base) + "/" + "restart").c_str());
+      client.subscribe((String(mqtt_base) + "/" + "manualRelay").c_str());
     } else {
       DEBUG_PRINT("failed, rc=");
       DEBUG_PRINT(client.state());
@@ -729,7 +772,6 @@ void tick()
   //toggle state
   int state = digitalRead(BUILTIN_LED);  // get the current state of GPIO1 pin
   digitalWrite(BUILTIN_LED, !state);     // set pin to the opposite state
-  digitalWrite(LEDPIN, !state);          // set pin to the opposite state
 }
   
 //callback notifying us of the need to save config
@@ -969,7 +1011,7 @@ bool sendDataHA(void *) {
   sender.add("tP2IN", tP2In);
   sender.add("tP2OUT", tP2Out);
   sender.add("prutok", lMin);
-  sender.add("sPumpSolar/status", relay1==LOW ? 1 : 0);
+  sender.add("sPumpSolar/status", relayStatus==RELAY_ON ? 1 : 0);
   sender.add("tRoom", tRoom);
   sender.add("tBojler", tBojler);
   sender.add("tBojlerIN", tBojlerIn);
@@ -1206,41 +1248,57 @@ bool tempMeas(void *) {
   return true;
 }
 
+void dispRelayStatus() {
+  lcd.setCursor(RELAY_STATUSX,RELAY_STATUSY);
+  if (relayStatus==1) {
+    lcd.print(" ON");
+  } else if (relayStatus==0) {
+    lcd.print("OFF");
+  } else if (manualRelay==1) {
+    lcd.print("MON");
+  } else if (manualRelay==0) {
+    lcd.print("MOF");
+  }
+}
 
 //---------------------------------------------M A I N  C O N T R O L ------------------------------------------------
-void mainControl() {
-  //safety function
+void relay() {
   if ((tP1In >= SAFETY_ON) || (tP1Out >= SAFETY_ON) || (tP2In >= SAFETY_ON) || (tP2Out >= SAFETY_ON)) {
-    relay1=LOW; //relay ON
+    relayStatus=RELAY_ON; 
     DEBUG_PRINTLN(F("SAFETY CONTROL!!!!"));
-  } else if (manualON) {
-    //DEBUG_PRINTLN(F("MANUAL CONTROL!!!!"));
-  } else {
-    //pump is ON - relay ON = LOW
-    if (relay1==LOW) { 
-      if ((((tP2Out - tControl) < tDiffOFF)) && (millis() - DELAY_AFTER_ON >= lastOffOn)) { //switch pump ON->OFF
-        DEBUG_PRINT(F("millis()="));
-        DEBUG_PRINT(millis());
-        DEBUG_PRINT(F(" delayAfterON="));
-        DEBUG_PRINT(DELAY_AFTER_ON);
-        DEBUG_PRINT(F(" lastOffOn="));
-        DEBUG_PRINT(lastOffOn);
-        DEBUG_PRINT(F(" tP2Out="));
-        DEBUG_PRINT(tP2Out);
-        DEBUG_PRINT(F("tControl="));
-        DEBUG_PRINTLN(tControl);
-        relay1=HIGH; //relay OFF = HIGH
-        //lastOff=millis();
-      }
-    } else { //pump is OFF - relay OFF = HIGH
-      if ((tP1Out - tControl) >= tDiffON || (tP2Out - tControl) >= tDiffON) { //switch pump OFF->ON
-        relay1=LOW; //relay ON = LOW
-        lastOffOn = millis();
-      }
+  } else if (manualRelay==2) {
+    //-----------------------------------zmena 0-1--------------------------------------------
+    if (relayStatus == RELAY_OFF && ((tP1Out - tControl) >= tDiffON || (tP2Out - tControl) >= tDiffON)) {
+      lastOffOn = millis();
+      relayStatus = RELAY_ON;
+      changeRelay(relayStatus);
+      sendRelayHA(1);
+    //-----------------------------------zmena 1-0--------------------------------------------
+    } else if (relayStatus == RELAY_ON && ((((tP2Out - tControl) < tDiffOFF)) && (millis() - DELAY_AFTER_ON >= lastOffOn))) { 
+      DEBUG_PRINT(F("millis()="));
+      DEBUG_PRINT(millis());
+      DEBUG_PRINT(F(" delayAfterON="));
+      DEBUG_PRINT(DELAY_AFTER_ON);
+      DEBUG_PRINT(F(" lastOffOn="));
+      DEBUG_PRINT(lastOffOn);
+      DEBUG_PRINT(F(" tP2Out="));
+      DEBUG_PRINT(tP2Out);
+      DEBUG_PRINT(F("tControl="));
+      DEBUG_PRINTLN(tControl);
+      relayStatus = RELAY_OFF;
+      changeRelay(relayStatus);
+      sendRelayHA(0);
     }
+  } else if (manualRelay==1) {
+      relayStatus = RELAY_ON;
+      changeRelay(relayStatus);
+  } else if (manualRelay==0) {
+      relayStatus = RELAY_OFF;
+      changeRelay(relayStatus);
   }
-  digitalWrite(RELAY1PIN, relay1);
+  dispRelayStatus();
 }
+
 
 //---------------------------------------------D I S P L A Y ------------------------------------------------
 void lcdShow() {
@@ -1472,9 +1530,9 @@ void keyBoard() {
     if (key=='D') {
       manualON = !manualON;
       if (manualON) {
-        relay1=LOW;
+        manualRelay=1;
       } else {
-        relay1=HIGH;
+        manualRelay=0;
       }
     }
     key = ' ';
@@ -1518,7 +1576,7 @@ void displayRelayStatus(void) {
   if (manualON) {
     lcd.print(F("M"));
   } else {
-    if (relay1==LOW)
+    if (relayStatus==RELAY_ON)
       lcd.print(F("T"));
     else
       lcd.print(F("N"));
