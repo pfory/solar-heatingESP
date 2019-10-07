@@ -95,6 +95,7 @@ byte relayStatus                             = RELAY_OFF;
 bool manualON                               = false;
 bool shouldSaveConfig                       = false; //flag for saving data
 
+bool                  todayClear            = false;
 
 ADC_MODE(ADC_VCC); //vcc read
 
@@ -346,16 +347,19 @@ void setup() {
   DEBUG_PRINT("Boot-Mode: ");
   DEBUG_PRINTLN(_reset_reason);
   heartBeat = _reset_reason;
+  
+ /*
+ REASON_DEFAULT_RST             = 0      normal startup by power on 
+ REASON_WDT_RST                 = 1      hardware watch dog reset 
+ REASON_EXCEPTION_RST           = 2      exception reset, GPIO status won't change 
+ REASON_SOFT_WDT_RST            = 3      software watch dog reset, GPIO status won't change 
+ REASON_SOFT_RESTART            = 4      software restart ,system_restart , GPIO status won't change 
+ REASON_DEEP_SLEEP_AWAKE        = 5      wake up from deep-sleep 
+ REASON_EXT_SYS_RST             = 6      external system reset 
+  */
 
   client.setServer(mqtt_server, mqtt_port);
   client.setCallback(callback);
-  
-  // drd.stop();
-
-  // if (_dblreset) {
-    // WiFi.disconnect(); //  this alone is not enough to stop the autoconnecter
-    // WiFi.mode(WIFI_AP);
-  // }
   
   //WiFiManager
   //Local intialization. Once its business is done, there is no need to keep it around
@@ -562,6 +566,9 @@ void setup() {
   timer.every(SENDSTAT_DELAY, sendStatisticHA);
   timer.every(SENDSTAT_DELAY, countMinRun);
   timer.every(CALC_DELAY/2, displayTime);
+  
+  void * a;
+  sendStatisticHA(a);
 
   DEBUG_PRINTLN(" Ready");
  
@@ -612,12 +619,16 @@ void loop() {
     dispClear = false;
   }
   
-  if (hour()==0 && minute()==0) { //first ON in actual day
+  //nulovani statistik o pulnoci
+  if (hour()==0 && !todayClear) {
+    todayClear =true;
     energyADay=0;
     secOnDay=0;
     tMaxOut=T_MIN;
     tMaxIn=T_MIN;
     tMaxBojler=T_MIN;
+  } else if (hour()>0) {
+    todayClear = false;
   }
 
 } //loop
