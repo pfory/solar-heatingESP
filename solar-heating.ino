@@ -1089,28 +1089,17 @@ void printSystemTime(){
 
 bool displayTime(void *) {
   lcd.setCursor(TIMEX, TIMEY); //col,row
-  lcd2digits(hour());
+  char buffer[6];
   if (showDoubleDot) {
-    showDoubleDot = false;
-    lcd.write(':');
+    sprintf(buffer, "%02d:%02d", hour(), minute());
   } else {
-    showDoubleDot = true;
-    lcd.write(' ');
+    sprintf(buffer, "%02d %02d", hour(), minute());
   }
-  lcd2digits(minute());
-/*  lcd.write(':');
-  lcd2digits(second());*/
-  //zobrazeni hlasky o zmene uhlu kolektoru
+  lcd.print(buffer);
+  showDoubleDot = !showDoubleDot;
+  return true;
 }
 #endif
-
-//display time on LCD
-void lcd2digits(int number) {
-  if (number >= 0 && number < 10) {
-    lcd.write('0');
-  }
-  lcd.print(number);
-}
 
 void print2digits(int number) {
   if (number >= 0 && number < 10) {
@@ -1118,8 +1107,6 @@ void print2digits(int number) {
   }
   DEBUG_PRINT(number);
 }
-
-
 
 bool tempMeas(void *) {
   dsSensors.requestTemperatures(); 
