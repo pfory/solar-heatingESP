@@ -2,7 +2,7 @@
 #define CONFIGURATION_H
 
 //SW name & version
-#define     VERSION                       "1.70"
+#define     VERSION                       "1.71"
 #define     SW_NAME                       "Solar"
 
 #define ota
@@ -155,16 +155,16 @@ D8                                           - relay 2
 #define ENERGYY                              1
 #define FLOWX                                1
 #define FLOWY                                2
-#define MINRUNX                              9
-#define MINRUNY                              3
+#define MINRUNX                             16
+#define MINRUNY                              1
 #define TIMEX                                0
 #define TIMEY                                3
 #define POZ0X                                0
 #define POZ0Y                                0
 #define POZ1Y                                1
 #define CONTROLSENSORX                       19
-#define CONTROLSENSORY                       1
-#define SUNANGLEX                            7
+#define CONTROLSENSORY                       0
+#define SUNANGLEX                            6
 #define SUNANGLEY                            3
 
 #define DISPLAY_MAIN                         0

@@ -4,6 +4,7 @@ SOLAR - control system for solar unit
 Petr Fory pfory@seznam.cz
 GIT - https://github.com/pfory/solar-heating
 //Wemos D1 R2 & mini  !!!!!!!!!!!! 1M SPIFSS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+POZOR na verzi desky esp8266 2.42+, nefunguje interrupt, až do vyřešení nepřecházet na vyšší verzi
 */
 
 /*TODO
@@ -93,9 +94,9 @@ byte manualRelay                             = 2;
 byte relayStatus                             = RELAY_OFF;
    
 bool manualON                               = false;
-bool shouldSaveConfig                       = false; //flag for saving data
+//bool shouldSaveConfig                       = false; //flag for saving data
 
-bool                  todayClear            = false;
+bool todayClear                             = false;
 
 ADC_MODE(ADC_VCC); //vcc read
 
@@ -894,10 +895,10 @@ bool readConfig() {
 
         DynamicJsonDocument doc(1024);
         deserializeJson(doc, json);
-        storage.tDiffON        = doc["tDiffON"];
+        tDiffON        = doc["tDiffON"];
         DEBUG_PRINT(F("tDiffON: "));
         DEBUG_PRINTLN(tDiffON);
-        storage.tDiffOFF       = doc["tDiffOFF"];
+        tDiffOFF       = doc["tDiffOFF"];
         DEBUG_PRINT(F("tDiffOFF: "));
         DEBUG_PRINTLN(tDiffOFF);
         controlSensorBojler = doc["controlSensor"];
@@ -1127,7 +1128,7 @@ bool tempMeas(void *) {
     // DEBUG_PRINTLN(tempTemp);
     sensor[i] = tempTemp;
   }
-/*
+
   tP1In       = sensor[sensorOrder[0]]; //so0
   tP1Out      = sensor[sensorOrder[1]]; //so1
   tP2In       = sensor[sensorOrder[2]]; //so2
@@ -1136,7 +1137,7 @@ bool tempMeas(void *) {
   tBojlerOut  = sensor[sensorOrder[5]]; //so5
   tRoom       = sensor[sensorOrder[6]]; //so6
   tBojler     = sensor[sensorOrder[7]]; //so7
-*/
+/*
   tP1In       = sensor[7]; //so0
   tP1Out      = sensor[4]; //so1
   tP2In       = sensor[2]; //so2
@@ -1145,7 +1146,7 @@ bool tempMeas(void *) {
   tBojlerOut  = sensor[3]; //so5
   tRoom       = sensor[6]; //so6
   tBojler     = sensor[0]; //so7
-
+*/
   
   controlSensorBojler==1 ? tControl = tBojler : tControl = tRoom;
   
@@ -1191,9 +1192,9 @@ bool tempMeas(void *) {
 
 void dispRelayStatus() {
   lcd.setCursor(RELAY_STATUSX,RELAY_STATUSY);
-  if (relayStatus==1) {
+  if (relayStatus==RELAY_ON) {
     lcd.print(" ON");
-  } else if (relayStatus==0) {
+  } else if (relayStatus==RELAY_OFF) {
     lcd.print("OFF");
   } else if (manualRelay==1) {
     lcd.print("MON");
