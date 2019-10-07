@@ -333,7 +333,7 @@ void setup() {
   //digitalWrite(RELAY2PIN, relay2);
 
   ticker.attach(1, tick);
-  bool _dblreset = drd.detectDoubleReset();
+  //bool _dblreset = drd.detectDoubleReset();
     
   WiFi.printDiag(Serial);
     
@@ -384,34 +384,34 @@ void setup() {
   
     //DEBUG_PRINTLN("Double reset detected. Config mode.");
 
-  WiFiManagerParameter custom_mqtt_server("mqtt_server", "MQTT server", mqtt_server, 40);
-  WiFiManagerParameter custom_mqtt_port("mqtt_port", "MQTT server port", String(mqtt_port).c_str(), 5);
-  WiFiManagerParameter custom_mqtt_uname("mqtt_uname", "MQTT username", mqtt_username, 40);
-  WiFiManagerParameter custom_mqtt_key("mqtt_key", "MQTT password", mqtt_key, 20);
-  WiFiManagerParameter custom_mqtt_base("mqtt_base", "MQTT topic end without /", mqtt_base, 60);
-  WiFiManagerParameter custom_tDiffON("tDiffON", "temperature difference ON", String(tDiffON).c_str(), 2);
-  WiFiManagerParameter custom_tDiffOFF("tDiffOFF", "temperature difference OFF", String(tDiffOFF).c_str(), 2);
-  WiFiManagerParameter custom_controlSensor("controlSensor", "1 = Bojler 0 = Room", String(controlSensorBojler).c_str(), 1);
+  // WiFiManagerParameter custom_mqtt_server("mqtt_server", "MQTT server", mqtt_server, 40);
+  // WiFiManagerParameter custom_mqtt_port("mqtt_port", "MQTT server port", String(mqtt_port).c_str(), 5);
+  // WiFiManagerParameter custom_mqtt_uname("mqtt_uname", "MQTT username", mqtt_username, 40);
+  // WiFiManagerParameter custom_mqtt_key("mqtt_key", "MQTT password", mqtt_key, 20);
+  // WiFiManagerParameter custom_mqtt_base("mqtt_base", "MQTT topic end without /", mqtt_base, 60);
+  // WiFiManagerParameter custom_tDiffON("tDiffON", "temperature difference ON", String(tDiffON).c_str(), 2);
+  // WiFiManagerParameter custom_tDiffOFF("tDiffOFF", "temperature difference OFF", String(tDiffOFF).c_str(), 2);
+  // WiFiManagerParameter custom_controlSensor("controlSensor", "1 = Bojler 0 = Room", String(controlSensorBojler).c_str(), 1);
 
-  wifiManager.addParameter(&custom_mqtt_server);
-  wifiManager.addParameter(&custom_mqtt_port);
-  wifiManager.addParameter(&custom_mqtt_uname);
-  wifiManager.addParameter(&custom_mqtt_key);
-  wifiManager.addParameter(&custom_mqtt_base);
-  wifiManager.addParameter(&custom_tDiffON);
-  wifiManager.addParameter(&custom_tDiffOFF);
-  wifiManager.addParameter(&custom_controlSensor);
+  // wifiManager.addParameter(&custom_mqtt_server);
+  // wifiManager.addParameter(&custom_mqtt_port);
+  // wifiManager.addParameter(&custom_mqtt_uname);
+  // wifiManager.addParameter(&custom_mqtt_key);
+  // wifiManager.addParameter(&custom_mqtt_base);
+  // wifiManager.addParameter(&custom_tDiffON);
+  // wifiManager.addParameter(&custom_tDiffOFF);
+  // wifiManager.addParameter(&custom_controlSensor);
 
   //sets timeout until configuration portal gets turned off
   //useful to make it all retry or go to sleep
   //in seconds
   
-  wifiManager.setTimeout(30);
-  wifiManager.setConnectTimeout(30); 
+  // wifiManager.setTimeout(30);
+  // wifiManager.setConnectTimeout(30); 
   //wifiManager.setBreakAfterConfig(true);
   
   //set config save notify callback
-  wifiManager.setSaveConfigCallback(saveConfigCallback);
+  //wifiManager.setSaveConfigCallback(saveConfigCallback);
   
   //fetches ssid and pass and tries to connect
   //if it does not connect it starts an access point with the specified name
@@ -425,24 +425,24 @@ void setup() {
     delay(5000);
   } 
   
-  validateInput(custom_mqtt_server.getValue(), mqtt_server);
-  mqtt_port = String(custom_mqtt_port.getValue()).toInt();
-  validateInput(custom_mqtt_uname.getValue(), mqtt_username);
-  validateInput(custom_mqtt_key.getValue(), mqtt_key);
-  validateInput(custom_mqtt_base.getValue(), mqtt_base);
-  tDiffON = String(custom_tDiffON.getValue()).toInt();
-  tDiffOFF = String(custom_tDiffOFF.getValue()).toInt();
-  controlSensorBojler = String(custom_controlSensor.getValue()).toInt();
+  // validateInput(custom_mqtt_server.getValue(), mqtt_server);
+  // mqtt_port = String(custom_mqtt_port.getValue()).toInt();
+  // validateInput(custom_mqtt_uname.getValue(), mqtt_username);
+  // validateInput(custom_mqtt_key.getValue(), mqtt_key);
+  // validateInput(custom_mqtt_base.getValue(), mqtt_base);
+  // tDiffON = String(custom_tDiffON.getValue()).toInt();
+  // tDiffOFF = String(custom_tDiffOFF.getValue()).toInt();
+  // controlSensorBojler = String(custom_controlSensor.getValue()).toInt();
   
-  if (shouldSaveConfig) {
-    saveConfig();
-  }
+  // if (shouldSaveConfig) {
+    // saveConfig();
+  // }
   
-  //if you get here you have connected to the WiFi
-  DEBUG_PRINTLN("CONNECTED");
-  DEBUG_PRINT("Local ip : ");
-  DEBUG_PRINTLN(WiFi.localIP());
-  DEBUG_PRINTLN(WiFi.subnetMask());
+  // //if you get here you have connected to the WiFi
+  // DEBUG_PRINTLN("CONNECTED");
+  // DEBUG_PRINT("Local ip : ");
+  // DEBUG_PRINTLN(WiFi.localIP());
+  // DEBUG_PRINTLN(WiFi.subnetMask());
 
 #ifdef serverHTTP
   server.on ( "/", handleRoot );
@@ -786,10 +786,10 @@ void tick()
 }
   
 //callback notifying us of the need to save config
-void saveConfigCallback () {
-  DEBUG_PRINTLN("Should save config");
-  shouldSaveConfig = true;
-}
+// void saveConfigCallback () {
+  // DEBUG_PRINTLN("Should save config");
+  // shouldSaveConfig = true;
+// }
 
 //gets called when WiFiManager enters configuration mode
 void configModeCallback (WiFiManager *myWiFiManager) {
@@ -802,13 +802,13 @@ void configModeCallback (WiFiManager *myWiFiManager) {
 }
 
 
-void validateInput(const char *input, char *output)
-{
-  String tmp = input;
-  tmp.trim();
-  tmp.replace(' ', '_');
-  tmp.toCharArray(output, tmp.length() + 1);
-}
+// void validateInput(const char *input, char *output)
+// {
+  // String tmp = input;
+  // tmp.trim();
+  // tmp.replace(' ', '_');
+  // tmp.toCharArray(output, tmp.length() + 1);
+// }
 
 bool saveConfig() {
   DEBUG_PRINTLN(F("Saving config..."));
@@ -825,15 +825,15 @@ bool saveConfig() {
 
   StaticJsonDocument<1024> doc;
 
-  doc["MQTT_server"]             = mqtt_server;
-  doc["MQTT_port"]               = mqtt_port;
-  doc["MQTT_uname"]              = mqtt_username;
-  doc["MQTT_pwd"]                = mqtt_key;
-  doc["MQTT_base"]               = mqtt_base;
+  // doc["MQTT_server"]             = mqtt_server;
+  // doc["MQTT_port"]               = mqtt_port;
+  // doc["MQTT_uname"]              = mqtt_username;
+  // doc["MQTT_pwd"]                = mqtt_key;
+  // doc["MQTT_base"]               = mqtt_base;
   
-  doc["ip"]                      = WiFi.localIP().toString();
-  doc["gateway"]                 = WiFi.gatewayIP().toString();
-  doc["subnet"]                  = WiFi.subnetMask().toString();
+  // doc["ip"]                      = WiFi.localIP().toString();
+  // doc["gateway"]                 = WiFi.gatewayIP().toString();
+  // doc["subnet"]                  = WiFi.subnetMask().toString();
 
   doc["tDiffON"]                 = tDiffON;
   doc["tDiffOFF"]                = tDiffOFF;
@@ -884,122 +884,52 @@ bool readConfig() {
       File configFile = SPIFFS.open(CFGFILE, "r");
       if (configFile) {
         DEBUG_PRINTLN(F("Opened config file"));
-        size_t size = configFile.size();
-        // Allocate a buffer to store contents of the file.
-        std::unique_ptr<char[]> buf(new char[size]);
 
-        configFile.readBytes(buf.get(), size);
-        DynamicJsonDocument doc(1024);
-        DeserializationError error = deserializeJson(doc, configFile);
-        JsonObject obj=doc.as<JsonObject>();
-        
-        if (error) {
-          DEBUG_PRINTLN(F("Failed to read file, using default configuration"));
-          return false;
-        } else {
-          DEBUG_PRINTLN(F("Parsed json"));
-          
-          if (obj.containsKey("MQTT_server")) {
-            strcpy(mqtt_server, obj["MQTT_server"]);
-            DEBUG_PRINT(F("MQTT server: "));
-            DEBUG_PRINTLN(mqtt_server);
-          }
-          
-          if (obj.containsKey("MQTT_port")) {
-            mqtt_port = doc["MQTT_port"] | 1883;
-            DEBUG_PRINT(F("MQTT port: "));
-            DEBUG_PRINTLN(mqtt_port);
-          }
-
-          if (obj.containsKey("MQTT_uname")) {
-            strcpy(mqtt_username, doc["MQTT_uname"]);
-            DEBUG_PRINT(F("MQTT username: "));
-            DEBUG_PRINTLN(mqtt_username);
-          }
-          if (obj.containsKey("MQTT_pwd")) {
-            strcpy(mqtt_key, doc["MQTT_pwd"]);
-            DEBUG_PRINT(F("MQTT password: "));
-            DEBUG_PRINTLN(mqtt_key);
-          }
-          if (obj.containsKey("MQTT_base")) {
-            strcpy(mqtt_base, doc["MQTT_base"]);
-            DEBUG_PRINT(F("MQTT base: "));
-            DEBUG_PRINTLN(mqtt_base);
-          }
-          if (obj.containsKey("ip")) {
-            DEBUG_PRINTLN("setting custom ip from config");
-            strcpy(static_ip, doc["ip"]);
-            strcpy(static_gw, doc["gateway"]);
-            strcpy(static_sn, doc["subnet"]);
-            DEBUG_PRINTLN(static_ip);
-          } else {
-            DEBUG_PRINTLN("no custom ip in config");
-          }
-
-          if (obj.containsKey("tDiffON")) {
-            tDiffON = doc["tDiffON"];
-            DEBUG_PRINT(F("tDiffON: "));
-            DEBUG_PRINTLN(tDiffON);
-          }
-          
-          if (obj.containsKey("tDiffOFF")) {
-            tDiffOFF = doc["tDiffOFF"];
-            DEBUG_PRINT(F("tDiffOFF: "));
-            DEBUG_PRINTLN(tDiffOFF);
-          }
-          
-          if (obj.containsKey("controlSensor")) {
-            controlSensorBojler = doc["controlSensor"];
-            DEBUG_PRINT(F("control sensor: "));
-            controlSensorBojler==1 ? DEBUG_PRINTLN(" bojler") : DEBUG_PRINTLN(" room");
-          }
-          
-          if (obj.containsKey("sensorOrder[0]")) {
-            sensorOrder[0] = doc["sensorOrder[0]"];
-            DEBUG_PRINT(F("sensorOrder[0]: "));
-            DEBUG_PRINTLN(sensorOrder[0]);
-          } 
-          if (obj.containsKey("sensorOrder[1]")) {
-            sensorOrder[1] = doc["sensorOrder[1]"];
-            DEBUG_PRINT(F("sensorOrder[1]: "));
-            DEBUG_PRINTLN(sensorOrder[1]);
-          } 
-          if (obj.containsKey("sensorOrder[2]")) {
-            sensorOrder[2] = doc["sensorOrder[2]"];
-            DEBUG_PRINT(F("sensorOrder[2]: "));
-            DEBUG_PRINTLN(sensorOrder[2]);
-          } 
-          if (obj.containsKey("sensorOrder[3]")) {
-            sensorOrder[3] = doc["sensorOrder[3]"];
-            DEBUG_PRINT(F("sensorOrder[3]: "));
-            DEBUG_PRINTLN(sensorOrder[3]);
-          } 
-          if (obj.containsKey("sensorOrder[4]")) {
-            sensorOrder[4] = doc["sensorOrder[4]"];
-            DEBUG_PRINT(F("sensorOrder[4]: "));
-            DEBUG_PRINTLN(sensorOrder[4]);
-          } 
-          if (obj.containsKey("sensorOrder[5]")) {
-            sensorOrder[5] = doc["sensorOrder[5]"];
-            DEBUG_PRINT(F("sensorOrder[5]: "));
-            DEBUG_PRINTLN(sensorOrder[5]);
-          } 
-          if (obj.containsKey("sensorOrder[6]")) {
-            sensorOrder[6] = doc["sensorOrder[6]"];
-            DEBUG_PRINT(F("sensorOrder[6]: "));
-            DEBUG_PRINTLN(sensorOrder[6]);
-          } 
-          if (obj.containsKey("sensorOrder[7]")) {
-            sensorOrder[6] = doc["sensorOrder[7]"];
-            DEBUG_PRINT(F("sensorOrder[7]: "));
-            DEBUG_PRINTLN(sensorOrder[7]);
-          } 
-
-          DEBUG_PRINTLN(F("Parsed config:"));
-          DEBUG_PRINTLN(error.c_str());
-          DEBUG_PRINTLN();
-          return true;
+        char json[500];
+        while (configFile.available()) {
+         int l = configFile.readBytesUntil('\n', json, sizeof(json));
+         json[l] = 0;
+         DEBUG_PRINTLN(json);
         }
+
+        DynamicJsonDocument doc(1024);
+        deserializeJson(doc, json);
+        storage.tDiffON        = doc["tDiffON"];
+        DEBUG_PRINT(F("tDiffON: "));
+        DEBUG_PRINTLN(tDiffON);
+        storage.tDiffOFF       = doc["tDiffOFF"];
+        DEBUG_PRINT(F("tDiffOFF: "));
+        DEBUG_PRINTLN(tDiffOFF);
+        controlSensorBojler = doc["controlSensor"];
+        DEBUG_PRINT(F("control sensor: "));
+        controlSensorBojler==1 ? DEBUG_PRINTLN(" bojler") : DEBUG_PRINTLN(" room");
+        
+        sensorOrder[0] = doc["sensorOrder[0]"];
+        DEBUG_PRINT(F("sensorOrder[0]: "));
+        DEBUG_PRINTLN(sensorOrder[0]);
+        sensorOrder[1] = doc["sensorOrder[1]"];
+        DEBUG_PRINT(F("sensorOrder[1]: "));
+        DEBUG_PRINTLN(sensorOrder[1]);
+        sensorOrder[2] = doc["sensorOrder[2]"];
+        DEBUG_PRINT(F("sensorOrder[2]: "));
+        DEBUG_PRINTLN(sensorOrder[2]);
+        sensorOrder[3] = doc["sensorOrder[3]"];
+        DEBUG_PRINT(F("sensorOrder[3]: "));
+        DEBUG_PRINTLN(sensorOrder[3]);
+        sensorOrder[4] = doc["sensorOrder[4]"];
+        DEBUG_PRINT(F("sensorOrder[4]: "));
+        DEBUG_PRINTLN(sensorOrder[4]);
+        sensorOrder[5] = doc["sensorOrder[5]"];
+        DEBUG_PRINT(F("sensorOrder[5]: "));
+        DEBUG_PRINTLN(sensorOrder[5]);
+        sensorOrder[6] = doc["sensorOrder[6]"];
+        DEBUG_PRINT(F("sensorOrder[6]: "));
+        DEBUG_PRINTLN(sensorOrder[6]);
+        sensorOrder[6] = doc["sensorOrder[7]"];
+        DEBUG_PRINT(F("sensorOrder[7]: "));
+        DEBUG_PRINTLN(sensorOrder[7]);
+        
+        return true;
       }
       DEBUG_PRINTLN(F("ERROR: unable to open config file"));
     } else {
