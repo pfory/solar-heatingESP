@@ -1368,7 +1368,7 @@ void lcdShow() {
       lcd.print(lMin);
       lcd.print(F("l/m"));
     // }
-    displayRelayStatus();
+    dispRelayStatus();
     lcd.setCursor(MINRUNX, MINRUNY);
     if (lastRunMin<100000) PRINT_SPACE
     if (lastRunMin<10000) PRINT_SPACE
@@ -1582,27 +1582,27 @@ void dsInit(void) {
 // }
 
 //show relay's status in column 15
-void displayRelayStatus(void) {
-  lcd.setCursor(RELAY1X,RELAY1Y);
-  if (manualON) {
-    lcd.print(F("M"));
-  } else {
-    if (relayStatus==RELAY_ON)
-      lcd.print(F("T"));
-    else
-      lcd.print(F("N"));
-  }
-  if (manualON) {
-    //DEBUG_PRINTLN(F("Manual"));
-  } else {
-  }
-/*  lcd.setCursor(RELAY2X,RELAY2Y);
-  if (relay2==LOW)
-    lcd.print(F("T"));
-  else
-    lcd.print(F("N"));
-*/
-}
+// void displayRelayStatus(void) {
+  // lcd.setCursor(RELAY1X,RELAY1Y);
+  // if (manualON) {
+    // lcd.print(F("M"));
+  // } else {
+    // if (relayStatus==RELAY_ON)
+      // lcd.print(F("T"));
+    // else
+      // lcd.print(F("N"));
+  // }
+  // if (manualON) {
+    // //DEBUG_PRINTLN(F("Manual"));
+  // } else {
+  // }
+// /*  lcd.setCursor(RELAY2X,RELAY2Y);
+  // if (relay2==LOW)
+    // lcd.print(F("T"));
+  // else
+    // lcd.print(F("N"));
+// */
+// }
 
 void displayInfoValue(char text1, float value, char text2) {
   lcd.setCursor(POZ0X,POZ0Y);
@@ -1641,10 +1641,10 @@ bool calcFlow(void *) {
   // Pulse frequency (Hz) = 7.5Q, Q is flow rate in L/min.
   //numberOfPulsesFlow = 31;
   lMin = (float)numberOfPulsesFlow / (CALC_DELAY / 1000.f) / 7.5f;
-  DEBUG_PRINT(F("Pulsu: "));
-  DEBUG_PRINTLN(numberOfPulsesFlow);
-  Serial.print(lMin, DEC); // Print litres/min
-  DEBUG_PRINTLN(F(" L/min"));
+  //DEBUG_PRINT(F("Pulsu: "));
+  //DEBUG_PRINTLN(numberOfPulsesFlow);
+  //Serial.print(lMin, DEC); // Print litres/min
+  //DEBUG_PRINTLN(F(" L/min"));
   numberOfPulsesFlow = 0; // Reset Counter
   return true;
 }

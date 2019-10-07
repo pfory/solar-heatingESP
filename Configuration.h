@@ -155,7 +155,7 @@ D8                                           - relay 2
 #define ENERGYY                              1
 #define FLOWX                                1
 #define FLOWY                                2
-#define MINRUNX                              14
+#define MINRUNX                              9
 #define MINRUNY                              3
 #define TIMEX                                0
 #define TIMEY                                3
@@ -164,7 +164,7 @@ D8                                           - relay 2
 #define POZ1Y                                1
 #define CONTROLSENSORX                       19
 #define CONTROLSENSORY                       1
-#define SUNANGLEX                            10
+#define SUNANGLEX                            7
 #define SUNANGLEY                            3
 
 #define DISPLAY_MAIN                         0
@@ -181,8 +181,8 @@ D8                                           - relay 2
 
 
                           
-#define RELAY1X                              19
-#define RELAY1Y                              0
+//#define RELAY1X                              19
+//#define RELAY1Y                              0
 /*#define RELAY2X                            15
 #define RELAY2Y                              1
 */                          
