@@ -611,26 +611,8 @@ void loop() {
   //handle ftp server
   ftpSrv.handleFTP();
 
-  if (minute()==0 && second()==0) {
-    if (!dispClear) { 
-      lcd.clear();
-      dispClear = true;
-    }
-  } else {
-    dispClear = false;
-  }
-  
-  //nulovani statistik o pulnoci
-  if (hour()==0 && !todayClear) {
-    todayClear =true;
-    energyADay=0;
-    secOnDay=0;
-    tMaxOut=T_MIN;
-    tMaxIn=T_MIN;
-    tMaxBojler=T_MIN;
-  } else if (hour()>0) {
-    todayClear = false;
-  }
+  displayClear();
+  nulStat();
 
 } //loop
 
@@ -643,6 +625,32 @@ void printMessageToLCD(char* t, String v) {
   lcd.print(v);
   delay(2000);
   lcd.clear();
+}
+
+
+void displayClear() {
+  if (minute()==0 && second()==0) {
+    if (!dispClear) { 
+      lcd.clear();
+      dispClear = true;
+    }
+  } else {
+    dispClear = false;
+  }
+}
+
+  //nulovani statistik o pulnoci
+void nulStat() {
+  if (hour()==0 && !todayClear) {
+    todayClear =true;
+    energyADay=0;
+    secOnDay=0;
+    tMaxOut=T_MIN;
+    tMaxIn=T_MIN;
+    tMaxBojler=T_MIN;
+  } else if (hour()>0) {
+    todayClear = false;
+  }
 }
 
 void changeRelay(byte status) {
