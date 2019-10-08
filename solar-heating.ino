@@ -290,6 +290,11 @@ void callback(char* topic, byte* payload, unsigned int length) {
     } else {
       DEBUG_PRINTLN(F("OFF"));
     }
+  } else if (strcmp(topic, "/home/Corridor/esp07/sorder")==0) {
+    printMessageToLCD(topic, val);
+    DEBUG_PRINT("send sensor order");
+    void * a;
+    sendSOHA(a);
   }
 }
 
@@ -722,6 +727,7 @@ void reconnect() {
       client.subscribe((String(mqtt_base) + "/" + "so8").c_str());
       client.subscribe((String(mqtt_base) + "/" + "so9").c_str());
       client.subscribe((String(mqtt_base) + "/" + "restart").c_str());
+      client.subscribe((String(mqtt_base) + "/" + "sorder").c_str());
       client.subscribe((String(mqtt_base) + "/" + "manualRelay").c_str());
     } else {
       DEBUG_PRINT("failed, rc=");
@@ -950,6 +956,27 @@ bool readConfig() {
   return false;
 }
 
+bool sendSOHA(void *) {
+  digitalWrite(BUILTIN_LED, LOW);
+  printSystemTime();
+  DEBUG_PRINTLN(F(" - I am sending sensor order to HA"));
+  SenderClass sender;
+  sender.add("so0", sensorOrder[0]);
+  sender.add("so1", sensorOrder[1]);
+  sender.add("so2", sensorOrder[2]);
+  sender.add("so3", sensorOrder[3]);
+  sender.add("so4", sensorOrder[4]);
+  sender.add("so5", sensorOrder[5]);
+  sender.add("so6", sensorOrder[6]);
+  sender.add("so7", sensorOrder[7]);
+
+  noInterrupts();
+  sender.sendMQTT(mqtt_server, mqtt_port, mqtt_username, mqtt_key, mqtt_base);
+  interrupts();
+  digitalWrite(BUILTIN_LED, HIGH);
+  return true;
+}
+
 bool sendDataHA(void *) {
   digitalWrite(BUILTIN_LED, LOW);
   printSystemTime();
@@ -967,10 +994,11 @@ bool sendDataHA(void *) {
   sender.add("tBojlerIN", tBojlerIn);
   sender.add("tBojlerOUT", tBojlerOut);
   DEBUG_PRINTLN(F("Calling MQTT"));
-
+  
+  noInterrupts();
   sender.sendMQTT(mqtt_server, mqtt_port, mqtt_username, mqtt_key, mqtt_base);
-  digitalWrite(BUILTIN_LED, HIGH);
   interrupts();
+  digitalWrite(BUILTIN_LED, HIGH);
   return true;
 }
 
@@ -990,7 +1018,9 @@ bool sendStatisticHA(void *) {
   
   DEBUG_PRINTLN(F("Calling MQTT"));
   
+  noInterrupts();
   sender.sendMQTT(mqtt_server, mqtt_port, mqtt_username, mqtt_key, mqtt_base);
+  interrupts();
   digitalWrite(BUILTIN_LED, HIGH);
   return true;
 }
