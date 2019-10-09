@@ -194,7 +194,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   delay(2000);
   lcd.clear();
   
-  if (strcmp(topic, "/home/Corridor/esp07/controlSensorBojler")==0) {
+  if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_controlSensor)).c_str())==0) {
     printMessageToLCD(topic, val);
     DEBUG_PRINT("set control sensor to ");
     if (val.toInt()==1) {
@@ -204,98 +204,114 @@ void callback(char* topic, byte* payload, unsigned int length) {
     }
     controlSensorBojler=val.toInt();
     saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07/tDiffOFF")==0) {
+  } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_tDiffOFF)).c_str())==0) {
     printMessageToLCD(topic, val);
     DEBUG_PRINT("set tDiffOFF to ");
     tDiffOFF=val.toInt();
     DEBUG_PRINT(tDiffOFF);
     saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07/tDiffON")==0) {
+  } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_tDiffON)).c_str())==0) {
     printMessageToLCD(topic, val);
     DEBUG_PRINT("set tDiffON to ");
     tDiffON=val.toInt();
     DEBUG_PRINT(tDiffON);
     saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07/so0")==0) {
-    printMessageToLCD(topic, val);
-    DEBUG_PRINT("set sensor order 0 to ");
-    sensorOrder[0]=val.toInt();
-    DEBUG_PRINT(val.toInt());
-    saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07/so1")==0) {
-    printMessageToLCD(topic, val);
-    DEBUG_PRINT("set sensor order 1 to ");
-    sensorOrder[1]=val.toInt();
-    DEBUG_PRINT(val.toInt());
-    saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07/so2")==0) {
-    printMessageToLCD(topic, val);
-    DEBUG_PRINT("set sensor order 2 to ");
-    sensorOrder[2]=val.toInt();
-    DEBUG_PRINT(val.toInt());
-    saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07/so3")==0) {
-    printMessageToLCD(topic, val);
-    DEBUG_PRINT("set sensor order 3 to ");
-    sensorOrder[3]=val.toInt();
-    DEBUG_PRINT(val.toInt());
-    saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07/so4")==0) {
-    printMessageToLCD(topic, val);
-    DEBUG_PRINT("set sensor order 4 to ");
-    sensorOrder[4]=val.toInt();
-    DEBUG_PRINT(val.toInt());
-    saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07/so5")==0) {
-    printMessageToLCD(topic, val);
-    DEBUG_PRINT("set sensor order 5 to ");
-    sensorOrder[5]=val.toInt();
-    DEBUG_PRINT(val.toInt());
-    saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07/so6")==0) {
-    printMessageToLCD(topic, val);
-    DEBUG_PRINT("set sensor order 6 to ");
-    sensorOrder[6]=val.toInt();
-    DEBUG_PRINT(val.toInt());
-    saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07/so7")==0) {
-    printMessageToLCD(topic, val);
-    DEBUG_PRINT("set sensor order 7 to ");
-    sensorOrder[7]=val.toInt();
-    DEBUG_PRINT(val.toInt());
-    saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07/so8")==0) {
-    printMessageToLCD(topic, val);
-    DEBUG_PRINT("set sensor order 8 to ");
-    sensorOrder[8]=val.toInt();
-    DEBUG_PRINT(val.toInt());
-    saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07/so9")==0) {
-    printMessageToLCD(topic, val);
-    DEBUG_PRINT("set sensor order 9 to ");
-    sensorOrder[9]=val.toInt();
-    DEBUG_PRINT(val.toInt());
-    saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07/restart")==0) {
-    printMessageToLCD(topic, val);
-    DEBUG_PRINT("RESTART");
-    saveConfig();
-    ESP.restart();
-  } else if (strcmp(topic, "/home/Corridor/esp07/manualRelay")==0) {
-    printMessageToLCD(topic, val);
-    DEBUG_PRINT("set manual control relay to ");
-    manualRelay = val.toInt();
-    if (val.toInt()==1) {
-      DEBUG_PRINTLN(F("ON"));
-    } else {
-      DEBUG_PRINTLN(F("OFF"));
-    }
-  } else if (strcmp(topic, "/home/Corridor/esp07/sorder")==0) {
+  } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_sendSO)).c_str())==0) {
+   //} else if (strcmp(topic, mqtt_topic_sendSO)==0) {
     printMessageToLCD(topic, val);
     DEBUG_PRINT("send sensor order");
     void * a;
     sendSOHA(a);
-  }
+    
+   } else {
+     for (int i = 0; i<NUMBER_OF_DEVICES; i++) {
+       if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_so) + String(i)).c_str())==0) {
+         printMessageToLCD(topic, val);
+         DEBUG_PRINT("set sensor order ");
+         DEBUG_PRINT(i);
+         DEBUG_PRINT(" to ");
+         sensorOrder[i]=val.toInt();
+         DEBUG_PRINT(val.toInt());
+         saveConfig();  
+       }
+     }
+   }  
+    
+    
+  // } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_so0)).c_str())==0) {
+    // printMessageToLCD(topic, val);
+    // DEBUG_PRINT("set sensor order 0 to ");
+    // sensorOrder[0]=val.toInt();
+    // DEBUG_PRINT(val.toInt());
+    // saveConfig();  
+  // } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_so1)).c_str())==0) {
+    // printMessageToLCD(topic, val);
+    // DEBUG_PRINT("set sensor order 1 to ");
+    // sensorOrder[1]=val.toInt();
+    // DEBUG_PRINT(val.toInt());
+    // saveConfig();  
+  // } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_so2)).c_str())==0) {
+    // printMessageToLCD(topic, val);
+    // DEBUG_PRINT("set sensor order 2 to ");
+    // sensorOrder[2]=val.toInt();
+    // DEBUG_PRINT(val.toInt());
+    // saveConfig();  
+  // } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_so3)).c_str())==0) {
+    // printMessageToLCD(topic, val);
+    // DEBUG_PRINT("set sensor order 3 to ");
+    // sensorOrder[3]=val.toInt();
+    // DEBUG_PRINT(val.toInt());
+    // saveConfig();  
+  // } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_so4)).c_str())==0) {
+    // printMessageToLCD(topic, val);
+    // DEBUG_PRINT("set sensor order 4 to ");
+    // sensorOrder[4]=val.toInt();
+    // DEBUG_PRINT(val.toInt());
+    // saveConfig();  
+  // } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_so5)).c_str())==0) {
+    // printMessageToLCD(topic, val);
+    // DEBUG_PRINT("set sensor order 5 to ");
+    // sensorOrder[5]=val.toInt();
+    // DEBUG_PRINT(val.toInt());
+    // saveConfig();  
+  // } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_so6)).c_str())==0) {
+    // printMessageToLCD(topic, val);
+    // DEBUG_PRINT("set sensor order 6 to ");
+    // sensorOrder[6]=val.toInt();
+    // DEBUG_PRINT(val.toInt());
+    // saveConfig();  
+  // } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_so7)).c_str())==0) {
+    // printMessageToLCD(topic, val);
+    // DEBUG_PRINT("set sensor order 7 to ");
+    // sensorOrder[7]=val.toInt();
+    // DEBUG_PRINT(val.toInt());
+    // saveConfig();  
+  // } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_so8)).c_str())==0) {
+    // printMessageToLCD(topic, val);
+    // DEBUG_PRINT("set sensor order 8 to ");
+    // sensorOrder[8]=val.toInt();
+    // DEBUG_PRINT(val.toInt());
+    // saveConfig();  
+  // } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_restart)).c_str())==0) {
+    // printMessageToLCD(topic, val);
+    // DEBUG_PRINT("RESTART");
+    // saveConfig();
+    // ESP.restart();
+  // } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_relay)).c_str())==0) {
+    // printMessageToLCD(topic, val);
+    // DEBUG_PRINT("set manual control relay to ");
+    // manualRelay = val.toInt();
+    // if (val.toInt()==1) {
+      // DEBUG_PRINTLN(F("ON"));
+    // } else {
+      // DEBUG_PRINTLN(F("OFF"));
+    // }
+  // } else if (strcmp(topic, "/home/Corridor/esp07/sorder")==0) {
+    // printMessageToLCD(topic, val);
+    // DEBUG_PRINT("send sensor order");
+    // void * a;
+    // sendSOHA(a);
+  //}
 }
 
 WiFiClient espClient;
@@ -650,9 +666,9 @@ void nulStat() {
     todayClear =true;
     energyADay=0;
     secOnDay=0;
-    tMaxOut=T_MIN;
-    tMaxIn=T_MIN;
-    tMaxBojler=T_MIN;
+    tMaxOut=TEMP_ERR;
+    tMaxIn=TEMP_ERR;
+    tMaxBojler=TEMP_ERR;
   } else if (hour()>0) {
     todayClear = false;
   }
@@ -1141,16 +1157,13 @@ void print2digits(int number) {
 bool tempMeas(void *) {
   dsSensors.requestTemperatures(); 
   for (byte i=0;i<numberOfDevices; i++) {
-    float tempTemp=T_MIN;
+    float tempTemp=(float)TEMP_ERR;
     for (byte j=0;j<10;j++) { //try to read temperature ten times
-      //tempTemp = dsSensors.getTempCByIndex(i);
       tempTemp = dsSensors.getTempC(tempDeviceAddresses[i]);
       if (tempTemp>=-55) {
         break;
       }
     }
-
-    // DEBUG_PRINTLN(tempTemp);
     sensor[i] = tempTemp;
   }
 
