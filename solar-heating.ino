@@ -439,7 +439,7 @@ void setup() {
   }
   
   timer.every(SENDSTAT_DELAY, sendStatisticHA);
-  timer.every(SENDSTAT_DELAY, countMinRun);
+//  timer.every(SENDSTAT_DELAY, countMinRun);
   timer.every(CALC_DELAY/2, displayTime);
   
   void * a;
@@ -1173,10 +1173,10 @@ void lcdShow() {
     // }
     dispRelayStatus();
     lcd.setCursor(MINRUNX, MINRUNY);
-    if (lastRunMin<1000) PRINT_SPACE
-    if (lastRunMin<100) PRINT_SPACE
-    if (lastRunMin<10) PRINT_SPACE
-    lcd.print(lastRunMin);
+    if ((secOnDay/60)<1000) PRINT_SPACE
+    if ((secOnDay/60)<100) PRINT_SPACE
+    if ((secOnDay/60)<10) PRINT_SPACE
+    lcd.print((secOnDay/60));
     lcd.setCursor(CONTROLSENSORX, CONTROLSENSORY);
     controlSensorBojler==1 ? lcd.print(F("B")) : lcd.print(F("R"));
     lcd.setCursor(SUNANGLEX,SUNANGLEY);
@@ -1413,11 +1413,6 @@ void displayInfoValue(char text1, float value, char text2) {
   lcd.print(" ");
   lcd.print(text2);
   lcd.print("          ");
-}
-
-bool countMinRun(void *) {
-  lastRunMin += 1;
-  return true;
 }
 
 float enegyWsTokWh(float e) {
