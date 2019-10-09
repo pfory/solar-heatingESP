@@ -1326,8 +1326,6 @@ void lcdShow() {
     // }
     dispRelayStatus();
     lcd.setCursor(MINRUNX, MINRUNY);
-    if (lastRunMin<100000) PRINT_SPACE
-    if (lastRunMin<10000) PRINT_SPACE
     if (lastRunMin<1000) PRINT_SPACE
     if (lastRunMin<100) PRINT_SPACE
     if (lastRunMin<10) PRINT_SPACE
