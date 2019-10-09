@@ -194,7 +194,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   delay(2000);
   lcd.clear();
   
-  if (strcmp(topic, "/home/Corridor/esp07/controlSensorBojler")==0) {
+  if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_controlSensor)).c_str())==0) {
     printMessageToLCD(topic, val);
     DEBUG_PRINT("set control sensor to ");
     if (val.toInt()==1) {
@@ -204,84 +204,24 @@ void callback(char* topic, byte* payload, unsigned int length) {
     }
     controlSensorBojler=val.toInt();
     saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07/tDiffOFF")==0) {
+  } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_tDiffOFF)).c_str())==0) {
     printMessageToLCD(topic, val);
     DEBUG_PRINT("set tDiffOFF to ");
     tDiffOFF=val.toInt();
     DEBUG_PRINT(tDiffOFF);
     saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07/tDiffON")==0) {
+  } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_tDiffON)).c_str())==0) {
     printMessageToLCD(topic, val);
     DEBUG_PRINT("set tDiffON to ");
     tDiffON=val.toInt();
     DEBUG_PRINT(tDiffON);
     saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07/so0")==0) {
-    printMessageToLCD(topic, val);
-    DEBUG_PRINT("set sensor order 0 to ");
-    sensorOrder[0]=val.toInt();
-    DEBUG_PRINT(val.toInt());
-    saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07/so1")==0) {
-    printMessageToLCD(topic, val);
-    DEBUG_PRINT("set sensor order 1 to ");
-    sensorOrder[1]=val.toInt();
-    DEBUG_PRINT(val.toInt());
-    saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07/so2")==0) {
-    printMessageToLCD(topic, val);
-    DEBUG_PRINT("set sensor order 2 to ");
-    sensorOrder[2]=val.toInt();
-    DEBUG_PRINT(val.toInt());
-    saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07/so3")==0) {
-    printMessageToLCD(topic, val);
-    DEBUG_PRINT("set sensor order 3 to ");
-    sensorOrder[3]=val.toInt();
-    DEBUG_PRINT(val.toInt());
-    saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07/so4")==0) {
-    printMessageToLCD(topic, val);
-    DEBUG_PRINT("set sensor order 4 to ");
-    sensorOrder[4]=val.toInt();
-    DEBUG_PRINT(val.toInt());
-    saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07/so5")==0) {
-    printMessageToLCD(topic, val);
-    DEBUG_PRINT("set sensor order 5 to ");
-    sensorOrder[5]=val.toInt();
-    DEBUG_PRINT(val.toInt());
-    saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07/so6")==0) {
-    printMessageToLCD(topic, val);
-    DEBUG_PRINT("set sensor order 6 to ");
-    sensorOrder[6]=val.toInt();
-    DEBUG_PRINT(val.toInt());
-    saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07/so7")==0) {
-    printMessageToLCD(topic, val);
-    DEBUG_PRINT("set sensor order 7 to ");
-    sensorOrder[7]=val.toInt();
-    DEBUG_PRINT(val.toInt());
-    saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07/so8")==0) {
-    printMessageToLCD(topic, val);
-    DEBUG_PRINT("set sensor order 8 to ");
-    sensorOrder[8]=val.toInt();
-    DEBUG_PRINT(val.toInt());
-    saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07/so9")==0) {
-    printMessageToLCD(topic, val);
-    DEBUG_PRINT("set sensor order 9 to ");
-    sensorOrder[9]=val.toInt();
-    DEBUG_PRINT(val.toInt());
-    saveConfig();
-  } else if (strcmp(topic, "/home/Corridor/esp07/restart")==0) {
+  } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_restart)).c_str())==0) {
     printMessageToLCD(topic, val);
     DEBUG_PRINT("RESTART");
     saveConfig();
     ESP.restart();
-  } else if (strcmp(topic, "/home/Corridor/esp07/manualRelay")==0) {
+  } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_relay)).c_str())==0) {
     printMessageToLCD(topic, val);
     DEBUG_PRINT("set manual control relay to ");
     manualRelay = val.toInt();
@@ -290,12 +230,26 @@ void callback(char* topic, byte* payload, unsigned int length) {
     } else {
       DEBUG_PRINTLN(F("OFF"));
     }
-  } else if (strcmp(topic, "/home/Corridor/esp07/sorder")==0) {
+  } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_sendSO)).c_str())==0) {
+   //} else if (strcmp(topic, mqtt_topic_sendSO)==0) {
     printMessageToLCD(topic, val);
     DEBUG_PRINT("send sensor order");
     void * a;
     sendSOHA(a);
-  }
+    
+   } else {
+     for (int i = 0; i<NUMBER_OF_DEVICES; i++) {
+       if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_so) + String(i)).c_str())==0) {
+         printMessageToLCD(topic, val);
+         DEBUG_PRINT("set sensor order ");
+         DEBUG_PRINT(i);
+         DEBUG_PRINT(" to ");
+         sensorOrder[i]=val.toInt();
+         DEBUG_PRINT(val.toInt());
+         saveConfig();  
+       }
+     }
+   }  
 }
 
 WiFiClient espClient;
@@ -368,10 +322,7 @@ void setup() {
   client.setCallback(callback);
   
   //WiFiManager
-  //Local intialization. Once its business is done, there is no need to keep it around
   WiFiManager wifiManager;
-  //reset settings - for testing
-  //wifiManager.resetSettings();
   
   IPAddress _ip,_gw,_sn;
   _ip.fromString(static_ip);
@@ -384,45 +335,8 @@ void setup() {
   DEBUG_PRINTLN(_gw);
   DEBUG_PRINTLN(_sn);
 
-  //wifiManager.setConfigPortalTimeout(60); 
-  //set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
   wifiManager.setAPCallback(configModeCallback);
   
-    //DEBUG_PRINTLN("Double reset detected. Config mode.");
-
-  // WiFiManagerParameter custom_mqtt_server("mqtt_server", "MQTT server", mqtt_server, 40);
-  // WiFiManagerParameter custom_mqtt_port("mqtt_port", "MQTT server port", String(mqtt_port).c_str(), 5);
-  // WiFiManagerParameter custom_mqtt_uname("mqtt_uname", "MQTT username", mqtt_username, 40);
-  // WiFiManagerParameter custom_mqtt_key("mqtt_key", "MQTT password", mqtt_key, 20);
-  // WiFiManagerParameter custom_mqtt_base("mqtt_base", "MQTT topic end without /", mqtt_base, 60);
-  // WiFiManagerParameter custom_tDiffON("tDiffON", "temperature difference ON", String(tDiffON).c_str(), 2);
-  // WiFiManagerParameter custom_tDiffOFF("tDiffOFF", "temperature difference OFF", String(tDiffOFF).c_str(), 2);
-  // WiFiManagerParameter custom_controlSensor("controlSensor", "1 = Bojler 0 = Room", String(controlSensorBojler).c_str(), 1);
-
-  // wifiManager.addParameter(&custom_mqtt_server);
-  // wifiManager.addParameter(&custom_mqtt_port);
-  // wifiManager.addParameter(&custom_mqtt_uname);
-  // wifiManager.addParameter(&custom_mqtt_key);
-  // wifiManager.addParameter(&custom_mqtt_base);
-  // wifiManager.addParameter(&custom_tDiffON);
-  // wifiManager.addParameter(&custom_tDiffOFF);
-  // wifiManager.addParameter(&custom_controlSensor);
-
-  //sets timeout until configuration portal gets turned off
-  //useful to make it all retry or go to sleep
-  //in seconds
-  
-  // wifiManager.setTimeout(30);
-  // wifiManager.setConnectTimeout(30); 
-  //wifiManager.setBreakAfterConfig(true);
-  
-  //set config save notify callback
-  //wifiManager.setSaveConfigCallback(saveConfigCallback);
-  
-  //fetches ssid and pass and tries to connect
-  //if it does not connect it starts an access point with the specified name
-  //here  "AutoConnectAP"
-  //and goes into a blocking loop awaiting configuration
   if (!wifiManager.autoConnect(AUTOCONNECTNAME, AUTOCONNECTPWD)) { 
     DEBUG_PRINTLN("failed to connect and hit timeout");
     delay(3000);
@@ -431,25 +345,6 @@ void setup() {
     delay(5000);
   } 
   
-  // validateInput(custom_mqtt_server.getValue(), mqtt_server);
-  // mqtt_port = String(custom_mqtt_port.getValue()).toInt();
-  // validateInput(custom_mqtt_uname.getValue(), mqtt_username);
-  // validateInput(custom_mqtt_key.getValue(), mqtt_key);
-  // validateInput(custom_mqtt_base.getValue(), mqtt_base);
-  // tDiffON = String(custom_tDiffON.getValue()).toInt();
-  // tDiffOFF = String(custom_tDiffOFF.getValue()).toInt();
-  // controlSensorBojler = String(custom_controlSensor.getValue()).toInt();
-  
-  // if (shouldSaveConfig) {
-    // saveConfig();
-  // }
-  
-  // //if you get here you have connected to the WiFi
-  // DEBUG_PRINTLN("CONNECTED");
-  // DEBUG_PRINT("Local ip : ");
-  // DEBUG_PRINTLN(WiFi.localIP());
-  // DEBUG_PRINTLN(WiFi.subnetMask());
-
 #ifdef serverHTTP
   server.on ( "/", handleRoot );
   server.begin();
@@ -469,29 +364,9 @@ void setup() {
 #endif
 
 #ifdef ota
-  //OTA
-  // Port defaults to 8266
-  // ArduinoOTA.setPort(8266);
-
-  // Hostname defaults to esp8266-[ChipID]
   ArduinoOTA.setHostname(HOSTNAMEOTA);
 
-  // No authentication by default
-  // ArduinoOTA.setPassword("admin");
-
-  // Password can be set with it's md5 value as well
-  // MD5(admin) = 21232f297a57a5a743894a0e4a801fc3
-  // ArduinoOTA.setPasswordHash("21232f297a57a5a743894a0e4a801fc3");
-
   ArduinoOTA.onStart([]() {
-    // String type;
-    // if (ArduinoOTA.getCommand() == U_FLASH)
-      // type = "sketch";
-    // else // U_SPIFFS
-      // type = "filesystem";
-
-    // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
-    //DEBUG_PRINTLN("Start updating " + type);
     DEBUG_PRINTLN("Start updating ");
   });
   ArduinoOTA.onEnd([]() {
@@ -523,12 +398,6 @@ void setup() {
   } else {
     DEBUG_PRINTLN("Room");
   }
-  //DEBUG_PRINT(F("TotalEnergy from EEPROM:"));
-  //DEBUG_PRINT(totalEnergy);
-  //DEBUG_PRINTLN(F("Ws"));
-  //DEBUG_PRINT(F("TotalSec from EEPROM:"));
-  //DEBUG_PRINT(totalSec);
-  //DEBUG_PRINTLN(F("s"));
 
   lcd.setCursor(0,1);
   lcd.print(F("tON:"));  
@@ -650,9 +519,9 @@ void nulStat() {
     todayClear =true;
     energyADay=0;
     secOnDay=0;
-    tMaxOut=T_MIN;
-    tMaxIn=T_MIN;
-    tMaxBojler=T_MIN;
+    tMaxOut=TEMP_ERR;
+    tMaxIn=TEMP_ERR;
+    tMaxBojler=TEMP_ERR;
   } else if (hour()>0) {
     todayClear = false;
   }
@@ -716,16 +585,9 @@ void reconnect() {
       client.subscribe((String(mqtt_base) + "/" + "tDiffON").c_str());
       client.subscribe((String(mqtt_base) + "/" + "tDiffOFF").c_str());
       client.subscribe((String(mqtt_base) + "/" + "controlSensorBojler").c_str());
-      client.subscribe((String(mqtt_base) + "/" + "so0").c_str());
-      client.subscribe((String(mqtt_base) + "/" + "so1").c_str());
-      client.subscribe((String(mqtt_base) + "/" + "so2").c_str());
-      client.subscribe((String(mqtt_base) + "/" + "so3").c_str());
-      client.subscribe((String(mqtt_base) + "/" + "so4").c_str());
-      client.subscribe((String(mqtt_base) + "/" + "so5").c_str());
-      client.subscribe((String(mqtt_base) + "/" + "so6").c_str());
-      client.subscribe((String(mqtt_base) + "/" + "so7").c_str());
-      client.subscribe((String(mqtt_base) + "/" + "so8").c_str());
-      client.subscribe((String(mqtt_base) + "/" + "so9").c_str());
+      for (int i=0; i<NUMBER_OF_DEVICES; i++) {
+        client.subscribe((String(mqtt_base) + "/" + "so" + String(i)).c_str());
+      }
       client.subscribe((String(mqtt_base) + "/" + "restart").c_str());
       client.subscribe((String(mqtt_base) + "/" + "sorder").c_str());
       client.subscribe((String(mqtt_base) + "/" + "manualRelay").c_str());
@@ -800,12 +662,6 @@ void tick()
   digitalWrite(BUILTIN_LED, !state);     // set pin to the opposite state
 }
   
-//callback notifying us of the need to save config
-// void saveConfigCallback () {
-  // DEBUG_PRINTLN("Should save config");
-  // shouldSaveConfig = true;
-// }
-
 //gets called when WiFiManager enters configuration mode
 void configModeCallback (WiFiManager *myWiFiManager) {
   DEBUG_PRINTLN("Entered config mode");
@@ -816,14 +672,6 @@ void configModeCallback (WiFiManager *myWiFiManager) {
   ticker.attach(0.2, tick);
 }
 
-
-// void validateInput(const char *input, char *output)
-// {
-  // String tmp = input;
-  // tmp.trim();
-  // tmp.replace(' ', '_');
-  // tmp.toCharArray(output, tmp.length() + 1);
-// }
 
 bool saveConfig() {
   DEBUG_PRINTLN(F("Saving config..."));
@@ -853,14 +701,9 @@ bool saveConfig() {
   doc["tDiffON"]                 = tDiffON;
   doc["tDiffOFF"]                = tDiffOFF;
   doc["controlSensor"]           = controlSensorBojler;
-  doc["sensorOrder[0]"]          = sensorOrder[0];
-  doc["sensorOrder[1]"]          = sensorOrder[1];
-  doc["sensorOrder[2]"]          = sensorOrder[2];
-  doc["sensorOrder[3]"]          = sensorOrder[3];
-  doc["sensorOrder[4]"]          = sensorOrder[4];
-  doc["sensorOrder[5]"]          = sensorOrder[5];
-  doc["sensorOrder[6]"]          = sensorOrder[6];
-  doc["sensorOrder[7]"]          = sensorOrder[7];
+  for (int i=0; i<NUMBER_OF_DEVICES; i++) {
+    doc["sensorOrder[" + String(i) + "0]"]          = sensorOrder[i];
+  }
 
   lcd.clear();
  
@@ -919,30 +762,34 @@ bool readConfig() {
         DEBUG_PRINT(F("control sensor: "));
         controlSensorBojler==1 ? DEBUG_PRINTLN(" bojler") : DEBUG_PRINTLN(" room");
         
-        sensorOrder[0] = doc["sensorOrder[0]"];
-        DEBUG_PRINT(F("sensorOrder[0]: "));
-        DEBUG_PRINTLN(sensorOrder[0]);
-        sensorOrder[1] = doc["sensorOrder[1]"];
-        DEBUG_PRINT(F("sensorOrder[1]: "));
-        DEBUG_PRINTLN(sensorOrder[1]);
-        sensorOrder[2] = doc["sensorOrder[2]"];
-        DEBUG_PRINT(F("sensorOrder[2]: "));
-        DEBUG_PRINTLN(sensorOrder[2]);
-        sensorOrder[3] = doc["sensorOrder[3]"];
-        DEBUG_PRINT(F("sensorOrder[3]: "));
-        DEBUG_PRINTLN(sensorOrder[3]);
-        sensorOrder[4] = doc["sensorOrder[4]"];
-        DEBUG_PRINT(F("sensorOrder[4]: "));
-        DEBUG_PRINTLN(sensorOrder[4]);
-        sensorOrder[5] = doc["sensorOrder[5]"];
-        DEBUG_PRINT(F("sensorOrder[5]: "));
-        DEBUG_PRINTLN(sensorOrder[5]);
-        sensorOrder[6] = doc["sensorOrder[6]"];
-        DEBUG_PRINT(F("sensorOrder[6]: "));
-        DEBUG_PRINTLN(sensorOrder[6]);
-        sensorOrder[6] = doc["sensorOrder[7]"];
-        DEBUG_PRINT(F("sensorOrder[7]: "));
-        DEBUG_PRINTLN(sensorOrder[7]);
+        for (int i=0; i<NUMBER_OF_DEVICES; i++) {
+          sensorOrder[i] = doc["sensorOrder[" + String(i) + "0]"];
+          DEBUG_PRINT(F("sensorOrder["));
+          DEBUG_PRINT(i);
+          DEBUG_PRINT(F("]:"));
+          DEBUG_PRINTLN(sensorOrder[0]);
+        }
+        // sensorOrder[1] = doc["sensorOrder[1]"];
+        // DEBUG_PRINT(F("sensorOrder[1]: "));
+        // DEBUG_PRINTLN(sensorOrder[1]);
+        // sensorOrder[2] = doc["sensorOrder[2]"];
+        // DEBUG_PRINT(F("sensorOrder[2]: "));
+        // DEBUG_PRINTLN(sensorOrder[2]);
+        // sensorOrder[3] = doc["sensorOrder[3]"];
+        // DEBUG_PRINT(F("sensorOrder[3]: "));
+        // DEBUG_PRINTLN(sensorOrder[3]);
+        // sensorOrder[4] = doc["sensorOrder[4]"];
+        // DEBUG_PRINT(F("sensorOrder[4]: "));
+        // DEBUG_PRINTLN(sensorOrder[4]);
+        // sensorOrder[5] = doc["sensorOrder[5]"];
+        // DEBUG_PRINT(F("sensorOrder[5]: "));
+        // DEBUG_PRINTLN(sensorOrder[5]);
+        // sensorOrder[6] = doc["sensorOrder[6]"];
+        // DEBUG_PRINT(F("sensorOrder[6]: "));
+        // DEBUG_PRINTLN(sensorOrder[6]);
+        // sensorOrder[7] = doc["sensorOrder[7]"];
+        // DEBUG_PRINT(F("sensorOrder[7]: "));
+        // DEBUG_PRINTLN(sensorOrder[7]);
         
         return true;
       }
@@ -961,14 +808,17 @@ bool sendSOHA(void *) {
   printSystemTime();
   DEBUG_PRINTLN(F(" - I am sending sensor order to HA"));
   SenderClass sender;
-  sender.add("so0", sensorOrder[0]);
-  sender.add("so1", sensorOrder[1]);
-  sender.add("so2", sensorOrder[2]);
-  sender.add("so3", sensorOrder[3]);
-  sender.add("so4", sensorOrder[4]);
-  sender.add("so5", sensorOrder[5]);
-  sender.add("so6", sensorOrder[6]);
-  sender.add("so7", sensorOrder[7]);
+  for (int i=0; i<NUMBER_OF_DEVICES; i++) {
+    sender.add("so" + String(i), sensorOrder[i]);
+  }
+  // sender.add("so0", sensorOrder[0]);
+  // sender.add("so1", sensorOrder[1]);
+  // sender.add("so2", sensorOrder[2]);
+  // sender.add("so3", sensorOrder[3]);
+  // sender.add("so4", sensorOrder[4]);
+  // sender.add("so5", sensorOrder[5]);
+  // sender.add("so6", sensorOrder[6]);
+  // sender.add("so7", sensorOrder[7]);
 
   noInterrupts();
   sender.sendMQTT(mqtt_server, mqtt_port, mqtt_username, mqtt_key, mqtt_base);
@@ -1141,16 +991,13 @@ void print2digits(int number) {
 bool tempMeas(void *) {
   dsSensors.requestTemperatures(); 
   for (byte i=0;i<numberOfDevices; i++) {
-    float tempTemp=T_MIN;
+    float tempTemp=(float)TEMP_ERR;
     for (byte j=0;j<10;j++) { //try to read temperature ten times
-      //tempTemp = dsSensors.getTempCByIndex(i);
       tempTemp = dsSensors.getTempC(tempDeviceAddresses[i]);
       if (tempTemp>=-55) {
         break;
       }
     }
-
-    // DEBUG_PRINTLN(tempTemp);
     sensor[i] = tempTemp;
   }
 

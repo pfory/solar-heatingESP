@@ -2,7 +2,7 @@
 #define CONFIGURATION_H
 
 //SW name & version
-#define     VERSION                       "1.71"
+#define     VERSION                       "1.73"
 #define     SW_NAME                       "Solar"
 
 #define ota
@@ -35,14 +35,21 @@
   #define DEBUG_WRITE(x)
 #endif 
 
-char                  mqtt_server[40]       = "192.168.1.56";
-uint16_t              mqtt_port             = 1883;
-char                  mqtt_username[40]     = "datel";
-char                  mqtt_key[20]          = "hanka12";
-char                  mqtt_base[60]         = "/home/Corridor/esp07";
-char                  static_ip[16]         = "192.168.1.108";
-char                  static_gw[16]         = "192.168.1.1";
-char                  static_sn[16]         = "255.255.255.0";
+static const char* const      mqtt_server                    = "192.168.1.56";
+static const uint16_t         mqtt_port                      = 1883;
+static const char* const      mqtt_username                  = "datel";
+static const char* const      mqtt_key                       = "hanka12";
+static const char* const      mqtt_base                      = "/home/Corridor/esp07";
+static const char* const      static_ip                      = "192.168.1.108";
+static const char* const      static_gw                      = "192.168.1.1";
+static const char* const      static_sn                      = "255.255.255.0";
+static const char* const      mqtt_topic_relay               = "manualRelay";
+static const char* const      mqtt_topic_restart             = "restart";
+static const char* const      mqtt_topic_tDiffOFF            = "tDiffOFF";
+static const char* const      mqtt_topic_tDiffON             = "tDiffON";
+static const char* const      mqtt_topic_controlSensor       = "controlSensorBojler";
+static const char* const      mqtt_topic_sendSO              = "sorder";
+static const char* const      mqtt_topic_so                  = "so";
 
 /*
 Version history:
@@ -179,19 +186,8 @@ D8                                           - relay 2
 #define RELAY_STATUSX                       17
 #define RELAY_STATUSY                        3
 
-
-                          
-//#define RELAY1X                              19
-//#define RELAY1Y                              0
-/*#define RELAY2X                            15
-#define RELAY2Y                              1
-*/                          
-                          
-#define DAY_INTERVAL                         43200000 //1000*60*60*12; //ms
-
 #define PRINT_SPACE                          lcd.print(F(" "));
 
-#define DS_MEASSURE_INTERVAL                 750 //inteval between meassurements
 #define DELAY_AFTER_ON                       120000 //1000*60*2; //po tento cas zustane rele sepnute bez ohledu na stav teplotnich cidel
   
 #define SAFETY_ON                            86.0 //teplota, pri niz rele vzdy sepne
@@ -202,5 +198,5 @@ D8                                           - relay 2
 #define MEAS_DELAY                           5000  //mereni teplot
 #define CALC_DELAY                           1000  //mereni prutoku a vypocet energie kazdou sekundu
   
-#define T_MIN                                -128.0
+#define TEMP_ERR                            -127
 #endif
