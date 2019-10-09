@@ -216,6 +216,20 @@ void callback(char* topic, byte* payload, unsigned int length) {
     tDiffON=val.toInt();
     DEBUG_PRINT(tDiffON);
     saveConfig();
+  } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_restart)).c_str())==0) {
+    printMessageToLCD(topic, val);
+    DEBUG_PRINT("RESTART");
+    saveConfig();
+    ESP.restart();
+  } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_relay)).c_str())==0) {
+    printMessageToLCD(topic, val);
+    DEBUG_PRINT("set manual control relay to ");
+    manualRelay = val.toInt();
+    if (val.toInt()==1) {
+      DEBUG_PRINTLN(F("ON"));
+    } else {
+      DEBUG_PRINTLN(F("OFF"));
+    }
   } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_sendSO)).c_str())==0) {
    //} else if (strcmp(topic, mqtt_topic_sendSO)==0) {
     printMessageToLCD(topic, val);

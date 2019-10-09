@@ -49,7 +49,7 @@ static const char* const      mqtt_topic_tDiffOFF            = "tDiffOFF";
 static const char* const      mqtt_topic_tDiffON             = "tDiffON";
 static const char* const      mqtt_topic_controlSensor       = "controlSensorBojler";
 static const char* const      mqtt_topic_sendSO              = "sorder";
-static const char* const      mqtt_topic_so                 = "so";
+static const char* const      mqtt_topic_so                  = "so";
 
 /*
 Version history:
