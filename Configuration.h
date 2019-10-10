@@ -148,7 +148,7 @@ D8                                           - relay 2
 #define TEMP3Y                               0
 #define TEMP4X                               9  //P2 Out
 #define TEMP4Y                               0
-#define TEMP5X                              13  //Control
+#define TEMP5X                              12  //Control
 #define TEMP5Y                               0
 #define TEMP6X                               9  //Bojler in
 #define TEMP6Y                               2

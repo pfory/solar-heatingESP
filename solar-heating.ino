@@ -52,12 +52,19 @@ time_t getNtpTime();
 #endif
 
 
-#define DRD_TIMEOUT       1
-// RTC Memory Address for the DoubleResetDetector to use
-#define DRD_ADDRESS       0
-DoubleResetDetector drd(DRD_TIMEOUT, DRD_ADDRESS);
-
 #define CFGFILE "/config.json"
+
+//navrhar - https://maxpromer.github.io/LCD-Character-Creator/
+byte customChar[] = {
+  B01110,
+  B01010,
+  B01110,
+  B00000,
+  B00000,
+  B00000,
+  B00000,
+  B00000
+};
 
 unsigned int volatile pulseCount            = 0;
 unsigned long lastRunMin                    = 0;
@@ -272,6 +279,7 @@ void setup() {
   lcd.print(SW_NAME);  
   PRINT_SPACE
   lcd.print(VERSION);
+  lcd.createChar(0, customChar);
   
   pinMode(BUILTIN_LED, OUTPUT);
   pinMode(STATUS_LED, OUTPUT);
@@ -1138,7 +1146,7 @@ void lcdShow() {
       displayValue(TEMP2X,TEMP2Y, tP1Out, 3, 0);
       displayValue(TEMP3X,TEMP3Y, tP2In, 3, 0);
       displayValue(TEMP4X,TEMP4Y, tP2Out, 3, 0);
-      displayValue(TEMP5X,TEMP5Y, tControl, 3, 0);
+      displayValue(TEMP5X,TEMP5Y, tControl, 3, 1);
       displayValue(TEMP6X,TEMP6Y, tBojlerIn, 3, 0);
       displayValue(TEMP7X,TEMP7Y, tBojlerOut, 3, 0);
       displayValue(TEMP8X,TEMP8Y, tBojler, 3, 0);
@@ -1167,7 +1175,9 @@ void lcdShow() {
     lcd.setCursor(CONTROLSENSORX, CONTROLSENSORY);
     controlSensorBojler==1 ? lcd.print(F("B")) : lcd.print(F("R"));
     lcd.setCursor(SUNANGLEX,SUNANGLEY);
+    lcd.print("Naklon:");
     lcd.print(sunAngle[month()-1]);
+    lcd.write(byte(0));
     
   } else if (display==DISPLAY_T_DIFF_ON) {
     displayInfoValue('TDiffON', tDiffON, 'C');
@@ -1364,32 +1374,6 @@ void dsInit(void) {
   dsSensors.setWaitForConversion(false);
 }
 
-// float enegyWsTokWh(float e) {
-  // return e/3600.f/1000.f;
-// }
-
-//show relay's status in column 15
-// void displayRelayStatus(void) {
-  // lcd.setCursor(RELAY1X,RELAY1Y);
-  // if (manualON) {
-    // lcd.print(F("M"));
-  // } else {
-    // if (relayStatus==RELAY_ON)
-      // lcd.print(F("T"));
-    // else
-      // lcd.print(F("N"));
-  // }
-  // if (manualON) {
-    // //DEBUG_PRINTLN(F("Manual"));
-  // } else {
-  // }
-// /*  lcd.setCursor(RELAY2X,RELAY2Y);
-  // if (relay2==LOW)
-    // lcd.print(F("T"));
-  // else
-    // lcd.print(F("N"));
-// */
-// }
 
 void displayInfoValue(char text1, float value, char text2) {
   lcd.setCursor(POZ0X,POZ0Y);
