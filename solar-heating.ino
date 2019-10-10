@@ -439,7 +439,7 @@ void setup() {
   }
   
   timer.every(SENDSTAT_DELAY, sendStatisticHA);
-  timer.every(SENDSTAT_DELAY, countMinRun);
+//  timer.every(SENDSTAT_DELAY, countMinRun);
   timer.every(CALC_DELAY/2, displayTime);
   
   void * a;
@@ -1399,11 +1399,6 @@ void displayInfoValue(char text1, float value, char text2) {
   lcd.print(" ");
   lcd.print(text2);
   lcd.print("          ");
-}
-
-bool countMinRun(void *) {
-  lastRunMin += 1;
-  return true;
 }
 
 float enegyWsTokWh(float e) {
