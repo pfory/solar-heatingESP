@@ -1134,16 +1134,17 @@ void lcdShow() {
     //02   2.1l/m  55 45 48  0
     //03                123456
     if (firstTempMeasDone) {
-      displayTemp(TEMP1X,TEMP1Y, tP1In, false);
-      displayTemp(TEMP2X,TEMP2Y, tP1Out, false);
-      displayTemp(TEMP3X,TEMP3Y, tP2In, false);
-      displayTemp(TEMP4X,TEMP4Y, tP2Out, false);
-      displayTemp(TEMP5X,TEMP5Y, tControl, true);
-      displayTemp(TEMP6X,TEMP6Y, tBojlerIn, false);
-      displayTemp(TEMP7X,TEMP7Y, tBojlerOut, false);
-      displayTemp(TEMP8X,TEMP8Y, tBojler, false);
+      displayValue(TEMP1X,TEMP1Y, tP1In, 3, 0);
+      displayValue(TEMP2X,TEMP2Y, tP1Out, 3, 0);
+      displayValue(TEMP3X,TEMP3Y, tP2In, 3, 0);
+      displayValue(TEMP4X,TEMP4Y, tP2Out, 3, 0);
+      displayValue(TEMP5X,TEMP5Y, tControl, 3, 0);
+      displayValue(TEMP6X,TEMP6Y, tBojlerIn, 3, 0);
+      displayValue(TEMP7X,TEMP7Y, tBojlerOut, 3, 0);
+      displayValue(TEMP8X,TEMP8Y, tBojler, 3, 0);
     }
-    lcd.setCursor(POWERX,POWERY);
+    displayValue(POWERX,POWERY, (int)power, 4, 0);  //W
+    lcd.print(F("W"));
     // if ((millis()-lastOff)>=DAY_INTERVAL) {
       // lcd.print(F("Bez slunce      "));
       // lcd.print((millis() - lastOff)/1000/3600);
@@ -1154,36 +1155,19 @@ void lcdShow() {
       //zobrazeni poctu minut behu cerpadla za aktualni den
       //0123456789012345
       // 636 0.1234 720T
-      unsigned int p=(int)power;
-      if (p<10000) PRINT_SPACE
-      if (p<1000) PRINT_SPACE
-      if (p<100) PRINT_SPACE
-      if (p<10) PRINT_SPACE
-      if (power<=65534) {
-        lcd.print(p);
-        lcd.print(F("W"));
-      }
       
-      lcd.setCursor(ENERGYX,ENERGYY);
-      lcd.print(enegyWsTokWh(energyADay)); //Ws -> kWh (show it in kWh)
-      lcd.print(F("kWh"));
-      lcd.setCursor(FLOWX,FLOWY);
-      lcd.print(lMin);
-      lcd.print(F("l/m"));
-    // }
-    dispRelayStatus();
-    lcd.setCursor(MINRUNX, MINRUNY);
-    if (lastRunMin<100000) PRINT_SPACE
-    if (lastRunMin<10000) PRINT_SPACE
-    if (lastRunMin<1000) PRINT_SPACE
-    if (lastRunMin<100) PRINT_SPACE
-    if (lastRunMin<10) PRINT_SPACE
-    lcd.print(lastRunMin);
+    displayValue(ENERGYX,ENERGYY, enegyWsTokWh(energyADay), 3, 0);  ////Ws -> kWh (show it in kWh)
+    lcd.print(F("kWh"));
+
+    displayValue(FLOWX,FLOWY, lMin, 3, 0);  
+    lcd.print(F("l/m"));
+
+    displayValue(RUNMINTODAY_X,RUNMINTODAY_Y, lastRunMin, 4, 0);  //min
+
     lcd.setCursor(CONTROLSENSORX, CONTROLSENSORY);
     controlSensorBojler==1 ? lcd.print(F("B")) : lcd.print(F("R"));
     lcd.setCursor(SUNANGLEX,SUNANGLEY);
     lcd.print(sunAngle[month()-1]);
-    
     
   } else if (display==DISPLAY_T_DIFF_ON) {
     displayInfoValue('TDiffON', tDiffON, 'C');
@@ -1222,53 +1206,53 @@ void lcdShow() {
   }
 }
 
-void displayTemp(int x, int y, float value, bool des) {
-  /*
-  value     des=true   des=false
-            0123       0123
-  89.3      89.3       89
-  10.0      10.0       10
-   9.9       9.9        9
-   1.1       1.1        1
-   0.9       0.9        0
-   0.1       0.0        0
-   0.0       0.0        0
-  -0.1      -0.1       -0
-  -0.9      -0.9       -0
-  -1.0      -1.0       -1
-  -9.9      -9.9       -9
- -10.0      -10        -10
- -25.2      -25        -25  
-   */
-  lcd.setCursor(x,y);
+// void displayTemp(int x, int y, float value, bool des) {
+  // /*
+  // value     des=true   des=false
+            // 0123       0123
+  // 89.3      89.3       89
+  // 10.0      10.0       10
+   // 9.9       9.9        9
+   // 1.1       1.1        1
+   // 0.9       0.9        0
+   // 0.1       0.0        0
+   // 0.0       0.0        0
+  // -0.1      -0.1       -0
+  // -0.9      -0.9       -0
+  // -1.0      -1.0       -1
+  // -9.9      -9.9       -9
+ // -10.0      -10        -10
+ // -25.2      -25        -25  
+   // */
+  // lcd.setCursor(x,y);
   
-  //DEBUG_PRINTLN(F(value);
-  if (!des) {
-    value = round(value);
-  }
+  // //DEBUG_PRINTLN(F(value);
+  // if (!des) {
+    // value = round(value);
+  // }
   
-  if (value<10.f && value>=0.f) {
-    //DEBUG_PRINT(F("_"));
-    lcd.print(F(" "));
-  } else if (value<0.f && value>-10.f) {
-    //DEBUG_PRINT(F("_"));
-    lcd.print(F("-"));
-  } else if (value<-10.f) {
-    des = false;
-    //DEBUG_PRINT("-"));
-  }
+  // if (value<10.f && value>=0.f) {
+    // //DEBUG_PRINT(F("_"));
+    // lcd.print(F(" "));
+  // } else if (value<0.f && value>-10.f) {
+    // //DEBUG_PRINT(F("_"));
+    // lcd.print(F("-"));
+  // } else if (value<-10.f) {
+    // des = false;
+    // //DEBUG_PRINT("-"));
+  // }
   
-  if (value>=100.f) {
-    value=value-100.f;
-  }
+  // if (value>=100.f) {
+    // value=value-100.f;
+  // }
  
-  lcd.print(abs((int)value));
-  if (des) {
-    lcd.print(F("."));
-    lcd.print(abs((int)(value*10)%10));
-  }
-  lcd.print(F(" "));
-}
+  // lcd.print(abs((int)value));
+  // if (des) {
+    // lcd.print(F("."));
+    // lcd.print(abs((int)(value*10)%10));
+  // }
+  // lcd.print(F(" "));
+// }
 
 
 //---------------------------------------------K E Y B O A R D ------------------------------------------------
@@ -1452,3 +1436,26 @@ bool calcFlow(void *) {
   return true;
 }
 #endif
+
+void displayValue(int x, int y, float value, byte cela, byte des) {
+  char buffer [18];
+  if (des==0) {
+    value = round(value);
+  }
+ 
+  char format[5];
+  char cislo[2];
+  itoa (cela, cislo, 10);
+  strcpy(format, "%");
+  strcat(format, cislo);
+  strcat(format, "d");
+
+  sprintf (buffer, format, (int)value); // send data to the buffer
+  lcd.setCursor(x,y);
+  lcd.print(buffer); // display line on buffer
+
+  if (des>0) {
+    lcd.print(F("."));
+    lcd.print(abs((int)(value*(10*des))%(10*des)));
+  }
+}

@@ -162,14 +162,14 @@ D8                                           - relay 2
 #define ENERGYY                              1
 #define FLOWX                                1
 #define FLOWY                                2
-#define MINRUNX                             16
-#define MINRUNY                              1
+#define RUNMINTODAY_X                       16
+#define RUNMINTODAY_Y                        1
 #define TIMEX                                0
 #define TIMEY                                3
 #define POZ0X                                0
 #define POZ0Y                                0
 #define POZ1Y                                1
-#define CONTROLSENSORX                       19
+#define CONTROLSENSORX                      19
 #define CONTROLSENSORY                       0
 #define SUNANGLEX                            6
 #define SUNANGLEY                            3
