@@ -151,24 +151,24 @@ D8                                           - relay 2
 #define TEMP5X                              12  //Control
 #define TEMP5Y                               0
 #define TEMP6X                               9  //Bojler in
-#define TEMP6Y                               2
+#define TEMP6Y                               1
 #define TEMP7X                              12  //Bojler out
-#define TEMP7Y                               2
+#define TEMP7Y                               1
 #define TEMP8X                              15  //Bojler
-#define TEMP8Y                               2
+#define TEMP8Y                               1
 #define POWERX                               0
-#define POWERY                               1
+#define POWERY                               2
 #define ENERGYX                              8
-#define ENERGYY                              1
+#define ENERGYY                              2
 #define FLOWX                                1
-#define FLOWY                                2
+#define FLOWY                                1
 #define RUNMINTODAY_X                       16
-#define RUNMINTODAY_Y                        1
+#define RUNMINTODAY_Y                        2
 #define TIMEX                                0
 #define TIMEY                                3
 #define POZ0X                                0
 #define POZ0Y                                0
-#define POZ1Y                                1
+#define POZ1Y                                2
 #define CONTROLSENSORX                      19
 #define CONTROLSENSORY                       0
 #define SUNANGLEX                            6

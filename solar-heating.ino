@@ -8,8 +8,7 @@ POZOR na verzi desky esp8266 2.42+, nefunguje interrupt, až do vyřešení nep�
 */
 
 /*TODO
-pripojit cidlo prutoku
-ukladani a nacitani hodnot z config.json
+vyresit chybu teplomeru
 */
 
 #include "Configuration.h"
