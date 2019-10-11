@@ -1056,10 +1056,10 @@ bool tempMeas(void *) {
   
   //obcas se vyskytne chyba a vsechna cidla prestanou merit
   //zkusim restartovat sbernici
-  bool reset=true;
+  bool reset=false;
   for (byte i=0; i<numberOfDevices; i++) {
-    if (sensor[i]!=0.0 || sensor[i]>-100.0) {
-      reset=false;
+    if (sensor[i]==0.0 || sensor[i]<-100.0) {
+      reset=true;
     }
   }
   if (reset) {
