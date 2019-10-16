@@ -66,7 +66,7 @@ byte customChar[] = {
 };
 
 unsigned int volatile pulseCount            = 0;
-unsigned long lastRunMin                    = 0;
+//unsigned long lastRunMin                    = 0;
     
 uint32_t heartBeat                          = 0;
    
@@ -426,7 +426,7 @@ void setup() {
  
   dsInit();
 
-  lcd.clear();
+  //lcd.clear();
 
   if (numberOfDevices>NUMBER_OF_DEVICES) {
     DEBUG_PRINTLN("ERROR - real number of devices DS18B20 > NUMBER_OF_DEVICES. Change variable NUMBER_OF_DEVICES in configuration file!!!!!!!!");
@@ -1169,7 +1169,7 @@ void lcdShow() {
     displayValue(FLOWX,FLOWY, lMin, 3, 0);  
     lcd.print(F("l/m"));
 
-    displayValue(RUNMINTODAY_X,RUNMINTODAY_Y, lastRunMin, 4, 0);  //min
+    displayValue(RUNMINTODAY_X,RUNMINTODAY_Y, secOnDay / 60, 4, 0);  //min
 
     lcd.setCursor(CONTROLSENSORX, CONTROLSENSORY);
     controlSensorBojler==1 ? lcd.print(F("B")) : lcd.print(F("R"));
@@ -1371,6 +1371,7 @@ void dsInit(void) {
   }
   dsSensors.setResolution(12);
   dsSensors.setWaitForConversion(false);
+  lcd.clear();
 }
 
 
