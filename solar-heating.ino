@@ -97,7 +97,7 @@ float tMaxBojler                            = 0; //maximal boiler temperature (j
 
    
 byte manualRelay                             = 2;
-byte relayStatus                             = RELAY_OFF;
+byte relayStatus                             = RELAY_ON;
    
 bool manualON                               = false;
 //bool shouldSaveConfig                       = false; //flag for saving data
