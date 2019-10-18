@@ -283,6 +283,7 @@ void setup() {
   pinMode(BUILTIN_LED, OUTPUT);
   pinMode(STATUS_LED, OUTPUT);
   pinMode(PIRPIN, INPUT);
+  pinMode(ONE_WIRE_BUS, INPUT);
 #ifdef flowSensor
   //pinMode(FLOWSENSORPIN, INPUT);
   //digitalWrite(FLOWSENSORPIN, HIGH); // Optional Internal Pull-Up
@@ -429,7 +430,7 @@ void setup() {
   //lcd.clear();
 
   if (numberOfDevices>NUMBER_OF_DEVICES) {
-    DEBUG_PRINTLN("ERROR - real number of devices DS18B20 > NUMBER_OF_DEVICES. Change variable NUMBER_OF_DEVICES in configuration file!!!!!!!!");
+    DEBUG_PRINTLN("ERROR - real number of devices DS18B20 > NUMBER_OF_DEVICES. Change variable NUMBER_OF_DEVICES in Configuration.h file!!!!!!!!");
   }
 
   if (SPIFFS.begin()) {
@@ -996,7 +997,9 @@ void print2digits(int number) {
 }
 
 bool tempMeas(void *) {
+  DEBUG_PRINT(F("Requesting temperatures..."));
   dsSensors.requestTemperatures(); 
+  DEBUG_PRINTLN(F("DONE"));
   for (byte i=0;i<numberOfDevices; i++) {
     float tempTemp=(float)TEMP_ERR;
     for (byte j=0;j<10;j++) { //try to read temperature ten times
@@ -1065,8 +1068,10 @@ bool tempMeas(void *) {
   }
   if (reset) {
     dsInit();
+  } else {
+    firstTempMeasDone = true;
   }
-  firstTempMeasDone = true;
+  
   return true;
 }
 
