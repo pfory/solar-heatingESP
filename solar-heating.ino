@@ -1058,7 +1058,8 @@ bool tempMeas(void *) {
   //zkusim restartovat sbernici
   bool reset=false;
   for (byte i=0; i<numberOfDevices; i++) {
-    if (sensor[i]==0.0 || sensor[i]<-100.0) {
+    //if (sensor[i]==0.0 || sensor[i]<-100.0) {
+    if (sensor[i]<-100.0) {
       reset=true;
     }
   }
