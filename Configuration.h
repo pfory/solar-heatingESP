@@ -2,7 +2,7 @@
 #define CONFIGURATION_H
 
 //SW name & version
-#define     VERSION                       "1.73"
+#define     VERSION                       "1.74"
 #define     SW_NAME                       "Solar"
 
 #define ota

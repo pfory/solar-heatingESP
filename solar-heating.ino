@@ -1180,8 +1180,8 @@ void lcdShow() {
     lcd.setCursor(CONTROLSENSORX, CONTROLSENSORY);
     controlSensorBojler==1 ? lcd.print(F("B")) : lcd.print(F("R"));
     lcd.setCursor(SUNANGLEX,SUNANGLEY);
-    lcd.print("Naklon:");
-    lcd.print(sunAngle[month()-1]);
+    lcd.print("Uhel:");
+    lcd.print(90- sunAngle[month()-1]);
     lcd.write(byte(0));
     
   } else if (display==DISPLAY_T_DIFF_ON) {
