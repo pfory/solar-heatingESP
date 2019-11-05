@@ -851,6 +851,7 @@ bool sendDataHA(void *) {
   sender.add("tBojler", tBojler);
   sender.add("tBojlerIN", tBojlerIn);
   sender.add("tBojlerOUT", tBojlerOut);
+  sender.add("tControl", tControl);
   DEBUG_PRINTLN(F("Calling MQTT"));
   
   noInterrupts();
@@ -1077,14 +1078,14 @@ bool tempMeas(void *) {
 
 void dispRelayStatus() {
   lcd.setCursor(RELAY_STATUSX,RELAY_STATUSY);
-  if (relayStatus==RELAY_ON) {
-    lcd.print(" ON");
-  } else if (relayStatus==RELAY_OFF) {
-    lcd.print("OFF");
-  } else if (manualRelay==1) {
+  if (manualRelay==1) {
     lcd.print("MON");
   } else if (manualRelay==0) {
     lcd.print("MOF");
+  } else if (relayStatus==RELAY_ON) {
+    lcd.print(" ON");
+  } else if (relayStatus==RELAY_OFF) {
+    lcd.print("OFF");
   }
 }
 
