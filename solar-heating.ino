@@ -162,7 +162,7 @@ unsigned int numberOfDevices                = 0; // Number of temperature device
 
 float sensor[NUMBER_OF_DEVICES];
 
-byte sunAngle[12]                           = {17,23,32,44,55,62,63,58,48,37}; //uhel slunce nad obzorem kdyz je na jihu
+byte sunAngle[12]                           = {17,23,32,44,55,62,63,58,48,37,26,19}; //uhel slunce nad obzorem kdyz je na jihu
 
 bool isDebugEnabled()
 {
