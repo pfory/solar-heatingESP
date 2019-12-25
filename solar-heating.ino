@@ -870,7 +870,7 @@ bool sendStatisticHA(void *) {
   sender.add("VersionSWSolar", VERSION);
   sender.add("Napeti",  ESP.getVcc());
   sender.add("HeartBeat", heartBeat++);
-  sender.add("RSSI", WiFi.RSSI());
+  if (heartBeat % 10 == 0) sender.add("RSSI", WiFi.RSSI());
   sender.add("tDiffON", tDiffON);
   sender.add("tDiffOFF", tDiffOFF);
   sender.add("controlSensorBojler", controlSensorBojler);
