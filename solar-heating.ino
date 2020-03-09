@@ -99,7 +99,6 @@ float tMaxBojler                            = 0; //maximal boiler temperature (j
 byte manualRelay                             = 2;
 byte relayStatus                             = RELAY_ON;
    
-bool manualON                               = false;
 //bool shouldSaveConfig                       = false; //flag for saving data
 
 bool todayClear                             = false;
@@ -1342,10 +1341,14 @@ void keyBoard() {
       display=DISPLAY_MAIN;
     }
     if (key=='D') {
-      manualON = !manualON;
-      if (manualON) {
-        manualRelay=1;
-      } else {
+      // manualON = !manualON;
+      // if (manualON) {
+        // manualRelay=1;
+      // } else {
+        // manualRelay=0;
+      // }
+      manualRelay++;
+      if (manualRelay>2) {
         manualRelay=0;
       }
     }
