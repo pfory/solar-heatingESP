@@ -2,7 +2,7 @@
 #define CONFIGURATION_H
 
 //SW name & version
-#define     VERSION                       "1.77"
+#define     VERSION                       "1.78"
 #define     SW_NAME                       "Solar"
 
 #define ota
@@ -191,6 +191,7 @@ D8                                           - relay 2
 #define DELAY_AFTER_ON                       120000 //1000*60*2; //po tento cas zustane rele sepnute bez ohledu na stav teplotnich cidel
   
 #define SAFETY_ON                            86.0 //teplota, pri niz rele vzdy sepne
+#define ROOMTEMPON                           25.0 //teplota, pri niz sepne rele kdyz je kontrolni cidlo mistnost
   
 #define SEND_DELAY                           30000  //prodleva mezi poslanim dat v ms
 #define SHOW_INFO_DELAY                      5000  //

@@ -1031,7 +1031,7 @@ bool tempMeas(void *) {
 */
   
   //controlSensorBojler==1 ? tControl = tBojler : tControl = tRoom;
-  controlSensorBojler==1 ? tControl = tBojler : tControl = 40.0;
+  controlSensorBojler==1 ? tControl = tBojler : tControl = ROOMTEMPON;
   
   if (tP2Out>tMaxOut)       tMaxOut      = tP2Out;
   if (tP2In>tMaxIn)         tMaxIn       = tP2In;
