@@ -1030,7 +1030,8 @@ bool tempMeas(void *) {
   tBojler     = sensor[0]; //so7
 */
   
-  controlSensorBojler==1 ? tControl = tBojler : tControl = tRoom;
+  //controlSensorBojler==1 ? tControl = tBojler : tControl = tRoom;
+  controlSensorBojler==1 ? tControl = tBojler : tControl = 40.0;
   
   if (tP2Out>tMaxOut)       tMaxOut      = tP2Out;
   if (tP2In>tMaxIn)         tMaxIn       = tP2In;
