@@ -23,9 +23,9 @@ vyresit chybu teplomeru
 #include "Sender.h"
 #include <Wire.h>
 #include <PubSubClient.h>
-#include "ESP8266FtpServer.h"
+//#include "ESP8266FtpServer.h"
 
-FtpServer ftpSrv;
+//FtpServer ftpSrv;
 
 #ifdef ota
 #include <ArduinoOTA.h>
@@ -434,7 +434,7 @@ void setup() {
 
   if (SPIFFS.begin()) {
    DEBUG_PRINTLN("SPIFFS opened!");
-   ftpSrv.begin("esp8266", "esp8266"); // username, password for ftp. Set ports in ESP8266FtpServer.h (default 21, 50009 for PASV)
+   //ftpSrv.begin("esp8266", "esp8266"); // username, password for ftp. Set ports in ESP8266FtpServer.h (default 21, 50009 for PASV)
   }
   
   //setup timers
@@ -490,7 +490,7 @@ void loop() {
   client.loop();
   
   //handle ftp server
-  ftpSrv.handleFTP();
+  //ftpSrv.handleFTP();
 
   displayClear();
   nulStat();
@@ -1096,7 +1096,7 @@ void relay() {
     DEBUG_PRINTLN(F("SAFETY CONTROL!!!!"));
   } else if (manualRelay==2) {
     //-----------------------------------zmena 0-1--------------------------------------------
-    if (relayStatus == RELAY_OFF && ((tP1Out - tControl) >= tDiffON || (tP2Out - tControl) >= tDiffON)) {
+    if (relayStatus == RELAY_OFF && ((tP1Out - tControl) >= tDiffON || (tP2Out - tControl) >= tDiffON || (tP1In - tControl) >= tDiffON || (tP2In - tControl) >= tDiffON)) {
       lastOffOn = millis();
       relayStatus = RELAY_ON;
       changeRelay(relayStatus);
