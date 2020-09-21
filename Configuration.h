@@ -19,7 +19,7 @@
 #include <timer.h>
 
 //SW name & version
-#define     VERSION                       "1.80"
+#define     VERSION                       "1.81"
 #define     SW_NAME                       "Solar"
 
 #define ota
@@ -32,7 +32,7 @@
 #define AUTOCONNECTPWD    "password"
 
 #ifdef ota
-#define HOSTNAMEOTA   "solar"
+#define HOSTNAMEOTA   SW_NAME VERSION
 #include <ArduinoOTA.h>
 #endif
 

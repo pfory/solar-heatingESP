@@ -4,7 +4,7 @@ SOLAR - control system for solar unit
 Petr Fory pfory@seznam.cz
 GIT - https://github.com/pfory/solar-heating
 //Wemos D1 R2 & mini  !!!!!!!!!!!! 1M SPIFSS !!!!!!!!!!!!!!!!!!!!!!!!!!!
-POZOR na verzi desky esp8266 2.42+, nefunguje interrupt, až do vyřešení nepřecházet na vyšší verzi
+vyřešeno void ICACHE_RAM_ATTR flow(); - POZOR na verzi desky esp8266 2.42+, nefunguje interrupt, až do vyřešení nepřecházet na vyšší verzi
 */
 
 /*TODO
@@ -232,6 +232,8 @@ WiFiClient espClient;
 PubSubClient client(espClient);
 
 
+void ICACHE_RAM_ATTR flow();
+
 //----------------------------------------------------- S E T U P -----------------------------------------------------------
 void setup() {
   // put your setup code here, to run once:
@@ -242,8 +244,16 @@ void setup() {
 
   WiFiManager wifiManager;
 
+  //set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
+  wifiManager.setAPCallback(configModeCallback);
+  wifiManager.setConfigPortalTimeout(CONFIG_PORTAL_TIMEOUT);
+  wifiManager.setConnectTimeout(CONNECT_TIMEOUT);
+
   if (drd.detectDoubleReset()) {
+    drd.stop();
     DEBUG_PRINTLN("Double reset detected, starting config portal...");
+    ticker.attach(0.2, tick);
+
     if (!wifiManager.startConfigPortal(HOSTNAMEOTA)) {
       DEBUG_PRINTLN("failed to connect and hit timeout");
       delay(3000);
@@ -285,8 +295,7 @@ void setup() {
 
   ticker.attach(1, tick);
   //bool _dblreset = drd.detectDoubleReset();
-    
-  WiFi.printDiag(Serial);
+
     
   bool validConf = readConfig();
   if (!validConf) {
@@ -317,16 +326,14 @@ void setup() {
   _gw.fromString(static_gw);
   _sn.fromString(static_sn);
 
+  WiFi.printDiag(Serial);
+
   wifiManager.setSTAStaticIPConfig(_ip, _gw, _sn);
   
   DEBUG_PRINTLN(_ip);
   DEBUG_PRINTLN(_gw);
   DEBUG_PRINTLN(_sn);
 
-  //set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
-  wifiManager.setAPCallback(configModeCallback);
-  wifiManager.setConfigPortalTimeout(CONFIG_PORTAL_TIMEOUT);
-  wifiManager.setConnectTimeout(CONNECT_TIMEOUT);
   
   if (!wifiManager.autoConnect(AUTOCONNECTNAME, AUTOCONNECTPWD)) { 
     DEBUG_PRINTLN("failed to connect and hit timeout");
@@ -423,6 +430,7 @@ void setup() {
   
   //setup timers
   if (numberOfDevices>0) {
+    DEBUG_PRINTLN("Setup timers.");
     timer.every(SEND_DELAY, sendDataHA);
     timer.every(MEAS_DELAY, tempMeas);
     timer.every(CALC_DELAY, calcPowerAndEnergy);
@@ -483,6 +491,7 @@ void loop() {
   displayClear();
   nulStat();
 
+  drd.loop();
 } //loop
 
 
@@ -524,15 +533,6 @@ void nulStat() {
 
 void changeRelay(byte status) {
   digitalWrite(RELAY1PIN, status);
-}
-
-void sendRelayHA(byte akce) {
-  digitalWrite(BUILTIN_LED, LOW);
-  SenderClass sender;
-  sender.add("relayChange", akce);
- 
-  sender.sendMQTT(mqtt_server, mqtt_port, mqtt_username, mqtt_key, mqtt_base);
-  digitalWrite(BUILTIN_LED, HIGH);
 }
 
 bool calcPowerAndEnergy(void *) {
@@ -665,6 +665,7 @@ void configModeCallback (WiFiManager *myWiFiManager) {
   DEBUG_PRINTLN(myWiFiManager->getConfigPortalSSID());
   //entered config mode, make led toggle faster
   ticker.attach(0.2, tick);
+  drd.stop();
 }
 
 
@@ -798,6 +799,16 @@ bool readConfig() {
   return false;
 }
 
+void sendRelayHA(byte akce) {
+  digitalWrite(BUILTIN_LED, LOW);
+  SenderClass sender;
+  sender.add("relayChange", akce);
+ 
+  sender.sendMQTT(mqtt_server, mqtt_port, mqtt_username, mqtt_key, mqtt_base);
+  digitalWrite(BUILTIN_LED, HIGH);
+}
+
+
 bool sendSOHA(void *) {
   digitalWrite(BUILTIN_LED, LOW);
   printSystemTime();
@@ -815,9 +826,9 @@ bool sendSOHA(void *) {
   // sender.add("so6", sensorOrder[6]);
   // sender.add("so7", sensorOrder[7]);
 
-  noInterrupts();
+  //noInterrupts();
   sender.sendMQTT(mqtt_server, mqtt_port, mqtt_username, mqtt_key, mqtt_base);
-  interrupts();
+  //interrupts();
   digitalWrite(BUILTIN_LED, HIGH);
   return true;
 }
@@ -841,9 +852,9 @@ bool sendDataHA(void *) {
   sender.add("tControl", tControl);
   DEBUG_PRINTLN(F("Calling MQTT"));
   
-  noInterrupts();
+  //noInterrupts();
   sender.sendMQTT(mqtt_server, mqtt_port, mqtt_username, mqtt_key, mqtt_base);
-  interrupts();
+  //interrupts();
   digitalWrite(BUILTIN_LED, HIGH);
   return true;
 }
@@ -864,9 +875,9 @@ bool sendStatisticHA(void *) {
   
   DEBUG_PRINTLN(F("Calling MQTT"));
   
-  noInterrupts();
+  //noInterrupts();
   sender.sendMQTT(mqtt_server, mqtt_port, mqtt_username, mqtt_key, mqtt_base);
-  interrupts();
+  //interrupts();
   digitalWrite(BUILTIN_LED, HIGH);
   return true;
 }
