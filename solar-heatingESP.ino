@@ -14,31 +14,11 @@ vyresit chybu teplomeru
 #include "Configuration.h"
 
 
-#include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
-#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
-#include <FS.h>          //this needs to be first
-#include <Ticker.h>
-#include <ArduinoJson.h> //https://github.com/bblanchon/ArduinoJson
-#include "DoubleResetDetector.h" // https://github.com/datacute/DoubleResetDetector
-#include "Sender.h"
-#include <Wire.h>
-#include <PubSubClient.h>
-//#include "ESP8266FtpServer.h"
-
-//FtpServer ftpSrv;
-
-#ifdef ota
-#include <ArduinoOTA.h>
-#endif
-
 #ifdef serverHTTP
-#include <ESP8266WebServer.h>
 ESP8266WebServer server(80);
 #endif
 
 #ifdef time
-#include <TimeLib.h>
-#include <Timezone.h>
 WiFiUDP EthernetUdp;
 static const char     ntpServerName[]       = "tik.cesnet.cz";
 //const int timeZone = 2;     // Central European Time
@@ -51,8 +31,6 @@ time_t getNtpTime();
 #endif
 
 
-#define CFGFILE "/config.json"
-
 //navrhar - https://maxpromer.github.io/LCD-Character-Creator/
 byte customChar[] = {
   B01110,
@@ -64,6 +42,8 @@ byte customChar[] = {
   B00000,
   B00000
 };
+
+DoubleResetDetector drd(DRD_TIMEOUT, DRD_ADDRESS);
 
 unsigned int volatile pulseCount            = 0;
 //unsigned long lastRunMin                    = 0;
@@ -116,12 +96,7 @@ unsigned int display                        = 0;
 unsigned long showInfo                      = 0; //zobrazeni 4 radky na displeji
 
 
-#include <LiquidCrystal_I2C.h>
 LiquidCrystal_I2C lcd(LCDADDRESS,LCDCOLS,LCDROWS);  // set the LCD
-
-#include <Keypad_I2C.h>
-#include <Keypad.h>          // GDY120705
-#include <Wire.h>
 
 const byte ROWS = 4; //four rows
 const byte COLS = 4; //three columns
@@ -150,9 +125,7 @@ byte            controlSensorBojler        = 1; //kontrolni cidlo 1 - Bojler 0 R
 byte            sensorOrder[NUMBER_OF_DEVICES];
 
 //DALLAS temperature sensors
-#include <OneWire.h>
 OneWire onewire(ONE_WIRE_BUS);  // pin for onewire DALLAS bus
-#include <DallasTemperature.h>
 DallasTemperature dsSensors(&onewire);
 DeviceAddress tempDeviceAddress;
 
@@ -172,10 +145,8 @@ bool isDebugEnabled()
 }
 
 //for LED status
-#include <Ticker.h>
 Ticker ticker;
 
-#include <timer.h>
 auto timer = timer_create_default(); // create a timer with default settings
 Timer<> default_timer; // save as above
 
@@ -269,6 +240,19 @@ void setup() {
   DEBUG_PRINT(F(" "));
   DEBUG_PRINTLN(F(VERSION));
 
+  WiFiManager wifiManager;
+
+  if (drd.detectDoubleReset()) {
+    DEBUG_PRINTLN("Double reset detected, starting config portal...");
+    if (!wifiManager.startConfigPortal(HOSTNAMEOTA)) {
+      DEBUG_PRINTLN("failed to connect and hit timeout");
+      delay(3000);
+      //reset and try again, or maybe put it to deep sleep
+      ESP.reset();
+      delay(5000);
+    }
+  }
+
   lcd.init();               // initialize the lcd 
   lcd.noCursor();
   lcd.backlight();
@@ -328,9 +312,6 @@ void setup() {
   client.setServer(mqtt_server, mqtt_port);
   client.setCallback(callback);
   
-  //WiFiManager
-  WiFiManager wifiManager;
-  
   IPAddress _ip,_gw,_sn;
   _ip.fromString(static_ip);
   _gw.fromString(static_gw);
@@ -342,7 +323,10 @@ void setup() {
   DEBUG_PRINTLN(_gw);
   DEBUG_PRINTLN(_sn);
 
+  //set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
   wifiManager.setAPCallback(configModeCallback);
+  wifiManager.setConfigPortalTimeout(CONFIG_PORTAL_TIMEOUT);
+  wifiManager.setConnectTimeout(CONNECT_TIMEOUT);
   
   if (!wifiManager.autoConnect(AUTOCONNECTNAME, AUTOCONNECTPWD)) { 
     DEBUG_PRINTLN("failed to connect and hit timeout");
@@ -458,7 +442,11 @@ void setup() {
   //keep LED on
   digitalWrite(BUILTIN_LED, HIGH);
   digitalWrite(STATUS_LED, HIGH);
-} //setup
+
+  drd.stop();
+
+  DEBUG_PRINTLN(F("Setup end."));
+}
 
 
 //----------------------------------------------------- L O O P -----------------------------------------------------------

@@ -1,8 +1,25 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
+#include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
+#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
+#include <FS.h>          //this needs to be first
+#include <Ticker.h>
+#include <ArduinoJson.h> //https://github.com/bblanchon/ArduinoJson
+#include <DoubleResetDetector.h>      //https://github.com/khoih-prog/ESP_DoubleResetDetector
+#include "Sender.h"
+#include <Wire.h>
+#include <PubSubClient.h>
+#include <Keypad_I2C.h>
+#include <Keypad.h>          // GDY120705
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
+#include <timer.h>
+
 //SW name & version
-#define     VERSION                       "1.79"
+#define     VERSION                       "1.80"
 #define     SW_NAME                       "Solar"
 
 #define ota
@@ -16,7 +33,20 @@
 
 #ifdef ota
 #define HOSTNAMEOTA   "solar"
+#include <ArduinoOTA.h>
 #endif
+
+#ifdef time
+#include <TimeLib.h>
+#include <Timezone.h>
+#endif
+
+#ifdef serverHTTP
+#include <ESP8266WebServer.h>
+#endif
+
+#define CFGFILE "/config.json"
+
 
 #ifdef verbose
   #define DEBUG_PRINT(x)                     Serial.print (x)
@@ -34,6 +64,16 @@
   #define DEBUG_PRINTF(x, y)
   #define DEBUG_WRITE(x)
 #endif 
+
+
+// Number of seconds after reset during which a
+// subseqent reset will be considered a double reset.
+#define DRD_TIMEOUT 2
+// RTC Memory Address for the DoubleResetDetector to use
+#define DRD_ADDRESS 0
+
+#define CONFIG_PORTAL_TIMEOUT 60 //jak dlouho zustane v rezimu AP nez se cip resetuje
+#define CONNECT_TIMEOUT 120 //jak dlouho se ceka na spojeni nez se aktivuje config portal
 
 static const char* const      mqtt_server                    = "192.168.1.56";
 static const uint16_t         mqtt_port                      = 1883;
