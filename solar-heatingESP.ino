@@ -296,7 +296,13 @@ void setup() {
   ticker.attach(1, tick);
   //bool _dblreset = drd.detectDoubleReset();
 
-    
+  dsInit();
+
+  // if (SPIFFS.begin()) {
+   // DEBUG_PRINTLN("SPIFFS opened!");
+   // //ftpSrv.begin("esp8266", "esp8266"); // username, password for ftp. Set ports in ESP8266FtpServer.h (default 21, 50009 for PASV)
+  // }
+  
   bool validConf = readConfig();
   if (!validConf) {
     DEBUG_PRINTLN(F("ERROR config corrupted"));
@@ -415,18 +421,12 @@ void setup() {
   //keypad.addEventListener(keypadEvent); //add an event listener for this keypad  
   
  
-  dsInit();
-
   //lcd.clear();
 
   if (numberOfDevices>NUMBER_OF_DEVICES) {
     DEBUG_PRINTLN("ERROR - real number of devices DS18B20 > NUMBER_OF_DEVICES. Change variable NUMBER_OF_DEVICES in Configuration.h file!!!!!!!!");
   }
 
-  if (SPIFFS.begin()) {
-   DEBUG_PRINTLN("SPIFFS opened!");
-   //ftpSrv.begin("esp8266", "esp8266"); // username, password for ftp. Set ports in ESP8266FtpServer.h (default 21, 50009 for PASV)
-  }
   
   //setup timers
   if (numberOfDevices>0) {
