@@ -211,7 +211,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
     printMessageToLCD(topic, val);
     DEBUG_PRINT("send sensor order");
     void * a;
-    sendSOHA(a);
+    sendSOMQTT(a);
     
   } else {
     for (int i = 0; i<NUMBER_OF_DEVICES; i++) {
@@ -423,22 +423,21 @@ void setup() {
     DEBUG_PRINTLN("ERROR - real number of devices DS18B20 > NUMBER_OF_DEVICES. Change variable NUMBER_OF_DEVICES in Configuration.h file!!!!!!!!");
   }
 
-  
   //setup timers
   if (numberOfDevices>0) {
     DEBUG_PRINTLN("Setup timers.");
-    timer.every(SEND_DELAY, sendDataHA);
+    timer.every(SEND_DELAY, sendDataMQTT);
     timer.every(MEAS_DELAY, tempMeas);
     timer.every(CALC_DELAY, calcPowerAndEnergy);
     timer.every(CALC_DELAY, calcFlow);
   }
   
-  timer.every(SENDSTAT_DELAY, sendStatisticHA);
+  timer.every(SENDSTAT_DELAY, sendStatisticMQTT);
 //  timer.every(SENDSTAT_DELAY, countMinRun);
   timer.every(CALC_DELAY/2, displayTime);
   
   void * a;
-  sendStatisticHA(a);
+  sendStatisticMQTT(a);
 
   DEBUG_PRINTLN(" Ready");
  
@@ -477,9 +476,7 @@ void loop() {
   ArduinoOTA.handle();
 #endif
 
-  if (!client.connected()) {
-    reconnect();
-  }
+  reconnect();
   client.loop();
   
   //handle ftp server
@@ -607,6 +604,7 @@ void handleRoot() {
           <meta charset='UTF-8'>\
         </head>\
         <body>\
+          <b>Sensors:</b><br />\
           sensor[0],%s%d.%02d<br />\
           sensor[1],%s%d.%02d<br />\
           sensor[2],%s%d.%02d<br />\
@@ -615,6 +613,16 @@ void handleRoot() {
           sensor[5],%s%d.%02d<br />\
           sensor[6],%s%d.%02d<br />\
           sensor[7],%s%d.%02d<br />\
+          <br /><br />\
+          <b>Temperatures:</b>\
+          Panel 1 Input,%d.%02d<br />\
+          Panel 1 Output -,%d.%02d<br />\
+          Panel 2 Input  -,%d.%02d<br />\
+          Panel 2 Output -,%d.%02d<br />\
+          Bojler Input   -,%d.%02d<br />\
+          Bojler Output  -,%d.%02d<br />\
+          Bojler         -,%d.%02d<br />\
+          Room           -,%d.%02d<br />\
         </body>\
       </html>",
       sensor[0]<0 && sensor[0]>-1 ? "-":"",
@@ -640,8 +648,24 @@ void handleRoot() {
       abs((sensor[6] - (int)sensor[6]) * 100),
       sensor[7]<0 && sensor[7]>-1 ? "-":"",
       (int)sensor[7], 
-      abs((sensor[7] - (int)sensor[7]) * 100)
-	);
+      abs((sensor[7] - (int)sensor[7]) * 100),
+      (int)tP1In,
+      abs((tP1In - (int)tP1In) * 100),
+      (int)tP1Out,
+      abs((tP1Out - (int)tP1Out) * 100),
+      (int)tP2In,
+      abs((tP2In - (int)tP2In) * 100),
+      (int)tP2Out,
+      abs((tP2Out - (int)tP2Out) * 100),
+      (int)tBojlerIn,
+      abs((tBojlerIn - (int)tBojlerIn) * 100),
+      (int)tBojlerOut,
+      abs((tBojlerOut - (int)tBojlerOut) * 100),
+      (int)tBojler,
+      abs((tBojler - (int)tBojler) * 100),
+      (int)tRoom,
+      abs((tRoom - (int)tRoom) * 100)
+);
 	server.send ( 200, "text/html", temp );
   digitalWrite(BUILTIN_LED, HIGH);
 }
@@ -778,7 +802,7 @@ bool readConfig() {
   return false;
 }
 
-void sendRelayHA(byte akce) {
+void sendRelayMQTT(byte akce) {
   digitalWrite(BUILTIN_LED, LOW);
   SenderClass sender;
   sender.add("relayChange", akce);
@@ -788,22 +812,14 @@ void sendRelayHA(byte akce) {
 }
 
 
-bool sendSOHA(void *) {
+bool sendSOMQTT(void *) {
   digitalWrite(BUILTIN_LED, LOW);
   printSystemTime();
-  DEBUG_PRINTLN(F(" - I am sending sensor order to HA"));
+  DEBUG_PRINTLN(F(" - I am sending sensor order to MQTT"));
   SenderClass sender;
   for (int i=0; i<NUMBER_OF_DEVICES; i++) {
     sender.add("so" + String(i), sensorOrder[i]);
   }
-  // sender.add("so0", sensorOrder[0]);
-  // sender.add("so1", sensorOrder[1]);
-  // sender.add("so2", sensorOrder[2]);
-  // sender.add("so3", sensorOrder[3]);
-  // sender.add("so4", sensorOrder[4]);
-  // sender.add("so5", sensorOrder[5]);
-  // sender.add("so6", sensorOrder[6]);
-  // sender.add("so7", sensorOrder[7]);
 
   //noInterrupts();
   sender.sendMQTT(mqtt_server, mqtt_port, mqtt_username, mqtt_key, mqtt_base);
@@ -812,10 +828,10 @@ bool sendSOHA(void *) {
   return true;
 }
 
-bool sendDataHA(void *) {
+bool sendDataMQTT(void *) {
   digitalWrite(BUILTIN_LED, LOW);
   printSystemTime();
-  DEBUG_PRINTLN(F(" - I am sending data to HA"));
+  DEBUG_PRINTLN(F(" - I am sending data to MQTT"));
   
   SenderClass sender;
   sender.add("tP1IN", tP1In);
@@ -838,10 +854,10 @@ bool sendDataHA(void *) {
   return true;
 }
 
-bool sendStatisticHA(void *) {
+bool sendStatisticMQTT(void *) {
   digitalWrite(BUILTIN_LED, LOW);
   printSystemTime();
-  DEBUG_PRINTLN(F(" - I am sending statistic to HA"));
+  DEBUG_PRINTLN(F(" - I am sending statistic to MQTT"));
 
   SenderClass sender;
   sender.add("VersionSWSolar", VERSION);
@@ -1078,7 +1094,7 @@ void relay() {
       lastOffOn = millis();
       relayStatus = RELAY_ON;
       changeRelay(relayStatus);
-      sendRelayHA(1);
+      sendRelayMQTT(1);
     //-----------------------------------zmena 1-0--------------------------------------------
     } else if (relayStatus == RELAY_ON && ((((tP2Out - tControl) < tDiffOFF)) && (millis() - DELAY_AFTER_ON >= lastOffOn))) { 
       DEBUG_PRINT(F("millis()="));
@@ -1093,7 +1109,7 @@ void relay() {
       DEBUG_PRINTLN(tControl);
       relayStatus = RELAY_OFF;
       changeRelay(relayStatus);
-      sendRelayHA(0);
+      sendRelayMQTT(0);
     }
   } else if (manualRelay==1) {
       relayStatus = RELAY_ON;
