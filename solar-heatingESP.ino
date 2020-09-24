@@ -167,7 +167,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   lcd.print(topic);
   lcd.print(": ");
   lcd.print(val);
-  delay(2000);
+  delay(500);
   lcd.clear();
   
   if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_controlSensor)).c_str())==0) {
@@ -213,24 +213,25 @@ void callback(char* topic, byte* payload, unsigned int length) {
     void * a;
     sendSOHA(a);
     
-   } else {
-     for (int i = 0; i<NUMBER_OF_DEVICES; i++) {
-       if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_so) + String(i)).c_str())==0) {
-         printMessageToLCD(topic, val);
-         DEBUG_PRINT("set sensor order ");
-         DEBUG_PRINT(i);
-         DEBUG_PRINT(" to ");
-         sensorOrder[i]=val.toInt();
-         DEBUG_PRINT(val.toInt());
-         saveConfig();  
-       }
-     }
-   }  
+  } else {
+    for (int i = 0; i<NUMBER_OF_DEVICES; i++) {
+      if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_so) + String(i)).c_str())==0) {
+        printMessageToLCD(topic, val);
+        DEBUG_PRINT("set sensor order ");
+        DEBUG_PRINT(i);
+        DEBUG_PRINT(" to ");
+        sensorOrder[i]=val.toInt();
+        DEBUG_PRINTLN(val.toInt());
+        saveConfig();  
+      }
+    }
+  }  
 }
 
 WiFiClient espClient;
 PubSubClient client(espClient);
 
+WiFiManager wifiManager;
 
 void ICACHE_RAM_ATTR flow();
 
@@ -242,26 +243,8 @@ void setup() {
   DEBUG_PRINT(F(" "));
   DEBUG_PRINTLN(F(VERSION));
 
-  WiFiManager wifiManager;
-
-  //set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
-  wifiManager.setAPCallback(configModeCallback);
-  wifiManager.setConfigPortalTimeout(CONFIG_PORTAL_TIMEOUT);
-  wifiManager.setConnectTimeout(CONNECT_TIMEOUT);
-
-  if (drd.detectDoubleReset()) {
-    drd.stop();
-    DEBUG_PRINTLN("Double reset detected, starting config portal...");
-    ticker.attach(0.2, tick);
-
-    if (!wifiManager.startConfigPortal(HOSTNAMEOTA)) {
-      DEBUG_PRINTLN("failed to connect and hit timeout");
-      delay(3000);
-      //reset and try again, or maybe put it to deep sleep
-      ESP.reset();
-      delay(5000);
-    }
-  }
+  WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
+  ticker.attach(1, tick);
 
   lcd.init();               // initialize the lcd 
   lcd.noCursor();
@@ -272,6 +255,24 @@ void setup() {
   PRINT_SPACE
   lcd.print(VERSION);
   lcd.createChar(0, customChar);
+
+  if (drd.detectDoubleReset()) {
+    DEBUG_PRINTLN("Double reset detected, starting config portal...");
+    lcd.clear();
+    ticker.attach(0.2, tick);
+    lcd.print("DRD, config...");
+
+    if (!wifiManager.startConfigPortal(HOSTNAMEOTA)) {
+      DEBUG_PRINTLN("failed to connect and hit timeout");
+      lcd.print("con failed, timeout");
+      delay(3000);
+      //reset and try again, or maybe put it to deep sleep
+      ESP.reset();
+      lcd.print("ESP reset!");
+      delay(5000);
+    }
+  }
+
   
   pinMode(BUILTIN_LED, OUTPUT);
   pinMode(STATUS_LED, OUTPUT);
@@ -293,21 +294,29 @@ void setup() {
   digitalWrite(RELAY1PIN, relayStatus);
   //digitalWrite(RELAY2PIN, relay2);
 
-  ticker.attach(1, tick);
-  //bool _dblreset = drd.detectDoubleReset();
-
   dsInit();
 
-  // if (SPIFFS.begin()) {
-   // DEBUG_PRINTLN("SPIFFS opened!");
-   // //ftpSrv.begin("esp8266", "esp8266"); // username, password for ftp. Set ports in ESP8266FtpServer.h (default 21, 50009 for PASV)
-  // }
-  
-  bool validConf = readConfig();
-  if (!validConf) {
+  if (!readConfig()) {
     DEBUG_PRINTLN(F("ERROR config corrupted"));
   }
   
+  lcd.setCursor(0,2);
+  lcd.print(F("tON:"));  
+  lcd.print(tDiffON);
+  lcd.print(F(" tOFF:"));  
+  lcd.print(tDiffOFF);
+  lcd.setCursor(0,3);
+  lcd.print(F("Control:"));  
+  //lcd.print(controlSensor);
+  if (controlSensorBojler==1) {
+    lcd.print("Bojler");
+  } else {
+    lcd.print("Room");
+  }
+  delay(2000);
+  lcd.clear();
+  
+ 
   rst_info *_reset_info = ESP.getResetInfoPtr();
   uint8_t _reset_reason = _reset_info->reason;
   DEBUG_PRINT("Boot-Mode: ");
@@ -324,22 +333,21 @@ void setup() {
  REASON_EXT_SYS_RST             = 6      external system reset 
   */
 
-  client.setServer(mqtt_server, mqtt_port);
-  client.setCallback(callback);
   
+  //set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
+  wifiManager.setAPCallback(configModeCallback);
+  wifiManager.setConfigPortalTimeout(CONFIG_PORTAL_TIMEOUT);
+  wifiManager.setConnectTimeout(CONNECT_TIMEOUT);
+
+
   IPAddress _ip,_gw,_sn;
   _ip.fromString(static_ip);
   _gw.fromString(static_gw);
   _sn.fromString(static_sn);
 
-  WiFi.printDiag(Serial);
-
   wifiManager.setSTAStaticIPConfig(_ip, _gw, _sn);
   
-  DEBUG_PRINTLN(_ip);
-  DEBUG_PRINTLN(_gw);
-  DEBUG_PRINTLN(_sn);
-
+  lcd.print("Connecting to WiFi..");
   
   if (!wifiManager.autoConnect(AUTOCONNECTNAME, AUTOCONNECTPWD)) { 
     DEBUG_PRINTLN("failed to connect and hit timeout");
@@ -348,6 +356,11 @@ void setup() {
     ESP.reset();
     delay(5000);
   } 
+
+  lcd.print("WiFi connected.");
+
+  client.setServer(mqtt_server, mqtt_port);
+  client.setCallback(callback);
   
 #ifdef serverHTTP
   server.on ( "/", handleRoot );
@@ -403,26 +416,9 @@ void setup() {
     DEBUG_PRINTLN("Room");
   }
 
-  lcd.setCursor(0,1);
-  lcd.print(F("tON:"));  
-  lcd.print(tDiffON);
-  lcd.print(F(" tOFF:"));  
-  lcd.print(tDiffOFF);
-  lcd.setCursor(0,2);
-  lcd.print(F("Control:"));  
-  //lcd.print(controlSensor);
-  if (controlSensorBojler==1) {
-    lcd.print("Bojler");
-  } else {
-    lcd.print("Room");
-  }
-
   keypad.begin();
   //keypad.addEventListener(keypadEvent); //add an event listener for this keypad  
   
- 
-  //lcd.clear();
-
   if (numberOfDevices>NUMBER_OF_DEVICES) {
     DEBUG_PRINTLN("ERROR - real number of devices DS18B20 > NUMBER_OF_DEVICES. Change variable NUMBER_OF_DEVICES in Configuration.h file!!!!!!!!");
   }
@@ -454,6 +450,7 @@ void setup() {
   drd.stop();
 
   DEBUG_PRINTLN(F("Setup end."));
+  lcd.clear();
 }
 
 
@@ -660,6 +657,8 @@ void tick()
 //gets called when WiFiManager enters configuration mode
 void configModeCallback (WiFiManager *myWiFiManager) {
   DEBUG_PRINTLN("Entered config mode");
+  lcd.clear();
+  lcd.print("Connect timeout, start config...");
   DEBUG_PRINTLN(WiFi.softAPIP());
   //if you used auto generated SSID, print it
   DEBUG_PRINTLN(myWiFiManager->getConfigPortalSSID());
@@ -697,8 +696,9 @@ bool saveConfig() {
   doc["tDiffON"]                 = tDiffON;
   doc["tDiffOFF"]                = tDiffOFF;
   doc["controlSensor"]           = controlSensorBojler;
-  for (int i=0; i<NUMBER_OF_DEVICES; i++) {
-    doc["sensorOrder[" + String(i) + "0]"]          = sensorOrder[i];
+  for (int i=0; i<numberOfDevices; i++) {
+    //doc["sensorOrder[" + String(i) + "0]"]          = sensorOrder[i];
+    doc["sensorOrder[" + String(i) + "]"]          = sensorOrder[i];
   }
 
   lcd.clear();
@@ -758,35 +758,14 @@ bool readConfig() {
         DEBUG_PRINT(F("control sensor: "));
         controlSensorBojler==1 ? DEBUG_PRINTLN(" bojler") : DEBUG_PRINTLN(" room");
         
-        for (int i=0; i<NUMBER_OF_DEVICES; i++) {
-          sensorOrder[i] = doc["sensorOrder[" + String(i) + "0]"];
+        for (int i=0; i<numberOfDevices; i++) {
+          sensorOrder[i] = doc["sensorOrder[" + String(i) + "]"];
           DEBUG_PRINT(F("sensorOrder["));
           DEBUG_PRINT(i);
           DEBUG_PRINT(F("]:"));
-          DEBUG_PRINTLN(sensorOrder[0]);
+          DEBUG_PRINTLN(sensorOrder[i]);
         }
-        // sensorOrder[1] = doc["sensorOrder[1]"];
-        // DEBUG_PRINT(F("sensorOrder[1]: "));
-        // DEBUG_PRINTLN(sensorOrder[1]);
-        // sensorOrder[2] = doc["sensorOrder[2]"];
-        // DEBUG_PRINT(F("sensorOrder[2]: "));
-        // DEBUG_PRINTLN(sensorOrder[2]);
-        // sensorOrder[3] = doc["sensorOrder[3]"];
-        // DEBUG_PRINT(F("sensorOrder[3]: "));
-        // DEBUG_PRINTLN(sensorOrder[3]);
-        // sensorOrder[4] = doc["sensorOrder[4]"];
-        // DEBUG_PRINT(F("sensorOrder[4]: "));
-        // DEBUG_PRINTLN(sensorOrder[4]);
-        // sensorOrder[5] = doc["sensorOrder[5]"];
-        // DEBUG_PRINT(F("sensorOrder[5]: "));
-        // DEBUG_PRINTLN(sensorOrder[5]);
-        // sensorOrder[6] = doc["sensorOrder[6]"];
-        // DEBUG_PRINT(F("sensorOrder[6]: "));
-        // DEBUG_PRINTLN(sensorOrder[6]);
-        // sensorOrder[7] = doc["sensorOrder[7]"];
-        // DEBUG_PRINT(F("sensorOrder[7]: "));
-        // DEBUG_PRINTLN(sensorOrder[7]);
-        
+       
         return true;
       }
       DEBUG_PRINTLN(F("ERROR: unable to open config file"));
@@ -1360,7 +1339,7 @@ void dsInit(void) {
   dsSensors.begin();
   numberOfDevices = dsSensors.getDeviceCount();
 
-  lcd.setCursor(0,3);
+  lcd.setCursor(0,1);
   lcd.print(numberOfDevices);
   DEBUG_PRINT(numberOfDevices);
   
@@ -1381,7 +1360,7 @@ void dsInit(void) {
   }
   dsSensors.setResolution(12);
   dsSensors.setWaitForConversion(false);
-  lcd.clear();
+  //lcd.clear();
 }
 
 
