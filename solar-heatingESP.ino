@@ -593,12 +593,13 @@ void reconnect() {
 
 #ifdef serverHTTP
 void handleRoot() {
-	char temp[600];
+	#define TEXTLEN 1000
+  char temp[TEXTLEN];
   printSystemTime();
   DEBUG_PRINTLN(" Client request");
   digitalWrite(BUILTIN_LED, LOW);
   
-	snprintf ( temp, 400,
+	snprintf ( temp, TEXTLEN,
       "<html>\
         <head>\
           <meta charset='UTF-8'>\
@@ -614,15 +615,15 @@ void handleRoot() {
           sensor[6],%s%d.%02d<br />\
           sensor[7],%s%d.%02d<br />\
           <br /><br />\
-          <b>Temperatures:</b>\
+          <b>Temperatures:</b><br />\
           Panel 1 Input,%d.%02d<br />\
-          Panel 1 Output -,%d.%02d<br />\
-          Panel 2 Input  -,%d.%02d<br />\
-          Panel 2 Output -,%d.%02d<br />\
-          Bojler Input   -,%d.%02d<br />\
-          Bojler Output  -,%d.%02d<br />\
-          Bojler         -,%d.%02d<br />\
-          Room           -,%d.%02d<br />\
+          Panel 1 Output,%d.%02d<br />\
+          Panel 2 Input,%d.%02d<br />\
+          Panel 2 Output,%d.%02d<br />\
+          Bojler Input,%d.%02d<br />\
+          Bojler Output,%d.%02d<br />\
+          Bojler,%d.%02d<br />\
+          Room,%d.%02d<br />\
         </body>\
       </html>",
       sensor[0]<0 && sensor[0]>-1 ? "-":"",
