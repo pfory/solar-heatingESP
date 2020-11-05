@@ -606,24 +606,24 @@ void handleRoot() {
         </head>\
         <body>\
           <b>Sensors:</b><br />\
-          sensor[0],%s%d.%02d<br />\
-          sensor[1],%s%d.%02d<br />\
-          sensor[2],%s%d.%02d<br />\
-          sensor[3],%s%d.%02d<br />\
-          sensor[4],%s%d.%02d<br />\
-          sensor[5],%s%d.%02d<br />\
-          sensor[6],%s%d.%02d<br />\
-          sensor[7],%s%d.%02d<br />\
+          sensor[0]:%s%d.%02d<br />\
+          sensor[1]:%s%d.%02d<br />\
+          sensor[2]:%s%d.%02d<br />\
+          sensor[3]:%s%d.%02d<br />\
+          sensor[4]:%s%d.%02d<br />\
+          sensor[5]:%s%d.%02d<br />\
+          sensor[6]:%s%d.%02d<br />\
+          sensor[7]:%s%d.%02d<br />\
           <br /><br />\
           <b>Temperatures:</b><br />\
-          Panel 1 Input,%d.%02d<br />\
-          Panel 1 Output,%d.%02d<br />\
-          Panel 2 Input,%d.%02d<br />\
-          Panel 2 Output,%d.%02d<br />\
-          Bojler Input,%d.%02d<br />\
-          Bojler Output,%d.%02d<br />\
-          Bojler,%d.%02d<br />\
-          Room,%d.%02d<br />\
+          so0-Panel 1 Input:%d.%02d<br />\
+          so1-Panel 1 Output:%d.%02d<br />\
+          so2-Panel 2 Input:%d.%02d<br />\
+          so3-Panel 2 Output:%d.%02d<br />\
+          so4-Bojler Input:%d.%02d<br />\
+          so5-Bojler Output:%d.%02d<br />\
+          so6-Bojler:%d.%02d<br />\
+          so7-Room:%d.%02d<br />\
         </body>\
       </html>",
       sensor[0]<0 && sensor[0]>-1 ? "-":"",
