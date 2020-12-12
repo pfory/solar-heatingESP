@@ -19,7 +19,7 @@
 #include <timer.h>
 
 //SW name & version
-#define     VERSION                       "1.83"
+#define     VERSION                       "1.91"
 #define     SW_NAME                       "Solar"
 
 #define ota
@@ -80,11 +80,12 @@ static const uint16_t         mqtt_port                      = 1883;
 static const char* const      mqtt_username                  = "datel";
 static const char* const      mqtt_key                       = "hanka12";
 static const char* const      mqtt_base                      = "/home/Corridor/esp07";
-static const char* const      static_ip                      = "192.168.1.108";
-static const char* const      static_gw                      = "192.168.1.1";
-static const char* const      static_sn                      = "255.255.255.0";
+//static const char* const      static_ip                      = "192.168.1.108";
+//static const char* const      static_gw                      = "192.168.1.1";
+//static const char* const      static_sn                      = "255.255.255.0";
 static const char* const      mqtt_topic_relay               = "manualRelay";
 static const char* const      mqtt_topic_restart             = "restart";
+static const char* const      mqtt_topic_netinfo             = "netinfo";
 static const char* const      mqtt_topic_tDiffOFF            = "tDiffOFF";
 static const char* const      mqtt_topic_tDiffON             = "tDiffON";
 static const char* const      mqtt_topic_controlSensor       = "controlSensorBojler";
@@ -156,7 +157,7 @@ D8                                           - relay 2
 #define LCDCOLS                              20
 
 //All of the IO pins have interrupt/pwm/I2C/one-wire support except D0.
-#define STATUS_LED                           BUILTIN_LED //status LED
+//#define STATUS_LED                           BUILTIN_LED //status LED
 #define PIRPIN                               D0 //                           GPIO16
 #define RELAY1PIN                            D3 //relay 10k Pull-up          GPIO0
 #ifdef flowSensor
@@ -176,6 +177,8 @@ D8                                           - relay 2
 #define NUMBER_OF_DEVICES                    10
 #endif
 
+uint32_t              connectDelay                = 30000; //30s
+uint32_t              lastConnectAttempt          = 0;  
 
 //0123456789012345
 //15.6 15.8 15.8 V
@@ -236,7 +239,7 @@ D8                                           - relay 2
 #define SEND_DELAY                           30000  //prodleva mezi poslanim dat v ms
 #define SHOW_INFO_DELAY                      5000  //
 #define SENDSTAT_DELAY                       60000 //poslani statistiky kazdou minutu
-#define MEAS_DELAY                           5000  //mereni teplot
+#define MEAS_DELAY                           2000  //mereni teplot
 #define CALC_DELAY                           1000  //mereni prutoku a vypocet energie kazdou sekundu
   
 #define TEMP_ERR                            -127

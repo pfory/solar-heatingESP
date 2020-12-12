@@ -13,6 +13,15 @@ vyresit chybu teplomeru
 
 #include "Configuration.h"
 
+//DALLAS temperature sensors
+OneWire onewire(ONE_WIRE_BUS);  // pin for onewire DALLAS bus
+DallasTemperature dsSensors(&onewire);
+DeviceAddress tempDeviceAddress;
+
+DeviceAddress tempDeviceAddresses[NUMBER_OF_DEVICES];
+unsigned int numberOfDevices                = 0; // Number of temperature devices found
+
+float sensor[NUMBER_OF_DEVICES];
 
 #ifdef serverHTTP
 ESP8266WebServer server(80);
@@ -21,8 +30,6 @@ ESP8266WebServer server(80);
 #ifdef time
 WiFiUDP EthernetUdp;
 static const char     ntpServerName[]       = "tik.cesnet.cz";
-//const int timeZone = 2;     // Central European Time
-//Central European Time (Frankfurt, Paris)
 TimeChangeRule        CEST                  = {"CEST", Last, Sun, Mar, 2, 120};     //Central European Summer Time
 TimeChangeRule        CET                   = {"CET", Last, Sun, Oct, 3, 60};       //Central European Standard Time
 Timezone CE(CEST, CET);
@@ -92,7 +99,7 @@ void flow () { // Interrupt function
 }
 #endif    
     
-unsigned int display                        = 0;
+unsigned int displayType                    = DISPLAY_MAIN;
 unsigned long showInfo                      = 0; //zobrazeni 4 radky na displeji
 
 
@@ -124,20 +131,10 @@ byte            controlSensorBojler        = 1; //kontrolni cidlo 1 - Bojler 0 R
 
 byte            sensorOrder[NUMBER_OF_DEVICES];
 
-//DALLAS temperature sensors
-OneWire onewire(ONE_WIRE_BUS);  // pin for onewire DALLAS bus
-DallasTemperature dsSensors(&onewire);
-DeviceAddress tempDeviceAddress;
-
-DeviceAddress tempDeviceAddresses[NUMBER_OF_DEVICES];
-unsigned int numberOfDevices                = 0; // Number of temperature devices found
-
-float sensor[NUMBER_OF_DEVICES];
 
 byte sunAngle[12]                           = {17,23,32,44,55,62,63,58,48,37,26,19}; //uhel slunce nad obzorem kdyz je na jihu
 
-bool isDebugEnabled()
-{
+bool isDebugEnabled() {
 #ifdef verbose
   return true;
 #endif // verbose
@@ -149,6 +146,27 @@ Ticker ticker;
 
 auto timer = timer_create_default(); // create a timer with default settings
 Timer<> default_timer; // save as above
+
+
+void tick() {
+  //toggle state
+  int state = digitalRead(BUILTIN_LED);  // get the current state of GPIO1 pin
+  digitalWrite(BUILTIN_LED, !state);     // set pin to the opposite state
+}
+  
+//gets called when WiFiManager enters configuration mode
+void configModeCallback (WiFiManager *myWiFiManager) {
+  DEBUG_PRINTLN("Entered config mode");
+  lcd.clear();
+  lcd.print("Connect timeout, start config...");
+  DEBUG_PRINTLN(WiFi.softAPIP());
+  //if you used auto generated SSID, print it
+  DEBUG_PRINTLN(myWiFiManager->getConfigPortalSSID());
+  //entered config mode, make led toggle faster
+  ticker.attach(0.1, tick);
+  drd.stop();
+}
+
 
 //MQTT callback
 void callback(char* topic, byte* payload, unsigned int length) {
@@ -197,6 +215,10 @@ void callback(char* topic, byte* payload, unsigned int length) {
     DEBUG_PRINT("RESTART");
     saveConfig();
     ESP.restart();
+  } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_netinfo)).c_str())==0) {
+    printMessageToLCD(topic, val);
+    DEBUG_PRINT("NET INFO");
+    sendNetInfoMQTT();    
   } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_relay)).c_str())==0) {
     printMessageToLCD(topic, val);
     DEBUG_PRINT("set manual control relay to ");
@@ -237,14 +259,24 @@ void ICACHE_RAM_ATTR flow();
 
 //----------------------------------------------------- S E T U P -----------------------------------------------------------
 void setup() {
-  // put your setup code here, to run once:
   SERIAL_BEGIN;
   DEBUG_PRINT(F(SW_NAME));
   DEBUG_PRINT(F(" "));
   DEBUG_PRINTLN(F(VERSION));
 
-  WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
+  pinMode(RELAY1PIN, OUTPUT);
+  pinMode(RELAY2PIN, OUTPUT);
+  digitalWrite(RELAY1PIN, relayStatus);
+
   ticker.attach(1, tick);
+
+  WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
+
+  //set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
+  wifiManager.setAPCallback(configModeCallback);
+  wifiManager.setConfigPortalTimeout(CONFIG_PORTAL_TIMEOUT);
+  wifiManager.setConnectTimeout(CONNECT_TIMEOUT);
+
 
   lcd.init();               // initialize the lcd 
   lcd.noCursor();
@@ -273,10 +305,8 @@ void setup() {
     }
   }
 
-  
   pinMode(BUILTIN_LED, OUTPUT);
-  pinMode(STATUS_LED, OUTPUT);
-  pinMode(PIRPIN, INPUT);
+//  pinMode(STATUS_LED, OUTPUT);
   pinMode(ONE_WIRE_BUS, INPUT);
 #ifdef flowSensor
   //pinMode(FLOWSENSORPIN, INPUT);
@@ -288,11 +318,29 @@ void setup() {
   //digitalWrite(FLOWSENSORPIN, HIGH); // Optional Internal Pull-Up
   attachInterrupt(FLOWSENSORPIN, flow, CHANGE); // Setup Interrupt*/
 #endif
-  pinMode(RELAY1PIN, OUTPUT);
-  pinMode(RELAY2PIN, OUTPUT);
+#ifdef PIR
+  pinMode(PIRPIN, INPUT);
+#endif
 
-  digitalWrite(RELAY1PIN, relayStatus);
-  //digitalWrite(RELAY2PIN, relay2);
+  rst_info *_reset_info = ESP.getResetInfoPtr();
+  uint8_t _reset_reason = _reset_info->reason;
+  DEBUG_PRINT("Boot-Mode: ");
+  DEBUG_PRINTLN(_reset_reason);
+  heartBeat = _reset_reason;
+
+  /*
+ REASON_DEFAULT_RST             = 0      normal startup by power on 
+ REASON_WDT_RST                 = 1      hardware watch dog reset 
+ REASON_EXCEPTION_RST           = 2      exception reset, GPIO status won't change 
+ REASON_SOFT_WDT_RST            = 3      software watch dog reset, GPIO status won't change 
+ REASON_SOFT_RESTART            = 4      software restart ,system_restart , GPIO status won't change 
+ REASON_DEEP_SLEEP_AWAKE        = 5      wake up from deep-sleep 
+ REASON_EXT_SYS_RST             = 6      external system reset 
+  */
+  client.setServer(mqtt_server, mqtt_port);
+  client.setCallback(callback);
+
+  WiFi.printDiag(Serial);
 
   dsInit();
 
@@ -316,37 +364,6 @@ void setup() {
   delay(2000);
   lcd.clear();
   
- 
-  rst_info *_reset_info = ESP.getResetInfoPtr();
-  uint8_t _reset_reason = _reset_info->reason;
-  DEBUG_PRINT("Boot-Mode: ");
-  DEBUG_PRINTLN(_reset_reason);
-  heartBeat = _reset_reason;
-  
- /*
- REASON_DEFAULT_RST             = 0      normal startup by power on 
- REASON_WDT_RST                 = 1      hardware watch dog reset 
- REASON_EXCEPTION_RST           = 2      exception reset, GPIO status won't change 
- REASON_SOFT_WDT_RST            = 3      software watch dog reset, GPIO status won't change 
- REASON_SOFT_RESTART            = 4      software restart ,system_restart , GPIO status won't change 
- REASON_DEEP_SLEEP_AWAKE        = 5      wake up from deep-sleep 
- REASON_EXT_SYS_RST             = 6      external system reset 
-  */
-
-  
-  //set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
-  wifiManager.setAPCallback(configModeCallback);
-  wifiManager.setConfigPortalTimeout(CONFIG_PORTAL_TIMEOUT);
-  wifiManager.setConnectTimeout(CONNECT_TIMEOUT);
-
-
-  IPAddress _ip,_gw,_sn;
-  _ip.fromString(static_ip);
-  _gw.fromString(static_gw);
-  _sn.fromString(static_sn);
-
-  wifiManager.setSTAStaticIPConfig(_ip, _gw, _sn);
-  
   lcd.print("Connecting to WiFi..");
   
   if (!wifiManager.autoConnect(AUTOCONNECTNAME, AUTOCONNECTPWD)) { 
@@ -358,6 +375,7 @@ void setup() {
   } 
 
   lcd.print("WiFi connected.");
+  sendNetInfoMQTT();
 
   client.setServer(mqtt_server, mqtt_port);
   client.setCallback(callback);
@@ -424,27 +442,24 @@ void setup() {
   }
 
   //setup timers
-  if (numberOfDevices>0) {
-    DEBUG_PRINTLN("Setup timers.");
-    timer.every(SEND_DELAY, sendDataMQTT);
-    timer.every(MEAS_DELAY, tempMeas);
-    timer.every(CALC_DELAY, calcPowerAndEnergy);
-    timer.every(CALC_DELAY, calcFlow);
-  }
-  
+  DEBUG_PRINTLN("Setup timers.");
+  timer.every(SEND_DELAY, sendDataMQTT);
+  timer.every(MEAS_DELAY, tempMeas);
+  timer.every(CALC_DELAY, calcPowerAndEnergy);
+  timer.every(CALC_DELAY, calcFlow);
   timer.every(SENDSTAT_DELAY, sendStatisticMQTT);
 //  timer.every(SENDSTAT_DELAY, countMinRun);
+#ifdef time
   timer.every(CALC_DELAY/2, displayTime);
-  
+#endif
+
   void * a;
   sendStatisticMQTT(a);
 
-  DEBUG_PRINTLN(" Ready");
- 
+
   ticker.detach();
   //keep LED on
   digitalWrite(BUILTIN_LED, HIGH);
-  digitalWrite(STATUS_LED, HIGH);
 
   drd.stop();
 
@@ -457,13 +472,15 @@ void setup() {
 void loop() {
   firstTempMeasDone ? relay() : void();
   
+#ifdef PIR
   if (digitalRead(PIRPIN)==1) {
     lcd.backlight();
   } else {
     lcd.noBacklight();
   }
+#endif
 
-  lcdShow();
+  display();
   
   keyBoard();
   
@@ -481,11 +498,11 @@ void loop() {
   
   //handle ftp server
   //ftpSrv.handleFTP();
-
+#ifdef time
   displayClear();
   nulStat();
+#endif
 
-  drd.loop();
 } //loop
 
 
@@ -499,7 +516,7 @@ void printMessageToLCD(char* t, String v) {
   lcd.clear();
 }
 
-
+#ifdef time
 void displayClear() {
   if (minute()==0 && second()==0) {
     if (!dispClear) { 
@@ -524,6 +541,8 @@ void nulStat() {
     todayClear = false;
   }
 }
+#endif
+
 
 void changeRelay(byte status) {
   digitalWrite(RELAY1PIN, status);
@@ -562,40 +581,38 @@ bool calcPowerAndEnergy(void *) {
 
 void reconnect() {
   // Loop until we're reconnected
-  while (!client.connected()) {
-    DEBUG_PRINT("Attempting MQTT connection...");
-    // Attempt to connect
-    if (client.connect(mqtt_base, mqtt_username, mqtt_key)) {
-      DEBUG_PRINTLN("connected");
-      // Once connected, publish an announcement...
-      //client.publish("outTopic","hello world");
-      // ... and resubscribe
-      //client.subscribe(mqtt_base + '/' + 'inTopic');
-      client.subscribe((String(mqtt_base) + "/" + "tDiffON").c_str());
-      client.subscribe((String(mqtt_base) + "/" + "tDiffOFF").c_str());
-      client.subscribe((String(mqtt_base) + "/" + "controlSensorBojler").c_str());
-      for (int i=0; i<NUMBER_OF_DEVICES; i++) {
-        client.subscribe((String(mqtt_base) + "/" + "so" + String(i)).c_str());
+  if (!client.connected()) {
+    if (lastConnectAttempt == 0 || lastConnectAttempt + connectDelay < millis()) {
+      DEBUG_PRINT("Attempting MQTT connection...");
+      // Attempt to connect
+      if (client.connect(mqtt_base, mqtt_username, mqtt_key)) {
+        DEBUG_PRINTLN("connected");
+        // Once connected, publish an announcement...
+        client.subscribe((String(mqtt_base) + "/" + "tDiffON").c_str());
+        client.subscribe((String(mqtt_base) + "/" + "tDiffOFF").c_str());
+        client.subscribe((String(mqtt_base) + "/" + "controlSensorBojler").c_str());
+        for (int i=0; i<NUMBER_OF_DEVICES; i++) {
+          client.subscribe((String(mqtt_base) + "/" + "so" + String(i)).c_str());
+        }
+        client.subscribe((String(mqtt_base) + "/" + "restart").c_str());
+        client.subscribe((String(mqtt_base) + "/" + "sorder").c_str());
+        client.subscribe((String(mqtt_base) + "/" + "manualRelay").c_str());
+      } else {
+        lastConnectAttempt = millis();
+        DEBUG_PRINT("failed, rc=");
+        DEBUG_PRINTLN(client.state());
       }
-      client.subscribe((String(mqtt_base) + "/" + "restart").c_str());
-      client.subscribe((String(mqtt_base) + "/" + "sorder").c_str());
-      client.subscribe((String(mqtt_base) + "/" + "manualRelay").c_str());
-    } else {
-      DEBUG_PRINT("failed, rc=");
-      DEBUG_PRINT(client.state());
-      DEBUG_PRINTLN(" try again in 5 seconds");
-      // Wait 5 seconds before retrying
-      delay(5000);
     }
   }
 }
-
 
 #ifdef serverHTTP
 void handleRoot() {
 	#define TEXTLEN 1000
   char temp[TEXTLEN];
+#ifdef time  
   printSystemTime();
+#endif
   DEBUG_PRINTLN(" Client request");
   digitalWrite(BUILTIN_LED, LOW);
   
@@ -671,27 +688,6 @@ void handleRoot() {
   digitalWrite(BUILTIN_LED, HIGH);
 }
 #endif
-
-void tick()
-{
-  //toggle state
-  int state = digitalRead(BUILTIN_LED);  // get the current state of GPIO1 pin
-  digitalWrite(BUILTIN_LED, !state);     // set pin to the opposite state
-}
-  
-//gets called when WiFiManager enters configuration mode
-void configModeCallback (WiFiManager *myWiFiManager) {
-  DEBUG_PRINTLN("Entered config mode");
-  lcd.clear();
-  lcd.print("Connect timeout, start config...");
-  DEBUG_PRINTLN(WiFi.softAPIP());
-  //if you used auto generated SSID, print it
-  DEBUG_PRINTLN(myWiFiManager->getConfigPortalSSID());
-  //entered config mode, make led toggle faster
-  ticker.attach(0.2, tick);
-  drd.stop();
-}
-
 
 bool saveConfig() {
   DEBUG_PRINTLN(F("Saving config..."));
@@ -815,8 +811,10 @@ void sendRelayMQTT(byte akce) {
 
 bool sendSOMQTT(void *) {
   digitalWrite(BUILTIN_LED, LOW);
+#ifdef time  
   printSystemTime();
-  DEBUG_PRINTLN(F(" - I am sending sensor order to MQTT"));
+#endif
+  DEBUG_PRINTLN(F("Sensor order"));
   SenderClass sender;
   for (int i=0; i<NUMBER_OF_DEVICES; i++) {
     sender.add("so" + String(i), sensorOrder[i]);
@@ -829,10 +827,28 @@ bool sendSOMQTT(void *) {
   return true;
 }
 
+void sendNetInfoMQTT() {
+  digitalWrite(BUILTIN_LED, LOW);
+  DEBUG_PRINTLN(F("Net info"));
+
+  SenderClass sender;
+  sender.add("IP",              WiFi.localIP().toString().c_str());
+  sender.add("MAC",             WiFi.macAddress());
+  
+  DEBUG_PRINTLN(F("Calling MQTT"));
+  
+  sender.sendMQTT(mqtt_server, mqtt_port, mqtt_username, mqtt_key, mqtt_base);
+  digitalWrite(BUILTIN_LED, HIGH);
+  return;
+}
+
+
 bool sendDataMQTT(void *) {
   digitalWrite(BUILTIN_LED, LOW);
+#ifdef time  
   printSystemTime();
-  DEBUG_PRINTLN(F(" - I am sending data to MQTT"));
+#endif
+  DEBUG_PRINTLN(F("Data"));
   
   SenderClass sender;
   sender.add("tP1IN", tP1In);
@@ -857,7 +873,9 @@ bool sendDataMQTT(void *) {
 
 bool sendStatisticMQTT(void *) {
   digitalWrite(BUILTIN_LED, LOW);
+#ifdef time
   printSystemTime();
+#endif
   DEBUG_PRINTLN(F(" - I am sending statistic to MQTT"));
 
   SenderClass sender;
@@ -878,111 +896,6 @@ bool sendStatisticMQTT(void *) {
   return true;
 }
 
-
-#ifdef time
-/*-------- NTP code ----------*/
-
-const int NTP_PACKET_SIZE = 48; // NTP time is in the first 48 bytes of message
-byte packetBuffer[NTP_PACKET_SIZE]; //buffer to hold incoming & outgoing packets
-
-time_t getNtpTime()
-{
-  //IPAddress ntpServerIP; // NTP server's ip address
-  IPAddress ntpServerIP = IPAddress(195, 113, 144, 201);
-
-  while (EthernetUdp.parsePacket() > 0) ; // discard any previously received packets
-  DEBUG_PRINTLN("Transmit NTP Request");
-  // get a random server from the pool
-  //WiFi.hostByName(ntpServerName, ntpServerIP);
-  DEBUG_PRINT(ntpServerName);
-  DEBUG_PRINT(": ");
-  DEBUG_PRINTLN(ntpServerIP);
-  sendNTPpacket(ntpServerIP);
-  uint32_t beginWait = millis();
-  while (millis() - beginWait < 1500) {
-    int size = EthernetUdp.parsePacket();
-    if (size >= NTP_PACKET_SIZE) {
-      DEBUG_PRINTLN("Receive NTP Response");
-      EthernetUdp.read(packetBuffer, NTP_PACKET_SIZE);  // read packet into the buffer
-      unsigned long highWord = word(packetBuffer[40], packetBuffer[41]);
-      unsigned long lowWord = word(packetBuffer[42], packetBuffer[43]);
-      // combine the four bytes (two words) into a long integer
-      // this is NTP time (seconds since Jan 1 1900):
-      unsigned long secsSince1900 = highWord << 16 | lowWord;
-      DEBUG_PRINT("Seconds since Jan 1 1900 = " );
-      DEBUG_PRINTLN(secsSince1900);
-
-      // now convert NTP time into everyday time:
-      DEBUG_PRINT("Unix time = ");
-      // Unix time starts on Jan 1 1970. In seconds, that's 2208988800:
-      const unsigned long seventyYears = 2208988800UL;
-      // subtract seventy years:
-      unsigned long epoch = secsSince1900 - seventyYears;
-      // print Unix time:
-      DEBUG_PRINTLN(epoch);
-	  
-      TimeChangeRule *tcr;
-      time_t utc;
-      utc = epoch;
-      
-      return CE.toLocal(utc, &tcr);
-      //return secsSince1900 - 2208988800UL + timeZone * SECS_PER_HOUR;
-    }
-  }
-  DEBUG_PRINTLN("No NTP Response :-(");
-  return 0; // return 0 if unable to get the time
-}
-
-// send an NTP request to the time server at the given address
-void sendNTPpacket(IPAddress &address)
-{
-  // set all bytes in the buffer to 0
-  memset(packetBuffer, 0, NTP_PACKET_SIZE);
-  // Initialize values needed to form NTP request
-  // (see URL above for details on the packets)
-  packetBuffer[0] = 0b11100011;   // LI, Version, Mode
-  packetBuffer[1] = 0;     // Stratum, or type of clock
-  packetBuffer[2] = 6;     // Polling Interval
-  packetBuffer[3] = 0xEC;  // Peer Clock Precision
-  // 8 bytes of zero for Root Delay & Root Dispersion
-  packetBuffer[12] = 49;
-  packetBuffer[13] = 0x4E;
-  packetBuffer[14] = 49;
-  packetBuffer[15] = 52;
-  // all NTP fields have been given values, now
-  // you can send a packet requesting a timestamp:
-  EthernetUdp.beginPacket(address, 123); //NTP requests are to port 123
-  EthernetUdp.write(packetBuffer, NTP_PACKET_SIZE);
-  EthernetUdp.endPacket();
-}
-
-void printSystemTime(){
-  DEBUG_PRINT(day());
-  DEBUG_PRINT(".");
-  DEBUG_PRINT(month());
-  DEBUG_PRINT(".");
-  DEBUG_PRINT(year());
-  DEBUG_PRINT(" ");
-  print2digits(hour());
-  DEBUG_PRINT(":");
-  print2digits(minute());
-  DEBUG_PRINT(":");
-  print2digits(second());
-}
-
-bool displayTime(void *) {
-  lcd.setCursor(TIMEX, TIMEY); //col,row
-  char buffer[6];
-  if (showDoubleDot) {
-    sprintf(buffer, "%02d:%02d", hour(), minute());
-  } else {
-    sprintf(buffer, "%02d %02d", hour(), minute());
-  }
-  lcd.print(buffer);
-  showDoubleDot = !showDoubleDot;
-  return true;
-}
-#endif
 
 void print2digits(int number) {
   if (number >= 0 && number < 10) {
@@ -1033,24 +946,24 @@ bool tempMeas(void *) {
   if (tBojler>tMaxBojler)   tMaxBojler   = tBojler;
 
   
-  // DEBUG_PRINT(F("P1 In:"));
-  // DEBUG_PRINTLN(tP1In);
-  // DEBUG_PRINT(F("P1 Out:"));
-  // DEBUG_PRINTLN(tP1Out);
-  // DEBUG_PRINT(F("P2 In:"));
-  // DEBUG_PRINTLN(tP2In);
-  // DEBUG_PRINT(F("P2 Out:"));
-  // DEBUG_PRINTLN(tP2Out);
-  // DEBUG_PRINT(F("Room:"));
-  // DEBUG_PRINTLN(tRoom);
-  // DEBUG_PRINT(F("Bojler:"));
-  // DEBUG_PRINTLN(tBojler);
-  // DEBUG_PRINT(F("Bojler In:"));
-  // DEBUG_PRINTLN(tBojlerIn);
-  // DEBUG_PRINT(F("Bojler Out:"));
-  // DEBUG_PRINTLN(tBojlerOut);
-  // DEBUG_PRINT(F("Control:"));
-  // DEBUG_PRINTLN(tControl);
+  DEBUG_PRINT(F("P1 In:"));
+  DEBUG_PRINTLN(tP1In);
+  DEBUG_PRINT(F("P1 Out:"));
+  DEBUG_PRINTLN(tP1Out);
+  DEBUG_PRINT(F("P2 In:"));
+  DEBUG_PRINTLN(tP2In);
+  DEBUG_PRINT(F("P2 Out:"));
+  DEBUG_PRINTLN(tP2Out);
+  DEBUG_PRINT(F("Room:"));
+  DEBUG_PRINTLN(tRoom);
+  DEBUG_PRINT(F("Bojler:"));
+  DEBUG_PRINTLN(tBojler);
+  DEBUG_PRINT(F("Bojler In:"));
+  DEBUG_PRINTLN(tBojlerIn);
+  DEBUG_PRINT(F("Bojler Out:"));
+  DEBUG_PRINTLN(tBojlerOut);
+  DEBUG_PRINT(F("Control:"));
+  DEBUG_PRINTLN(tControl);
 
   
   //obcas se vyskytne chyba a vsechna cidla prestanou merit
@@ -1124,8 +1037,8 @@ void relay() {
 
 
 //---------------------------------------------D I S P L A Y ------------------------------------------------
-void lcdShow() {
-  if (display>=100) { 
+void display() {
+  if (displayType>=100) { 
     lcd.setCursor(POZ0X,POZ0Y);
   }
   // if (millis() > SHOW_INFO_DELAY + showInfo) {
@@ -1136,7 +1049,7 @@ void lcdShow() {
     // }
   // }
   
-  if (display==DISPLAY_MAIN) {
+  if (displayType==DISPLAY_MAIN) {
     //    012345678901234567890
     //00  10  9  0  -0 -9.1  T    
     //01   555W   12.3kWh 124m                    
@@ -1175,18 +1088,19 @@ void lcdShow() {
 
     lcd.setCursor(CONTROLSENSORX, CONTROLSENSORY);
     controlSensorBojler==1 ? lcd.print(F("B")) : lcd.print(F("R"));
+#ifdef time
     lcd.setCursor(SUNANGLEX,SUNANGLEY);
     lcd.print("Uhel:");
     lcd.print(90- sunAngle[month()-1]);
     lcd.write(byte(0));
-    
-  } else if (display==DISPLAY_T_DIFF_ON) {
+#endif    
+  } else if (displayType==DISPLAY_T_DIFF_ON) {
     displayInfoValue('TDiffON', tDiffON, 'C');
-  } else if (display==DISPLAY_T_DIFF_OFF) { 
+  } else if (displayType==DISPLAY_T_DIFF_OFF) { 
     displayInfoValue('TDiffOFF', tDiffOFF, 'C');
-  } else if (display==DISPLAY_FLOW) {
+  } else if (displayType==DISPLAY_FLOW) {
     //displayInfoValue('Flow', lMin, 'l/min');
-  } else if (display==DISPLAY_MAX_IO_TEMP) {
+  } else if (displayType==DISPLAY_MAX_IO_TEMP) {
     lcd.setCursor(POZ0X,POZ0Y);
     lcd.print(F("Max IN:"));
     lcd.print(tMaxIn);
@@ -1195,11 +1109,11 @@ void lcdShow() {
     lcd.print(F("Max OUT:"));
     lcd.print(tMaxOut);
     lcd.print(F("     "));
-  } else if (display==DISPLAY_MAX_BOJLER) {
+  } else if (displayType==DISPLAY_MAX_BOJLER) {
     displayInfoValue('Max bojler', tMaxBojler, 'C');
-  } else if (display==DISPLAY_MAX_POWER_TODAY) { 
+  } else if (displayType==DISPLAY_MAX_POWER_TODAY) { 
     //displayInfoValue('Max power today', maxPower, 'W');
-  } else if (display==DISPLAY_CONTROL_SENSOR) {
+  } else if (displayType==DISPLAY_CONTROL_SENSOR) {
     lcd.setCursor(POZ0X,POZ0Y);
     lcd.print(F("Control sensor"));
     lcd.setCursor(0,1);
@@ -1301,28 +1215,28 @@ void keyBoard() {
     if (key=='1') { 
     }
     else if (key=='2') { 
-      display=DISPLAY_T_DIFF_ON;
+      displayType=DISPLAY_T_DIFF_ON;
     }
     else if (key=='3') { 
-      display=DISPLAY_T_DIFF_OFF;
+      displayType=DISPLAY_T_DIFF_OFF;
     }
     else if (key=='4') {
-      display=DISPLAY_FLOW;
+      displayType=DISPLAY_FLOW;
     }
     else if (key=='5') { 
-      display=DISPLAY_MAX_IO_TEMP;
+      displayType=DISPLAY_MAX_IO_TEMP;
     }
     else if (key=='6') { 
-      display=DISPLAY_MAX_BOJLER;
+      displayType=DISPLAY_MAX_BOJLER;
     }
     else if (key=='B') {
       lcd.clear();
     }
     else if (key=='7') { 
-      display=DISPLAY_MAX_POWER_TODAY;
+      displayType=DISPLAY_MAX_POWER_TODAY;
     }
     else if (key=='8') { 
-      display=DISPLAY_CONTROL_SENSOR;
+      displayType=DISPLAY_CONTROL_SENSOR;
     }
     else if (key=='9') { 
     }
@@ -1334,7 +1248,7 @@ void keyBoard() {
       lcd.clear();
     }
     if (key=='0') { 
-      display=DISPLAY_MAIN;
+      displayType=DISPLAY_MAIN;
     }
     if (key=='D') {
       // manualON = !manualON;
@@ -1444,3 +1358,108 @@ void displayValue(int x, int y, float value, byte cela, byte des) {
     lcd.print(abs((int)(value*(10*des))%(10*des)));
   }
 }
+
+#ifdef time
+/*-------- NTP code ----------*/
+
+const int NTP_PACKET_SIZE = 48; // NTP time is in the first 48 bytes of message
+byte packetBuffer[NTP_PACKET_SIZE]; //buffer to hold incoming & outgoing packets
+
+time_t getNtpTime()
+{
+  //IPAddress ntpServerIP; // NTP server's ip address
+  IPAddress ntpServerIP = IPAddress(195, 113, 144, 201);
+
+  while (EthernetUdp.parsePacket() > 0) ; // discard any previously received packets
+  DEBUG_PRINTLN("Transmit NTP Request");
+  // get a random server from the pool
+  //WiFi.hostByName(ntpServerName, ntpServerIP);
+  DEBUG_PRINT(ntpServerName);
+  DEBUG_PRINT(": ");
+  DEBUG_PRINTLN(ntpServerIP);
+  sendNTPpacket(ntpServerIP);
+  uint32_t beginWait = millis();
+  while (millis() - beginWait < 1500) {
+    int size = EthernetUdp.parsePacket();
+    if (size >= NTP_PACKET_SIZE) {
+      DEBUG_PRINTLN("Receive NTP Response");
+      EthernetUdp.read(packetBuffer, NTP_PACKET_SIZE);  // read packet into the buffer
+      unsigned long highWord = word(packetBuffer[40], packetBuffer[41]);
+      unsigned long lowWord = word(packetBuffer[42], packetBuffer[43]);
+      // combine the four bytes (two words) into a long integer
+      // this is NTP time (seconds since Jan 1 1900):
+      unsigned long secsSince1900 = highWord << 16 | lowWord;
+      DEBUG_PRINT("Seconds since Jan 1 1900 = " );
+      DEBUG_PRINTLN(secsSince1900);
+
+      // now convert NTP time into everyday time:
+      DEBUG_PRINT("Unix time = ");
+      // Unix time starts on Jan 1 1970. In seconds, that's 2208988800:
+      const unsigned long seventyYears = 2208988800UL;
+      // subtract seventy years:
+      unsigned long epoch = secsSince1900 - seventyYears;
+      // print Unix time:
+      DEBUG_PRINTLN(epoch);
+	  
+      TimeChangeRule *tcr;
+      time_t utc;
+      utc = epoch;
+      
+      return CE.toLocal(utc, &tcr);
+      //return secsSince1900 - 2208988800UL + timeZone * SECS_PER_HOUR;
+    }
+  }
+  DEBUG_PRINTLN("No NTP Response :-(");
+  return 0; // return 0 if unable to get the time
+}
+
+// send an NTP request to the time server at the given address
+void sendNTPpacket(IPAddress &address)
+{
+  // set all bytes in the buffer to 0
+  memset(packetBuffer, 0, NTP_PACKET_SIZE);
+  // Initialize values needed to form NTP request
+  // (see URL above for details on the packets)
+  packetBuffer[0] = 0b11100011;   // LI, Version, Mode
+  packetBuffer[1] = 0;     // Stratum, or type of clock
+  packetBuffer[2] = 6;     // Polling Interval
+  packetBuffer[3] = 0xEC;  // Peer Clock Precision
+  // 8 bytes of zero for Root Delay & Root Dispersion
+  packetBuffer[12] = 49;
+  packetBuffer[13] = 0x4E;
+  packetBuffer[14] = 49;
+  packetBuffer[15] = 52;
+  // all NTP fields have been given values, now
+  // you can send a packet requesting a timestamp:
+  EthernetUdp.beginPacket(address, 123); //NTP requests are to port 123
+  EthernetUdp.write(packetBuffer, NTP_PACKET_SIZE);
+  EthernetUdp.endPacket();
+}
+
+void printSystemTime(){
+  DEBUG_PRINT(day());
+  DEBUG_PRINT(".");
+  DEBUG_PRINT(month());
+  DEBUG_PRINT(".");
+  DEBUG_PRINT(year());
+  DEBUG_PRINT(" ");
+  print2digits(hour());
+  DEBUG_PRINT(":");
+  print2digits(minute());
+  DEBUG_PRINT(":");
+  print2digits(second());
+}
+
+bool displayTime(void *) {
+  lcd.setCursor(TIMEX, TIMEY); //col,row
+  char buffer[6];
+  if (showDoubleDot) {
+    sprintf(buffer, "%02d:%02d", hour(), minute());
+  } else {
+    sprintf(buffer, "%02d %02d", hour(), minute());
+  }
+  lcd.print(buffer);
+  showDoubleDot = !showDoubleDot;
+  return true;
+}
+#endif
