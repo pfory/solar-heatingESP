@@ -19,7 +19,7 @@
 #include <timer.h>
 
 //SW name & version
-#define     VERSION                       "1.93"
+#define     VERSION                       "1.94"
 #define     SW_NAME                       "Solar"
 
 #define ota
@@ -27,6 +27,7 @@
 #define verbose
 #define flowSensor
 #define serverHTTP
+#define PIR
 
 #define AUTOCONNECTNAME   HOSTNAMEOTA
 #define AUTOCONNECTPWD    "password"
@@ -79,7 +80,7 @@ static const char* const      mqtt_server                    = "192.168.1.56";
 static const uint16_t         mqtt_port                      = 1883;
 static const char* const      mqtt_username                  = "datel";
 static const char* const      mqtt_key                       = "hanka12";
-static const char* const      mqtt_base                      = "/home/Corridor/esp07";
+static const char* const      mqtt_base                      = "/home/Corridor/esp07a";
 //static const char* const      static_ip                      = "192.168.1.108";
 //static const char* const      static_gw                      = "192.168.1.1";
 //static const char* const      static_sn                      = "255.255.255.0";
@@ -157,14 +158,14 @@ D8                                           - relay 2
 #define LCDCOLS                              20
 
 //All of the IO pins have interrupt/pwm/I2C/one-wire support except D0.
-//#define STATUS_LED                           BUILTIN_LED //status LED
-#define PIRPIN                               D0 //                           GPIO16
-#define RELAY1PIN                            D3 //relay 10k Pull-up          GPIO0
+#define STATUS_LED                           BUILTIN_LED //status LED
+#define PIRPIN                               16 //D0 //                           GPIO16
+#define RELAYPIN                             0 //D3 relay 10k Pull-up        GPIO0
 #ifdef flowSensor
-#define FLOWSENSORPIN                        D6 //flow sensor MISO           GPIO12
+#define FLOWSENSORPIN                        12 //D6 //flow sensor MISO           GPIO12
 #endif
-#define ONE_WIRE_BUS                         D7 //MOSI                       GPIO13
-#define RELAY2PIN                            D8 //10k Pull-down, SS          GPIO15
+#define ONE_WIRE_BUS                         13 //D7 //MOSI                       GPIO13
+//#define RELAY2PIN                            D8 //10k Pull-down, SS          GPIO15
 //SDA                                        D2 //                           GPIO4
 //SCL                                        D1 //                           GPIO5
 //BUILTIN_LED                                D4 //10k Pull-up, BUILTIN_LED   GPIO2

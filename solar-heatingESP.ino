@@ -84,7 +84,7 @@ float tMaxBojler                            = 0; //maximal boiler temperature (j
 
    
 byte manualRelay                             = 2;
-byte relayStatus                             = 0;
+byte relayStatus                             = RELAY_ON;
    
 //bool shouldSaveConfig                       = false; //flag for saving data
 
@@ -212,12 +212,12 @@ void callback(char* topic, byte* payload, unsigned int length) {
     saveConfig();
   } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_restart)).c_str())==0) {
     printMessageToLCD(topic, val);
-    DEBUG_PRINT("RESTART");
+    DEBUG_PRINTLN("RESTART");
     saveConfig();
     ESP.restart();
   } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_netinfo)).c_str())==0) {
     printMessageToLCD(topic, val);
-    DEBUG_PRINT("NET INFO");
+    DEBUG_PRINTLN("NET INFO");
     sendNetInfoMQTT();    
   } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_relay)).c_str())==0) {
     printMessageToLCD(topic, val);
@@ -265,9 +265,8 @@ void setup() {
   DEBUG_PRINT(F(" "));
   DEBUG_PRINTLN(F(VERSION));
 
-  pinMode(RELAY1PIN, OUTPUT);
-  pinMode(RELAY2PIN, OUTPUT);
-  digitalWrite(RELAY1PIN, relayStatus);
+  pinMode(RELAYPIN, OUTPUT);
+  digitalWrite(RELAYPIN, RELAY_ON);
 
   ticker.attach(1, tick);
 
@@ -280,7 +279,7 @@ void setup() {
 
 
   lcd.init();               // initialize the lcd 
-  lcd.noCursor();
+  //lcd.noCursor();
   lcd.backlight();
   lcd.home();                   
   lcd.print(SW_NAME);  
@@ -346,7 +345,7 @@ void setup() {
   if (!readConfig()) {
     DEBUG_PRINTLN(F("ERROR config corrupted"));
   }
-  
+
   lcd.setCursor(0,2);
   lcd.print(F("tON:"));  
   lcd.print(tDiffON);
@@ -456,7 +455,6 @@ void setup() {
   void * a;
   sendStatisticMQTT(a);
 
-
   ticker.detach();
   //keep LED on
   digitalWrite(BUILTIN_LED, HIGH);
@@ -545,7 +543,7 @@ void nulStat() {
 
 
 void changeRelay(byte status) {
-  //digitalWrite(RELAY1PIN, status);
+  digitalWrite(RELAYPIN, status);
 }
 
 bool calcPowerAndEnergy(void *) {
