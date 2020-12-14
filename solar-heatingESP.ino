@@ -255,8 +255,9 @@ PubSubClient client(espClient);
 
 WiFiManager wifiManager;
 
+#ifdef flowSensor
 void ICACHE_RAM_ATTR flow();
-
+#endif
 //----------------------------------------------------- S E T U P -----------------------------------------------------------
 void setup() {
   SERIAL_BEGIN;
@@ -446,9 +447,10 @@ void setup() {
   timer.every(SEND_DELAY, sendDataMQTT);
   timer.every(MEAS_DELAY, tempMeas);
   timer.every(CALC_DELAY, calcPowerAndEnergy);
+#ifdef flowSensor
   timer.every(CALC_DELAY, calcFlow);
+#endif
   timer.every(SENDSTAT_DELAY, sendStatisticMQTT);
-//  timer.every(SENDSTAT_DELAY, countMinRun);
 #ifdef time
   timer.every(CALC_DELAY/2, displayTime);
 #endif
@@ -811,18 +813,13 @@ void sendRelayMQTT(byte akce) {
 
 bool sendSOMQTT(void *) {
   digitalWrite(BUILTIN_LED, LOW);
-#ifdef time  
-  printSystemTime();
-#endif
   DEBUG_PRINTLN(F("Sensor order"));
   SenderClass sender;
   for (int i=0; i<NUMBER_OF_DEVICES; i++) {
     sender.add("so" + String(i), sensorOrder[i]);
   }
 
-  //noInterrupts();
   sender.sendMQTT(mqtt_server, mqtt_port, mqtt_username, mqtt_key, mqtt_base);
-  //interrupts();
   digitalWrite(BUILTIN_LED, HIGH);
   return true;
 }
@@ -845,9 +842,6 @@ void sendNetInfoMQTT() {
 
 bool sendDataMQTT(void *) {
   digitalWrite(BUILTIN_LED, LOW);
-#ifdef time  
-  printSystemTime();
-#endif
   DEBUG_PRINTLN(F("Data"));
   
   SenderClass sender;
@@ -864,19 +858,14 @@ bool sendDataMQTT(void *) {
   sender.add("tControl", tControl);
   DEBUG_PRINTLN(F("Calling MQTT"));
   
-  //noInterrupts();
   sender.sendMQTT(mqtt_server, mqtt_port, mqtt_username, mqtt_key, mqtt_base);
-  //interrupts();
   digitalWrite(BUILTIN_LED, HIGH);
   return true;
 }
 
 bool sendStatisticMQTT(void *) {
   digitalWrite(BUILTIN_LED, LOW);
-#ifdef time
-  printSystemTime();
-#endif
-  DEBUG_PRINTLN(F(" - I am sending statistic to MQTT"));
+  DEBUG_PRINTLN(F("Statistic"));
 
   SenderClass sender;
   sender.add("VersionSWSolar", VERSION);
@@ -889,9 +878,7 @@ bool sendStatisticMQTT(void *) {
   
   DEBUG_PRINTLN(F("Calling MQTT"));
   
-  //noInterrupts();
   sender.sendMQTT(mqtt_server, mqtt_port, mqtt_username, mqtt_key, mqtt_base);
-  //interrupts();
   digitalWrite(BUILTIN_LED, HIGH);
   return true;
 }
@@ -977,10 +964,9 @@ bool tempMeas(void *) {
   }
   if (reset) {
     dsInit();
-  } else {
-    firstTempMeasDone = true;
   }
-  
+  firstTempMeasDone = true;
+
   return true;
 }
 
@@ -1131,55 +1117,6 @@ void display() {
   }
 }
 
-// void displayTemp(int x, int y, float value, bool des) {
-  // /*
-  // value     des=true   des=false
-            // 0123       0123
-  // 89.3      89.3       89
-  // 10.0      10.0       10
-   // 9.9       9.9        9
-   // 1.1       1.1        1
-   // 0.9       0.9        0
-   // 0.1       0.0        0
-   // 0.0       0.0        0
-  // -0.1      -0.1       -0
-  // -0.9      -0.9       -0
-  // -1.0      -1.0       -1
-  // -9.9      -9.9       -9
- // -10.0      -10        -10
- // -25.2      -25        -25  
-   // */
-  // lcd.setCursor(x,y);
-  
-  // //DEBUG_PRINTLN(F(value);
-  // if (!des) {
-    // value = round(value);
-  // }
-  
-  // if (value<10.f && value>=0.f) {
-    // //DEBUG_PRINT(F("_"));
-    // lcd.print(F(" "));
-  // } else if (value<0.f && value>-10.f) {
-    // //DEBUG_PRINT(F("_"));
-    // lcd.print(F("-"));
-  // } else if (value<-10.f) {
-    // des = false;
-    // //DEBUG_PRINT("-"));
-  // }
-  
-  // if (value>=100.f) {
-    // value=value-100.f;
-  // }
- 
-  // lcd.print(abs((int)value));
-  // if (des) {
-    // lcd.print(F("."));
-    // lcd.print(abs((int)(value*10)%10));
-  // }
-  // lcd.print(F(" "));
-// }
-
-
 //---------------------------------------------K E Y B O A R D ------------------------------------------------
 void keyBoard() {
   char key = keypad.getKey();
@@ -1291,7 +1228,6 @@ void dsInit(void) {
   }
   dsSensors.setResolution(12);
   dsSensors.setWaitForConversion(false);
-  //lcd.clear();
 }
 
 
