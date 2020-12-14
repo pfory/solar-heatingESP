@@ -84,7 +84,7 @@ float tMaxBojler                            = 0; //maximal boiler temperature (j
 
    
 byte manualRelay                             = 2;
-byte relayStatus                             = RELAY_ON;
+byte relayStatus                             = 0;
    
 //bool shouldSaveConfig                       = false; //flag for saving data
 
@@ -282,7 +282,6 @@ void setup() {
   lcd.init();               // initialize the lcd 
   lcd.noCursor();
   lcd.backlight();
-  //lcd.begin();               // initialize the lcd 
   lcd.home();                   
   lcd.print(SW_NAME);  
   PRINT_SPACE
@@ -307,7 +306,6 @@ void setup() {
   }
 
   pinMode(BUILTIN_LED, OUTPUT);
-//  pinMode(STATUS_LED, OUTPUT);
   pinMode(ONE_WIRE_BUS, INPUT);
 #ifdef flowSensor
   //pinMode(FLOWSENSORPIN, INPUT);
@@ -547,7 +545,7 @@ void nulStat() {
 
 
 void changeRelay(byte status) {
-  digitalWrite(RELAY1PIN, status);
+  //digitalWrite(RELAY1PIN, status);
 }
 
 bool calcPowerAndEnergy(void *) {
