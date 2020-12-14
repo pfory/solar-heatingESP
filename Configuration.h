@@ -80,7 +80,7 @@ static const char* const      mqtt_server                    = "192.168.1.56";
 static const uint16_t         mqtt_port                      = 1883;
 static const char* const      mqtt_username                  = "datel";
 static const char* const      mqtt_key                       = "hanka12";
-static const char* const      mqtt_base                      = "/home/Corridor/esp07a";
+static const char* const      mqtt_base                      = "/home/Corridor/esp07";
 //static const char* const      static_ip                      = "192.168.1.108";
 //static const char* const      static_gw                      = "192.168.1.1";
 //static const char* const      static_sn                      = "255.255.255.0";
@@ -92,6 +92,20 @@ static const char* const      mqtt_topic_tDiffON             = "tDiffON";
 static const char* const      mqtt_topic_controlSensor       = "controlSensorBojler";
 static const char* const      mqtt_topic_sendSO              = "sorder";
 static const char* const      mqtt_topic_so                  = "so";
+
+
+/*
+sensor order
+/home/Corridor/esp07/so0 - 7
+/home/Corridor/esp07/so1 - 4
+/home/Corridor/esp07/so2 - 2
+/home/Corridor/esp07/so3 - 1
+/home/Corridor/esp07/so4 - 3
+/home/Corridor/esp07/so5 - 5
+/home/Corridor/esp07/so6 - 6
+/home/Corridor/esp07/so7 - 0
+*/
+
 
 /*
 Version history:
