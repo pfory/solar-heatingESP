@@ -268,6 +268,7 @@ void setup() {
   pinMode(RELAYPIN, OUTPUT);
   digitalWrite(RELAYPIN, RELAY_ON);
 
+  pinMode(BUILTIN_LED, OUTPUT);
   ticker.attach(1, tick);
 
   WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
