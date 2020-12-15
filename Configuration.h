@@ -19,7 +19,7 @@
 #include <timer.h>
 
 //SW name & version
-#define     VERSION                       "1.94"
+#define     VERSION                       "1.95"
 #define     SW_NAME                       "Solar"
 
 #define ota
@@ -173,13 +173,13 @@ D8                                           - relay 2
 
 //All of the IO pins have interrupt/pwm/I2C/one-wire support except D0.
 #define STATUS_LED                           BUILTIN_LED //status LED
-#define PIRPIN                               16 //D0 //                           GPIO16
-#define RELAYPIN                             0 //D3 relay 10k Pull-up        GPIO0
+#define PIRPIN                               D0 //                           GPIO16
+#define RELAYPIN                             D3 //relay 10k Pull-up        GPIO0
 #ifdef flowSensor
-#define FLOWSENSORPIN                        12 //D6 //flow sensor MISO           GPIO12
+#define FLOWSENSORPIN                        D6 //flow sensor MISO           GPIO12
 #endif
-#define ONE_WIRE_BUS                         13 //D7 //MOSI                       GPIO13
-//#define RELAY2PIN                            D8 //10k Pull-down, SS          GPIO15
+#define ONE_WIRE_BUS                         D7 //MOSI                       GPIO13
+//#define RELAY2PIN                          D8 //10k Pull-down, SS          GPIO15
 //SDA                                        D2 //                           GPIO4
 //SCL                                        D1 //                           GPIO5
 //BUILTIN_LED                                D4 //10k Pull-up, BUILTIN_LED   GPIO2
