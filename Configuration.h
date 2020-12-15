@@ -104,6 +104,7 @@ sensor order
 /home/Corridor/esp07/so5 - 5
 /home/Corridor/esp07/so6 - 6
 /home/Corridor/esp07/so7 - 0
+kontrola /home/Corridor/esp07/sorder
 */
 
 
@@ -147,20 +148,6 @@ I2C display
 DALLAS temperature sensor
 keyboard
 
-LOLIN Wemos D1 pinout
-------------------------------------------
-TX                                           - Tx
-RX                                           - Rx
-D0                                           - PIR sensor
-D1                                           - I2C display SCL 0x20, keypad 0x27
-D2                                           - I2C display SDA 0x20, keypad 0x27
-D3                                           - relay 1
-D4                                           - LED
-D5                                           - 
-D6                                           - flow sensor
-D7                                           - DALLAS temperature sensors
-D8                                           - relay 2
---------------------------------------------------------------------------------------------------------------------------
 */
 
 //keypad i2c address

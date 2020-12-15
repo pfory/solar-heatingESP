@@ -3,7 +3,7 @@
 SOLAR - control system for solar unit
 Petr Fory pfory@seznam.cz
 GIT - https://github.com/pfory/solar-heating
-//Wemos D1 R2 & mini  !!!!!!!!!!!! 1M SPIFSS !!!!!!!!!!!!!!!!!!!!!!!!!!!
+//Wemos D1 R2 & mini  !!!!!!!!!!!! 2M FS !!!!!!!!!!!!!!!!!!!!!!!!!!! - jinak se smaže nastavení z configu
 vyřešeno void ICACHE_RAM_ATTR flow(); - POZOR na verzi desky esp8266 2.42+, nefunguje interrupt, až do vyřešení nepřecházet na vyšší verzi
 */
 
