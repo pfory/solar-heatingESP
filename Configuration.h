@@ -159,7 +159,7 @@ keyboard
 #define LCDCOLS                              20
 
 //All of the IO pins have interrupt/pwm/I2C/one-wire support except D0.
-#define STATUS_LED                           BUILTIN_LED //status LED
+//#define STATUS_LED                           BUILTIN_LED //status LED
 #define PIRPIN                               D0 //                           GPIO16
 #define RELAYPIN                             D3 //relay 10k Pull-up        GPIO0
 #ifdef flowSensor
