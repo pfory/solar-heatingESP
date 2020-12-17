@@ -8,7 +8,6 @@
 #include <ArduinoJson.h> //https://github.com/bblanchon/ArduinoJson
 #include <DoubleResetDetector.h>      //https://github.com/khoih-prog/ESP_DoubleResetDetector
 #include "Sender.h"
-#include <Wire.h>
 #include <PubSubClient.h>
 #include <Keypad_I2C.h>
 #include <Keypad.h>          // GDY120705
