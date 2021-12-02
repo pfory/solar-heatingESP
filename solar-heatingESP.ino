@@ -4,7 +4,6 @@ SOLAR - control system for solar unit
 Petr Fory pfory@seznam.cz
 GIT - https://github.com/pfory/solar-heating
 //Wemos D1 R2 & mini  !!!!!!!!!!!! 2M FS !!!!!!!!!!!!!!!!!!!!!!!!!!! - jinak se smaže nastavení z configu
-vyřešeno void ICACHE_RAM_ATTR flow(); - POZOR na verzi desky esp8266 2.42+, nefunguje interrupt, až do vyřešení nepřecházet na vyšší verzi
 */
 
 /*TODO
@@ -162,9 +161,6 @@ void configModeCallback (WiFiManager *myWiFiManager) {
   DEBUG_PRINTLN(WiFi.softAPIP());
   //if you used auto generated SSID, print it
   DEBUG_PRINTLN(myWiFiManager->getConfigPortalSSID());
-  //entered config mode, make led toggle faster
-  ticker.attach(0.1, tick);
-  drd.stop();
 }
 
 
@@ -219,7 +215,10 @@ void callback(char* topic, byte* payload, unsigned int length) {
     printMessageToLCD(topic, val);
     DEBUG_PRINTLN("NET INFO");
     sendNetInfoMQTT();    
-  } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_relay)).c_str())==0) {
+  } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_config_portal)).c_str())==0) {
+    startConfigPortal();
+  } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_config_portal_stop)).c_str())==0) {
+    stopConfigPortal();  } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_relay)).c_str())==0) {
     printMessageToLCD(topic, val);
     DEBUG_PRINT("set manual control relay to ");
     manualRelay = val.toInt();
@@ -277,7 +276,8 @@ void setup() {
   wifiManager.setAPCallback(configModeCallback);
   wifiManager.setConfigPortalTimeout(CONFIG_PORTAL_TIMEOUT);
   wifiManager.setConnectTimeout(CONNECT_TIMEOUT);
-
+  wifiManager.setBreakAfterConfig(true);
+  wifiManager.setWiFiAutoReconnect(true);
 
   lcd.init();               // initialize the lcd 
   //lcd.noCursor();
@@ -289,19 +289,10 @@ void setup() {
   lcd.createChar(0, customChar);
 
   if (drd.detectDoubleReset()) {
+    drd.stop();
     DEBUG_PRINTLN("Double reset detected, starting config portal...");
-    lcd.clear();
-    ticker.attach(0.2, tick);
-    lcd.print("DRD, config...");
-
     if (!wifiManager.startConfigPortal(HOSTNAMEOTA)) {
-      DEBUG_PRINTLN("failed to connect and hit timeout");
-      lcd.print("con failed, timeout");
-      delay(3000);
-      //reset and try again, or maybe put it to deep sleep
-      ESP.reset();
-      lcd.print("ESP reset!");
-      delay(5000);
+      DEBUG_PRINTLN("Failed to connect. Use ESP without WiFi.");
     }
   }
 
@@ -339,8 +330,6 @@ void setup() {
   client.setServer(mqtt_server, mqtt_port);
   client.setCallback(callback);
 
-  WiFi.printDiag(Serial);
-
   dsInit();
 
   if (!readConfig()) {
@@ -366,19 +355,13 @@ void setup() {
   lcd.print("Connecting to WiFi..");
   
   if (!wifiManager.autoConnect(AUTOCONNECTNAME, AUTOCONNECTPWD)) { 
-    DEBUG_PRINTLN("failed to connect and hit timeout");
-    delay(3000);
-    //reset and try again, or maybe put it to deep sleep
-    ESP.reset();
-    delay(5000);
-  } 
+    DEBUG_PRINTLN("Autoconnect failed connect to WiFi. Use ESP without WiFi.");
+  }   
 
-  lcd.print("WiFi connected.");
+  WiFi.printDiag(Serial);
+  
   sendNetInfoMQTT();
 
-  client.setServer(mqtt_server, mqtt_port);
-  client.setCallback(callback);
-  
 #ifdef serverHTTP
   server.on ( "/", handleRoot );
   server.begin();
@@ -445,6 +428,7 @@ void setup() {
   timer.every(SEND_DELAY, sendDataMQTT);
   timer.every(MEAS_DELAY, tempMeas);
   timer.every(CALC_DELAY, calcPowerAndEnergy);
+  timer.every(CONNECT_DELAY, reconnect);
 #ifdef flowSensor
   timer.every(CALC_DELAY, calcFlow);
 #endif
@@ -455,6 +439,7 @@ void setup() {
 
   void * a;
   sendStatisticMQTT(a);
+  reconnect(a);
 
   ticker.detach();
   //keep LED on
@@ -462,8 +447,8 @@ void setup() {
 
   drd.stop();
 
-  DEBUG_PRINTLN(F("Setup end."));
   lcd.clear();
+  DEBUG_PRINTLN(F("SETUP END......................."));
 }
 
 
@@ -492,7 +477,7 @@ void loop() {
   ArduinoOTA.handle();
 #endif
 
-  reconnect();
+  wifiManager.process();
   client.loop();
   
   //handle ftp server
@@ -506,6 +491,18 @@ void loop() {
 
 
 //----------------------------------------------------- F U N C T I O N S -----------------------------------------------------------
+void startConfigPortal(void) {
+  DEBUG_PRINTLN("START config portal");
+  wifiManager.setConfigPortalBlocking(false);
+  wifiManager.startConfigPortal(HOSTNAMEOTA);
+}
+
+void stopConfigPortal(void) {
+  DEBUG_PRINTLN("STOP config portal");
+  wifiManager.stopConfigPortal();
+}
+
+
 void printMessageToLCD(char* t, String v) {
   lcd.clear();
   lcd.print(t);
@@ -578,31 +575,19 @@ bool calcPowerAndEnergy(void *) {
 }
 
 
-void reconnect() {
-  // Loop until we're reconnected
+bool reconnect(void *) {
   if (!client.connected()) {
-    if (lastConnectAttempt == 0 || lastConnectAttempt + connectDelay < millis()) {
-      DEBUG_PRINT("Attempting MQTT connection...");
-      // Attempt to connect
-      if (client.connect(mqtt_base, mqtt_username, mqtt_key)) {
-        DEBUG_PRINTLN("connected");
-        // Once connected, publish an announcement...
-        client.subscribe((String(mqtt_base) + "/" + "tDiffON").c_str());
-        client.subscribe((String(mqtt_base) + "/" + "tDiffOFF").c_str());
-        client.subscribe((String(mqtt_base) + "/" + "controlSensorBojler").c_str());
-        for (int i=0; i<NUMBER_OF_DEVICES; i++) {
-          client.subscribe((String(mqtt_base) + "/" + "so" + String(i)).c_str());
-        }
-        client.subscribe((String(mqtt_base) + "/" + "restart").c_str());
-        client.subscribe((String(mqtt_base) + "/" + "sorder").c_str());
-        client.subscribe((String(mqtt_base) + "/" + "manualRelay").c_str());
-      } else {
-        lastConnectAttempt = millis();
-        DEBUG_PRINT("failed, rc=");
-        DEBUG_PRINTLN(client.state());
-      }
+    DEBUG_PRINT("Attempting MQTT connection...");
+    // Attempt to connect
+    if (client.connect(mqtt_base, mqtt_username, mqtt_key)) {
+      client.subscribe((String(mqtt_base) + "/#").c_str());
+      DEBUG_PRINTLN("connected");
+    } else {
+      DEBUG_PRINT("failed, rc=");
+      DEBUG_PRINTLN(client.state());
     }
   }
+  return true;
 }
 
 #ifdef serverHTTP

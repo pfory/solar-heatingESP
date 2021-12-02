@@ -18,7 +18,7 @@
 #include <timer.h>
 
 //SW name & version
-#define     VERSION                       "1.95"
+#define     VERSION                       "2.00"
 #define     SW_NAME                       "Solar"
 
 #define ota
@@ -73,19 +73,18 @@
 #define DRD_ADDRESS 0
 
 #define CONFIG_PORTAL_TIMEOUT 60 //jak dlouho zustane v rezimu AP nez se cip resetuje
-#define CONNECT_TIMEOUT 120 //jak dlouho se ceka na spojeni nez se aktivuje config portal
+#define CONNECT_TIMEOUT 5 //jak dlouho se ceka na spojeni nez se aktivuje config portal
 
 static const char* const      mqtt_server                    = "192.168.1.56";
 static const uint16_t         mqtt_port                      = 1883;
 static const char* const      mqtt_username                  = "datel";
 static const char* const      mqtt_key                       = "hanka12";
 static const char* const      mqtt_base                      = "/home/Corridor/esp07";
-//static const char* const      static_ip                      = "192.168.1.108";
-//static const char* const      static_gw                      = "192.168.1.1";
-//static const char* const      static_sn                      = "255.255.255.0";
 static const char* const      mqtt_topic_relay               = "manualRelay";
 static const char* const      mqtt_topic_restart             = "restart";
 static const char* const      mqtt_topic_netinfo             = "netinfo";
+static const char* const      mqtt_config_portal             = "config";
+static const char* const      mqtt_config_portal_stop        = "disconfig";
 static const char* const      mqtt_topic_tDiffOFF            = "tDiffOFF";
 static const char* const      mqtt_topic_tDiffON             = "tDiffON";
 static const char* const      mqtt_topic_controlSensor       = "controlSensorBojler";
@@ -242,6 +241,7 @@ uint32_t              lastConnectAttempt          = 0;
 #define SENDSTAT_DELAY                       60000 //poslani statistiky kazdou minutu
 #define MEAS_DELAY                           2000  //mereni teplot
 #define CALC_DELAY                           1000  //mereni prutoku a vypocet energie kazdou sekundu
+#define CONNECT_DELAY                        5000 //ms
   
 #define TEMP_ERR                            -127
 #endif
