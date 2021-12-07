@@ -7,7 +7,6 @@
 #include <Ticker.h>
 #include <ArduinoJson.h> //https://github.com/bblanchon/ArduinoJson
 #include <DoubleResetDetector.h>      //https://github.com/khoih-prog/ESP_DoubleResetDetector
-#include "Sender.h"
 #include <PubSubClient.h>
 #include <Keypad_I2C.h>
 #include <Keypad.h>          // GDY120705
@@ -18,7 +17,7 @@
 #include <timer.h>
 
 //SW name & version
-#define     VERSION                       "2.00"
+#define     VERSION                       "2.10"
 #define     SW_NAME                       "Solar"
 
 #define ota
@@ -27,50 +26,10 @@
 #define flowSensor
 #define serverHTTP
 #define PIR
-
-#define AUTOCONNECTNAME   HOSTNAMEOTA
-#define AUTOCONNECTPWD    "password"
-
-#ifdef ota
-#define HOSTNAMEOTA   SW_NAME VERSION
-#include <ArduinoOTA.h>
-#endif
-
-#ifdef time
-#include <TimeLib.h>
-#include <Timezone.h>
-#endif
-
-#ifdef serverHTTP
-#include <ESP8266WebServer.h>
-#endif
+#define timers
 
 #define CFGFILE "/config.json"
 
-
-#ifdef verbose
-  #define DEBUG_PRINT(x)                     Serial.print (x)
-  #define DEBUG_PRINTDEC(x)                  Serial.print (x, DEC)
-  #define DEBUG_PRINTLN(x)                   Serial.println (x)
-  #define DEBUG_PRINTF(x, y)                 Serial.printf (x, y)
-  #define PORTSPEED 115200             
-  #define DEBUG_WRITE(x)                     Serial.write (x)
-  #define DEBUG_PRINTHEX(x)                  Serial.print (x, HEX)
-  #define SERIAL_BEGIN                       Serial.begin(PORTSPEED)
-#else
-  #define DEBUG_PRINT(x)
-  #define DEBUG_PRINTDEC(x)
-  #define DEBUG_PRINTLN(x)
-  #define DEBUG_PRINTF(x, y)
-  #define DEBUG_WRITE(x)
-#endif 
-
-
-// Number of seconds after reset during which a
-// subseqent reset will be considered a double reset.
-#define DRD_TIMEOUT 2
-// RTC Memory Address for the DoubleResetDetector to use
-#define DRD_ADDRESS 0
 
 #define CONFIG_PORTAL_TIMEOUT 60 //jak dlouho zustane v rezimu AP nez se cip resetuje
 #define CONNECT_TIMEOUT 5 //jak dlouho se ceka na spojeni nez se aktivuje config portal
@@ -177,9 +136,6 @@ keyboard
 #define NUMBER_OF_DEVICES                    10
 #endif
 
-uint32_t              connectDelay                = 30000; //30s
-uint32_t              lastConnectAttempt          = 0;  
-
 //0123456789012345
 //15.6 15.8 15.8 V
 //1234 0.12 624
@@ -244,4 +200,7 @@ uint32_t              lastConnectAttempt          = 0;
 #define CONNECT_DELAY                        5000 //ms
   
 #define TEMP_ERR                            -127
+
+#include <fce.h>
+
 #endif
