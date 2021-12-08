@@ -17,7 +17,7 @@
 #include <timer.h>
 
 //SW name & version
-#define     VERSION                       "2.23"
+#define     VERSION                       "2.24"
 #define     SW_NAME                       "Solar"
 
 #define ota

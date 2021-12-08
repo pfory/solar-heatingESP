@@ -118,6 +118,7 @@ byte sunAngle[12]                           = {17,23,32,44,55,62,63,58,48,37,26,
 
 //MQTT callback
 void callback(char* topic, byte* payload, unsigned int length) {
+  return;
   char * pEnd;
   long int valL;
   String val =  String();
@@ -1089,9 +1090,9 @@ bool reconnect(void *) {
       client.subscribe((String(mqtt_base) + "/" + String(mqtt_topic_restart)).c_str());
       client.subscribe((String(mqtt_base) + "/" + String(mqtt_topic_sendSO)).c_str());
       client.subscribe((String(mqtt_base) + "/" + String(mqtt_topic_relay)).c_str());
-      client.subscribe((String(mqtt_base) + "/" + String(mqtt_topic_netinfo).c_str());
-      client.subscribe((String(mqtt_base) + "/" + String(mqtt_config_portal_stop).c_str());
-      client.subscribe((String(mqtt_base) + "/" + String(mqtt_config_portal).c_str());
+      client.subscribe((String(mqtt_base) + "/" + String(mqtt_topic_netinfo)).c_str());
+      client.subscribe((String(mqtt_base) + "/" + String(mqtt_config_portal_stop)).c_str());
+      client.subscribe((String(mqtt_base) + "/" + String(mqtt_config_portal)).c_str());
       client.publish((String(mqtt_base) + "/LWT").c_str(), "online", true);
       DEBUG_PRINTLN("connected");
     } else {
