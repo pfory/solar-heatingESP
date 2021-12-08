@@ -169,7 +169,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
   } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_config_portal)).c_str())==0) {
     startConfigPortal();
   } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_config_portal_stop)).c_str())==0) {
-    stopConfigPortal();  } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_relay)).c_str())==0) {
+    stopConfigPortal();  
+  } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_relay)).c_str())==0) {
     printMessageToLCD(topic, val);
     DEBUG_PRINT("set manual control relay to ");
     manualRelay = val.toInt();
@@ -1079,12 +1080,18 @@ bool reconnect(void *) {
     DEBUG_PRINT("Attempting MQTT connection...");
     // Attempt to connect
      if (client.connect(mqtt_base, mqtt_username, mqtt_key, (String(mqtt_base) + "/LWT").c_str(), 2, true, "offline", false)) {
-      client.subscribe((String(mqtt_base) + "/" + "tDiffON").c_str());
-      client.subscribe((String(mqtt_base) + "/" + "tDiffOFF").c_str());
-      client.subscribe((String(mqtt_base) + "/" + "controlSensorBojler").c_str());
-      client.subscribe((String(mqtt_base) + "/" + "restart").c_str());
-      client.subscribe((String(mqtt_base) + "/" + "sorder").c_str());
-      client.subscribe((String(mqtt_base) + "/" + "manualRelay").c_str());
+      client.subscribe((String(mqtt_base) + "/" + String(mqtt_topic_tDiffON)).c_str());
+      client.subscribe((String(mqtt_base) + "/" + String(mqtt_topic_tDiffOFF)).c_str());
+      client.subscribe((String(mqtt_base) + "/" + String(mqtt_topic_controlSensor)).c_str());
+      for (int i=0; i<NUMBER_OF_DEVICES; i++) {
+        client.subscribe((String(mqtt_base) + "/" + String(mqtt_topic_so) + String(i)).c_str());
+      }
+      client.subscribe((String(mqtt_base) + "/" + String(mqtt_topic_restart)).c_str());
+      client.subscribe((String(mqtt_base) + "/" + String(mqtt_topic_sendSO)).c_str());
+      client.subscribe((String(mqtt_base) + "/" + String(mqtt_topic_relay)).c_str());
+      client.subscribe((String(mqtt_base) + "/" + String(mqtt_topic_netinfo).c_str());
+      client.subscribe((String(mqtt_base) + "/" + String(mqtt_config_portal_stop).c_str());
+      client.subscribe((String(mqtt_base) + "/" + String(mqtt_config_portal).c_str());
       client.publish((String(mqtt_base) + "/LWT").c_str(), "online", true);
       DEBUG_PRINTLN("connected");
     } else {
