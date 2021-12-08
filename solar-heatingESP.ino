@@ -645,6 +645,9 @@ bool sendDataMQTT(void *) {
   client.publish((String(mqtt_base) + "/tBojlerIN").c_str(), String(tBojlerIn).c_str());
   client.publish((String(mqtt_base) + "/tBojlerOUT").c_str(), String(tBojlerOut).c_str());
   client.publish((String(mqtt_base) + "/tControl").c_str(), String(tControl).c_str());
+  client.publish((String(mqtt_base) + "/controlSensorBojler").c_str(), String(controlSensorBojler).c_str());
+  client.publish((String(mqtt_base) + "/tDiffOFF").c_str(), String(tDiffOFF).c_str());
+  client.publish((String(mqtt_base) + "/tDiffON").c_str(), String(tDiffON).c_str());
  
   digitalWrite(BUILTIN_LED, HIGH);
   return true;
