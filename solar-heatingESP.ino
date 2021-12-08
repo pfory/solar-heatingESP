@@ -1079,8 +1079,8 @@ bool displayTime(void *) {
 bool reconnect(void *) {
   if (!client.connected()) {
     DEBUG_PRINT("Attempting MQTT connection...");
-    // Attempt to connect
-     if (client.connect(mqtt_base, mqtt_username, mqtt_key, (String(mqtt_base) + "/LWT").c_str(), 2, true, "offline", false)) {
+     // Attempt to connect
+     if (client.connect(mqtt_base, mqtt_username, mqtt_key, (String(mqtt_base) + "/LWT").c_str(), 2, true, "offline", true)) {
       client.subscribe((String(mqtt_base) + "/" + String(mqtt_topic_tDiffON)).c_str());
       client.subscribe((String(mqtt_base) + "/" + String(mqtt_topic_tDiffOFF)).c_str());
       client.subscribe((String(mqtt_base) + "/" + String(mqtt_topic_controlSensor)).c_str());
