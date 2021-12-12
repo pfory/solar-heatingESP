@@ -2,22 +2,17 @@
 #define CONFIGURATION_H
 
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
-#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
 #include <FS.h>          //this needs to be first
-#include <Ticker.h>
 #include <ArduinoJson.h> //https://github.com/bblanchon/ArduinoJson
-#include <DoubleResetDetector.h>      //https://github.com/khoih-prog/ESP_DoubleResetDetector
-#include <PubSubClient.h>
 #include <Keypad_I2C.h>
 #include <Keypad.h>          // GDY120705
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
-#include <timer.h>
 
 //SW name & version
-#define     VERSION                       "2.26"
+#define     VERSION                       "2.28"
 #define     SW_NAME                       "Solar"
 
 #define ota
@@ -32,7 +27,7 @@
 
 
 #define CONFIG_PORTAL_TIMEOUT 60 //jak dlouho zustane v rezimu AP nez se cip resetuje
-#define CONNECT_TIMEOUT 5 //jak dlouho se ceka na spojeni nez se aktivuje config portal
+#define CONNECT_TIMEOUT 120 //jak dlouho se ceka na spojeni nez se aktivuje config portal
 
 static const char* const      mqtt_server                    = "192.168.1.56";
 static const uint16_t         mqtt_port                      = 1883;
