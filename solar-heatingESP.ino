@@ -616,6 +616,10 @@ bool readConfig() {
 void sendRelayMQTT(byte akce) {
   digitalWrite(BUILTIN_LED, LOW);
   client.publish((String(mqtt_base) + "/relayChange").c_str(), String(akce).c_str());
+  delay(1000);
+  void * a;
+  calcFlow(a);
+  client.publish((String(mqtt_base) + "/prutok").c_str(), String(lMin).c_str());
   digitalWrite(BUILTIN_LED, HIGH);
 }
 
