@@ -12,7 +12,7 @@
 #include <DallasTemperature.h>
 
 //SW name & version
-#define     VERSION                       "2.29"
+#define     VERSION                       "2.31"
 #define     SW_NAME                       "Solar"
 
 #define ota
@@ -42,8 +42,8 @@ static const char* const      mqtt_config_portal_stop        = "disconfig";
 static const char* const      mqtt_topic_tDiffOFF            = "tDiffOFF";
 static const char* const      mqtt_topic_tDiffON             = "tDiffON";
 static const char* const      mqtt_topic_controlSensor       = "controlSensorBojler";
-static const char* const      mqtt_topic_sendSO              = "sorder";
-static const char* const      mqtt_topic_so                  = "so";
+static const char* const      mqtt_topic_DSAddr              = "DSAddr";
+// static const char* const      mqtt_topic_so                  = "so";
 
 
 /*
