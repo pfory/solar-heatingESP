@@ -66,15 +66,9 @@ DeviceAddress T3Addr                        = { 0x28, 0xFF, 0x94, 0x27, 0x74, 0x
 DeviceAddress T4Addr                        = { 0x28, 0xFF, 0x78, 0x33, 0x03, 0x17, 0x04, 0xDC };
 DeviceAddress T5Addr                        = { 0x28, 0xEA, 0x67, 0x6B, 0x05, 0x00, 0x00, 0x89 };
 DeviceAddress T6Addr                        = { 0x28, 0xFF, 0x65, 0xB9, 0x02, 0x17, 0x03, 0xA6 };
-DeviceAddress T7Addr                        = { 0x28, 0xFF, 0xAD, 0x6E, 0x04, 0x00, 0x00, 0x8C };
+DeviceAddress T7Addr                        = { 0x28, 0xFF, 0x6D, 0x2F, 0x73, 0x16, 0x05, 0x2D };
 DeviceAddress T8Addr                        = { 0x28, 0xFF, 0xA5, 0x68, 0x74, 0x16, 0x03, 0xF0 };
 
-//maximal temperatures
-//float tMaxIn                                = 0; //maximal input temperature (just for statistics)
-//float tMaxOut                               = 0; //maximal output temperature (just for statistics)
-//float tMaxBojler                            = 0; //maximal boiler temperature (just for statistics)
-
-   
 byte manualRelay                             = 2;
 byte relayStatus                             = RELAY_ON;
    
@@ -112,14 +106,9 @@ byte colPins[COLS]                          = {3,2,1,0}; //connect to the column
 Keypad_I2C keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS, I2CADDR); 
 // #endif
 
-// enum modeDisplay                          {SETUP, INFO};
-// modeDisplay displayMode                    = INFO;
-
-
 //promenne ulozene v pameti (viz CFGFILE "/config.json")
 byte            tDiffON                    = 5; //rozdil vystupni teploty panelu 1 tP1Out nebo panelu 2 tP2Out proti teplote bojleru1 pri kterem dojde ke spusteni cerpadla
 byte            tDiffOFF                   = 2; //rozdil vystupni teploty panelu 2 tP2Out proti teplote bojleru1 pri kterem dojde k vypnuti cerpadla
-//byte            controlSensorBojler        = 1; //kontrolni cidlo 1 - Bojler 0 Room
 
 byte            sensorOrder[NUMBER_OF_DEVICES];
 
@@ -146,15 +135,6 @@ void callback(char* topic, byte* payload, unsigned int length) {
   delay(500);
   lcd.clear();
   
-  // if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_controlSensor)).c_str())==0) {
-    // DEBUG_PRINT("set control sensor to ");
-    // if (val.toInt()==1) {
-      // DEBUG_PRINTLN(F("Bojler"));
-    // } else {
-      // DEBUG_PRINTLN(F("Room"));
-    // }
-    // controlSensorBojler=val.toInt();
-    // saveConfig();
   if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_tDiffOFF)).c_str())==0) {
     printMessageToLCD(topic, val);
     DEBUG_PRINT("set tDiffOFF to ");
@@ -192,27 +172,6 @@ void callback(char* topic, byte* payload, unsigned int length) {
   } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_DSAddr)).c_str())==0) {
     sendDSAddrMQTT();
   }
-  
-  // } else if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_sendSO)).c_str())==0) {
-   // //} else if (strcmp(topic, mqtt_topic_sendSO)==0) {
-    // printMessageToLCD(topic, val);
-    // DEBUG_PRINT("send sensor order");
-    // void * a;
-    // sendSOMQTT(a);
-    
-  // } else {
-    // for (int i = 0; i<NUMBER_OF_DEVICES; i++) {
-      // if (strcmp(topic, (String(mqtt_base) + "/" + String(mqtt_topic_so) + String(i)).c_str())==0) {
-        // printMessageToLCD(topic, val);
-        // DEBUG_PRINT("set sensor order ");
-        // DEBUG_PRINT(i);
-        // DEBUG_PRINT(" to ");
-        // sensorOrder[i]=val.toInt();
-        // DEBUG_PRINTLN(val.toInt());
-        // saveConfig();  
-      // }
-    // }
-  // }  
 }
 
 #ifdef flowSensor
@@ -603,18 +562,6 @@ bool readConfig() {
         tDiffOFF       = doc["tDiffOFF"];
         DEBUG_PRINT(F("tDiffOFF: "));
         DEBUG_PRINTLN(tDiffOFF);
-        // controlSensorBojler = doc["controlSensor"];
-        // DEBUG_PRINT(F("control sensor: "));
-        // controlSensorBojler==1 ? DEBUG_PRINTLN(" bojler") : DEBUG_PRINTLN(" room");
-        
-        // for (int i=0; i<numberOfDevices; i++) {
-          // sensorOrder[i] = doc["sensorOrder[" + String(i) + "]"];
-          // DEBUG_PRINT(F("sensorOrder["));
-          // DEBUG_PRINT(i);
-          // DEBUG_PRINT(F("]:"));
-          // DEBUG_PRINTLN(sensorOrder[i]);
-        // }
-       
         return true;
       }
       DEBUG_PRINTLN(F("ERROR: unable to open config file"));
@@ -658,15 +605,10 @@ bool sendDataMQTT(void *) {
   client.publish((String(mqtt_base) + "/tP2OUT").c_str(), String(tP2Out).c_str());
   client.publish((String(mqtt_base) + "/prutok").c_str(), String(lMin).c_str());
   client.publish((String(mqtt_base) + "/sPumpSolar/status").c_str(), String(relayStatus==RELAY_ON ? 1 : 0).c_str());
-  //client.publish((String(mqtt_base) + "/tRoom").c_str(), String(tRoom).c_str());
   client.publish((String(mqtt_base) + "/tBojler1").c_str(), String(tBojler1).c_str());
   client.publish((String(mqtt_base) + "/tBojler2").c_str(), String(tBojler2).c_str());
   client.publish((String(mqtt_base) + "/tBojlerIN").c_str(), String(tBojlerIn).c_str());
   client.publish((String(mqtt_base) + "/tBojlerOUT").c_str(), String(tBojlerOut).c_str());
-  //client.publish((String(mqtt_base) + "/tControl").c_str(), String(tControl).c_str());
-  //client.publish((String(mqtt_base) + "/controlSensorBojler").c_str(), String(controlSensorBojler).c_str());
-  client.publish((String(mqtt_base) + "/tDiffOFF").c_str(), String(tDiffOFF).c_str());
-  client.publish((String(mqtt_base) + "/tDiffON").c_str(), String(tDiffON).c_str());
  
   digitalWrite(BUILTIN_LED, HIGH);
   return true;
@@ -693,44 +635,6 @@ bool tempMeas(void *) {
   tBojler1      = dsSensors.getTempC(T5Addr);
   tBojler2      = dsSensors.getTempC(T3Addr);
   
-  // for (byte i=0;i<numberOfDevices; i++) {
-    // float tempTemp=(float)TEMP_ERR;
-    // for (byte j=0;j<10;j++) { //try to read temperature ten times
-      // tempTemp = dsSensors.getTempC(tempDeviceAddresses[i]);
-      // if (tempTemp>=-55) {
-        // break;
-      // }
-    // }
-    // sensor[i] = tempTemp;
-  // }
-
-  // tP1In       = sensor[sensorOrder[0]]; //so0
-  // tP1Out      = sensor[sensorOrder[1]]; //so1
-  // tP2In       = sensor[sensorOrder[2]]; //so2
-  // tP2Out      = sensor[sensorOrder[3]]; //so3
-  // tBojlerIn   = sensor[sensorOrder[4]]; //so4
-  // tBojlerOut  = sensor[sensorOrder[5]]; //so5
-  // tRoom       = sensor[sensorOrder[6]]; //so6
-  // tBojler1    = sensor[sensorOrder[7]]; //so7
-/*
-  tP1In       = sensor[7]; //so0
-  tP1Out      = sensor[4]; //so1
-  tP2In       = sensor[2]; //so2
-  tP2Out      = sensor[1]; //so3
-  tBojlerIn   = sensor[5]; //so4
-  tBojlerOut  = sensor[3]; //so5
-  tRoom       = sensor[6]; //so6
-  tBojler     = sensor[0]; //so7
-*/
-  
-  //controlSensorBojler==1 ? tControl = tBojler : tControl = tRoom;
-  //controlSensorBojler==1 ? tControl = tBojler1 : tControl = ROOMTEMPON;
-  
-  //if (tP2Out>tMaxOut)       tMaxOut      = tP2Out;
-  //if (tP2In>tMaxIn)         tMaxIn       = tP2In;
-  //if (tBojler1>tMaxBojler1) tMaxBojler1  = tBojler1;
-
-  
   DEBUG_PRINT(F("P1 In:"));
   DEBUG_PRINTLN(tP1In);
   DEBUG_PRINT(F("P1 Out:"));
@@ -739,8 +643,6 @@ bool tempMeas(void *) {
   DEBUG_PRINTLN(tP2In);
   DEBUG_PRINT(F("P2 Out:"));
   DEBUG_PRINTLN(tP2Out);
-  //DEBUG_PRINT(F("Room:"));
-  //DEBUG_PRINTLN(tRoom);
   DEBUG_PRINT(F("Bojler:"));
   DEBUG_PRINTLN(tBojler1);
   DEBUG_PRINT(F("Bojler In:"));
@@ -748,7 +650,6 @@ bool tempMeas(void *) {
   DEBUG_PRINT(F("Bojler Out:"));
   DEBUG_PRINTLN(tBojlerOut);
   DEBUG_PRINT(F("Control:"));
-  //DEBUG_PRINTLN(tControl);
 
   
   //obcas se vyskytne chyba a vsechna cidla prestanou merit
@@ -1017,13 +918,6 @@ void dsInit(void) {
     lcd.print(F(" sensors found"));
   }
 
-  // Loop through each device, print out address
-  // for (byte i=0;i<numberOfDevices; i++) {
-      // // Search the wire for address
-    // if (dsSensors.getAddress(tempDeviceAddress, i)) {
-      // memcpy(tempDeviceAddresses[i],tempDeviceAddress,8);
-    // }
-  // }
   dsSensors.setResolution(12);
   dsSensors.setWaitForConversion(false);
 }
@@ -1110,8 +1004,6 @@ bool displayTime(void *) {
 
 void sendDSAddrMQTT() {
   byte i;
-  // byte present = 0;
-  // byte data[12];
   byte addr[8];
   char buffer[256];
   DynamicJsonDocument doc(1024);
@@ -1120,6 +1012,7 @@ void sendDSAddrMQTT() {
   while(onewire.search(addr)) {
     DEBUG_PRINTLN("\n\rFound \'1-Wire\' device with address:");
     String s = String(40);
+    String s1 = String(2);
     for (i = 0; i < 8; i++) {
       DEBUG_PRINT("0x");
       s += "0x";
@@ -1128,20 +1021,18 @@ void sendDSAddrMQTT() {
         s += "0";
       }
       DEBUG_PRINTHEX(addr[i]);
-      s += String(addr[i], HEX);
+      s1 = String(addr[i], HEX);
+      s1.toUpperCase();
+      s += s1;
       if (i < 7) {
         DEBUG_PRINT(", ");
-        s += ",";
+        s += ", ";
       }
     }
     doc["Addr"]   = s;
     
     serializeJson(doc, buffer);
     client.publish((String(mqtt_base) + "/DSAddresses").c_str(), buffer);
-    // client.publish((String(mqtt_base) + "/Napeti").c_str(), String(ESP.getVcc()).c_str());
-    // client.publish((String(mqtt_base) + "/HeartBeat").c_str(), String(heartBeat++).c_str());
-    // client.publish((String(mqtt_base) + "/RSSI").c_str(), String(WiFi.RSSI()).c_str());
-
     
     if (OneWire::crc8( addr, 7) != addr[7]) {
         DEBUG_PRINTLN("CRC is not valid!");

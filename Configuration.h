@@ -12,7 +12,7 @@
 #include <DallasTemperature.h>
 
 //SW name & version
-#define     VERSION                       "2.31"
+#define     VERSION                       "2.34"
 #define     SW_NAME                       "Solar"
 
 #define ota
@@ -187,7 +187,7 @@ keyboard
 #define SAFETY_ON                            86.0 //teplota, pri niz rele vzdy sepne
 #define ROOMTEMPON                           25.0 //teplota, pri niz sepne rele kdyz je kontrolni cidlo mistnost
   
-#define SEND_DELAY                           60000  //prodleva mezi poslanim dat v ms
+#define SEND_DELAY                           20000  //prodleva mezi poslanim dat v ms
 #define SHOW_INFO_DELAY                      5000  //
 #define SENDSTAT_DELAY                       60000 //poslani statistiky kazdou minutu
 #define MEAS_DELAY                           2000  //mereni teplot
