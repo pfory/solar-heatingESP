@@ -649,7 +649,6 @@ bool tempMeas(void *) {
   DEBUG_PRINTLN(tBojlerIn);
   DEBUG_PRINT(F("Bojler Out:"));
   DEBUG_PRINTLN(tBojlerOut);
-  DEBUG_PRINT(F("Control:"));
 
   
   //obcas se vyskytne chyba a vsechna cidla prestanou merit
@@ -910,6 +909,33 @@ void dsInit(void) {
   lcd.print(numberOfDevices);
   DEBUG_PRINT(numberOfDevices);
   
+  dsSensors.setResolution(12);
+  dsSensors.setWaitForConversion(false);
+  dsSensors.requestTemperatures(); // Send the command to get temperatures
+  
+  for(int i=0;i<numberOfDevices; i++) {
+    // Search the wire for address
+    if(dsSensors.getAddress(tempDeviceAddress, i)) {
+      Serial.print("Found device ");
+      Serial.print(i, DEC);
+      Serial.print(" with address: ");
+      printAddress(tempDeviceAddress);
+      Serial.println();
+      
+      Serial.print("Temperature for device: ");
+      Serial.println(i,DEC);  
+		
+      // It responds almost immediately. Let's print out the data
+      float tempC = dsSensors.getTempC(tempDeviceAddress);
+      Serial.print("Temp C: ");
+      Serial.print(tempC);
+   }else{
+      Serial.print("Found ghost device at ");
+      Serial.print(i, DEC);
+      Serial.print(" but could not detect address. Check power and cabling");
+    }
+  }
+    
   if (numberOfDevices==1) {
     DEBUG_PRINTLN(" sensor found");
     lcd.print(F(" sensor found"));
@@ -917,11 +943,18 @@ void dsInit(void) {
     DEBUG_PRINTLN(" sensor(s) found");
     lcd.print(F(" sensors found"));
   }
-
-  dsSensors.setResolution(12);
-  dsSensors.setWaitForConversion(false);
 }
 
+
+// function to print a device address
+void printAddress(DeviceAddress deviceAddress)
+{
+  for (uint8_t i = 0; i < 8; i++)
+  {
+    if (deviceAddress[i] < 16) Serial.print("0");
+    Serial.print(deviceAddress[i], HEX);
+  }
+}
 
 void displayInfoValue(char text1, float value, char text2) {
   lcd.setCursor(POZ0X,POZ0Y);
