@@ -91,19 +91,19 @@ unsigned long showInfo                      = 0; //zobrazeni 4 radky na displeji
 
 LiquidCrystal_I2C lcd(LCDADDRESS,LCDCOLS,LCDROWS);  // set the LCD
 
-const byte ROWS = 4; //four rows
-const byte COLS = 4; //three columns
-char keys[ROWS][COLS]                       = {
-                                            {'1','2','3','A'},
-                                            {'4','5','6','B'},
-                                            {'7','8','9','C'},
-                                            {'*','0','#','D'}
-};
-byte rowPins[ROWS]                          = {7,6,5,4}; //connect to the row pinouts of the keypad
-byte colPins[COLS]                          = {3,2,1,0}; //connect to the column pinouts of the keypad
+// const byte ROWS = 4; //four rows
+// const byte COLS = 4; //three columns
+// char keys[ROWS][COLS]                       = {
+                                            // {'1','2','3','A'},
+                                            // {'4','5','6','B'},
+                                            // {'7','8','9','C'},
+                                            // {'*','0','#','D'}
+// };
+// byte rowPins[ROWS]                          = {7,6,5,4}; //connect to the row pinouts of the keypad
+// byte colPins[COLS]                          = {3,2,1,0}; //connect to the column pinouts of the keypad
 
 //Keypad_I2C keypad = Keypad_I2C( makeKeymap(keys), rowPins, colPins, ROWS, COLS, I2CADDR );
-Keypad_I2C keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS, I2CADDR); 
+//Keypad_I2C keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS, I2CADDR); 
 // #endif
 
 //promenne ulozene v pameti (viz CFGFILE "/config.json")
@@ -243,7 +243,7 @@ void setup() {
     // DEBUG_PRINTLN("Room");
   // }
 
-  keypad.begin();
+  //keypad.begin();
   //keypad.addEventListener(keypadEvent); //add an event listener for this keypad  
   
   if (numberOfDevices>NUMBER_OF_DEVICES) {
@@ -630,8 +630,8 @@ bool tempMeas(void *) {
   tP1Out        = dsSensors.getTempC(T2Addr);
   tP2In         = dsSensors.getTempC(T7Addr);
   tP2Out        = dsSensors.getTempC(T8Addr);
-  tBojlerIn     = dsSensors.getTempC(T4Addr);
-  tBojlerOut    = dsSensors.getTempC(T6Addr);
+  tBojlerIn     = dsSensors.getTempC(T6Addr);
+  tBojlerOut    = dsSensors.getTempC(T4Addr);
   tBojler1      = dsSensors.getTempC(T5Addr);
   tBojler2      = dsSensors.getTempC(T3Addr);
   
@@ -816,90 +816,90 @@ void display() {
 }
 
 //---------------------------------------------K E Y B O A R D ------------------------------------------------
-void keyBoard() {
-  char key = keypad.getKey();
-  if (key!=NO_KEY){
-    lcd.clear();
-    //DEBUG_PRINTLN(key);
-    /*
-    Keyboard layout
-    -----------
-    | 1 2 3 A |
-    | 4 5 6 B |
-    | 7 8 9 C |
-    | * 0 # D |
-    -----------
+// void keyBoard() {
+  // char key = keypad.getKey();
+  // if (key!=NO_KEY){
+    // lcd.clear();
+    // //DEBUG_PRINTLN(key);
+    // /*
+    // Keyboard layout
+    // -----------
+    // | 1 2 3 A |
+    // | 4 5 6 B |
+    // | 7 8 9 C |
+    // | * 0 # D |
+    // -----------
    
-    INFO
-    1 - 
-    2 - TDiffON
-    3 - TDiffOFF
-    4 - prutok
-    5 - Max IN OUT temp
-    6 - Max bojler
-    B - clear display
-    7 - Max power today
-    8 - Control sensor
-    9 - 
-    C - RESTART
-    * -
-    0 - main display
-    D - manual/auto
-    */
+    // INFO
+    // 1 - 
+    // 2 - TDiffON
+    // 3 - TDiffOFF
+    // 4 - prutok
+    // 5 - Max IN OUT temp
+    // 6 - Max bojler
+    // B - clear display
+    // 7 - Max power today
+    // 8 - Control sensor
+    // 9 - 
+    // C - RESTART
+    // * -
+    // 0 - main display
+    // D - manual/auto
+    // */
     
-    if (key=='1') { 
-    }
-    else if (key=='2') { 
-      displayType=DISPLAY_T_DIFF_ON;
-    }
-    else if (key=='3') { 
-      displayType=DISPLAY_T_DIFF_OFF;
-    }
-    else if (key=='4') {
-      displayType=DISPLAY_FLOW;
-    }
-    else if (key=='5') { 
-      displayType=DISPLAY_MAX_IO_TEMP;
-    }
-    else if (key=='6') { 
-      displayType=DISPLAY_MAX_BOJLER;
-    }
-    else if (key=='B') {
-      lcd.clear();
-    }
-    else if (key=='7') { 
-      displayType=DISPLAY_MAX_POWER_TODAY;
-    }
-    else if (key=='8') { 
-      displayType=DISPLAY_CONTROL_SENSOR;
-    }
-    else if (key=='9') { 
-    }
-    if (key=='C') {
-      saveConfig();
-      ESP.restart();
-    }
-    if (key=='*') {
-      lcd.clear();
-    }
-    if (key=='0') { 
-      displayType=DISPLAY_MAIN;
-    }
-    if (key=='D') {
-      // manualON = !manualON;
-      // if (manualON) {
-        // manualRelay=1;
-      // } else {
+    // if (key=='1') { 
+    // }
+    // else if (key=='2') { 
+      // displayType=DISPLAY_T_DIFF_ON;
+    // }
+    // else if (key=='3') { 
+      // displayType=DISPLAY_T_DIFF_OFF;
+    // }
+    // else if (key=='4') {
+      // displayType=DISPLAY_FLOW;
+    // }
+    // else if (key=='5') { 
+      // displayType=DISPLAY_MAX_IO_TEMP;
+    // }
+    // else if (key=='6') { 
+      // displayType=DISPLAY_MAX_BOJLER;
+    // }
+    // else if (key=='B') {
+      // lcd.clear();
+    // }
+    // else if (key=='7') { 
+      // displayType=DISPLAY_MAX_POWER_TODAY;
+    // }
+    // else if (key=='8') { 
+      // displayType=DISPLAY_CONTROL_SENSOR;
+    // }
+    // else if (key=='9') { 
+    // }
+    // if (key=='C') {
+      // saveConfig();
+      // ESP.restart();
+    // }
+    // if (key=='*') {
+      // lcd.clear();
+    // }
+    // if (key=='0') { 
+      // displayType=DISPLAY_MAIN;
+    // }
+    // if (key=='D') {
+      // // manualON = !manualON;
+      // // if (manualON) {
+        // // manualRelay=1;
+      // // } else {
+        // // manualRelay=0;
+      // // }
+      // manualRelay++;
+      // if (manualRelay>2) {
         // manualRelay=0;
       // }
-      manualRelay++;
-      if (manualRelay>2) {
-        manualRelay=0;
-      }
-    }
-    key = ' ';
-  }
-}
+    // }
+    // key = ' ';
+  // }
+// }
 
 void dsInit(void) {
   dsSensors.begin();

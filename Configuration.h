@@ -4,15 +4,15 @@
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
 #include <FS.h>          //this needs to be first
 #include <ArduinoJson.h> //https://github.com/bblanchon/ArduinoJson
-#include <Keypad_I2C.h>
-#include <Keypad.h>          // GDY120705
+//#include <Keypad_I2C.h>
+//#include <Keypad.h>          // GDY120705
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
 //SW name & version
-#define     VERSION                       "2.35"
+#define     VERSION                       "2.36"
 #define     SW_NAME                       "Solar"
 
 #define ota
