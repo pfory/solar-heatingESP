@@ -296,7 +296,7 @@ void loop() {
 
   display();
   
-  keyBoard();
+  //keyBoard();
   
   timer.tick(); // tick the timer
 #ifdef serverHTTP
