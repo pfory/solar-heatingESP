@@ -625,15 +625,23 @@ bool tempMeas(void *) {
   DEBUG_PRINT(F("Requesting temperatures..."));
   dsSensors.requestTemperatures(); 
   DEBUG_PRINTLN(F("DONE"));
-
-  tP1In         = dsSensors.getTempC(T1Addr);
-  tP1Out        = dsSensors.getTempC(T2Addr);
-  tP2In         = dsSensors.getTempC(T7Addr);
-  tP2Out        = dsSensors.getTempC(T8Addr);
-  tBojlerIn     = dsSensors.getTempC(T6Addr);
-  tBojlerOut    = dsSensors.getTempC(T4Addr);
-  tBojler1      = dsSensors.getTempC(T5Addr);
-  tBojler2      = dsSensors.getTempC(T3Addr);
+  
+  float t_temp=dsSensors.getTempC(T1Addr);
+  if (t_temp>-127) tP1In         = t_temp;
+  t_temp=dsSensors.getTempC(T2Addr);
+  if (t_temp>-127) tP1Out        = t_temp;
+  t_temp=dsSensors.getTempC(T7Addr);
+  if (t_temp>-127) tP2In         = t_temp;
+  t_temp=dsSensors.getTempC(T8Addr);   
+  if (t_temp>-127) tP2Out        = t_temp;
+  t_temp=dsSensors.getTempC(T6Addr);  
+  if (t_temp>-127) tBojlerIn     = t_temp;
+  t_temp=dsSensors.getTempC(T4Addr);
+  if (t_temp>-127) tBojlerOut    = t_temp;
+  t_temp=dsSensors.getTempC(T5Addr);   
+  if (t_temp>-127) tBojler1      = t_temp;
+  t_temp=dsSensors.getTempC(T3Addr);
+  if (t_temp>-127) tBojler2      = t_temp;
   
   DEBUG_PRINT(F("P1 In:"));
   DEBUG_PRINTLN(tP1In);

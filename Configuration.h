@@ -12,7 +12,7 @@
 #include <DallasTemperature.h>
 
 //SW name & version
-#define     VERSION                       "2.37"
+#define     VERSION                       "2.38"
 #define     SW_NAME                       "Solar"
 
 #define ota
