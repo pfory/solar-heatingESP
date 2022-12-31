@@ -3,31 +3,25 @@
 
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
 #include <FS.h>          //this needs to be first
+#include <LittleFS.h>
 #include <ArduinoJson.h> //https://github.com/bblanchon/ArduinoJson
-//#include <Keypad_I2C.h>
-//#include <Keypad.h>          // GDY120705
-#include <Wire.h>
-#include <LiquidCrystal_I2C.h>
+#include <LCD_I2C.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
 //SW name & version
-#define     VERSION                       "2.38"
+#define     VERSION                       "2.40"
 #define     SW_NAME                       "Solar"
 
 #define ota
 #define time
 #define verbose
 #define flowSensor
-#define serverHTTP
+//#define serverHTTP
 #define PIR
 #define timers
 
 #define CFGFILE "/config.json"
-
-
-#define CONFIG_PORTAL_TIMEOUT 60 //jak dlouho zustane v rezimu AP nez se cip resetuje
-#define CONNECT_TIMEOUT 120 //jak dlouho se ceka na spojeni nez se aktivuje config portal
 
 static const char* const      mqtt_server                    = "192.168.1.56";
 static const uint16_t         mqtt_port                      = 1883;
@@ -43,22 +37,6 @@ static const char* const      mqtt_topic_tDiffOFF            = "tDiffOFF";
 static const char* const      mqtt_topic_tDiffON             = "tDiffON";
 static const char* const      mqtt_topic_controlSensor       = "controlSensorBojler";
 static const char* const      mqtt_topic_DSAddr              = "DSAddr";
-// static const char* const      mqtt_topic_so                  = "so";
-
-
-/*
-sensor order
-/home/Corridor/esp07/so0 - 7
-/home/Corridor/esp07/so1 - 4
-/home/Corridor/esp07/so2 - 2
-/home/Corridor/esp07/so3 - 1
-/home/Corridor/esp07/so4 - 3
-/home/Corridor/esp07/so5 - 5
-/home/Corridor/esp07/so6 - 6
-/home/Corridor/esp07/so7 - 0
-kontrola /home/Corridor/esp07/sorder
-*/
-
 
 /*
 Version history:
@@ -103,7 +81,7 @@ keyboard
 */
 
 //keypad i2c address
-#define I2CADDR                              0x20
+//#define I2CADDR                              0x20
 
 //display
 #define LCDADDRESS                           0x27

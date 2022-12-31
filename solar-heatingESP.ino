@@ -3,11 +3,10 @@
 SOLAR - control system for solar unit
 Petr Fory pfory@seznam.cz
 GIT - https://github.com/pfory/solar-heating
-//Wemos D1 R2 & mini  !!!!!!!!!!!! 2M FS !!!!!!!!!!!!!!!!!!!!!!!!!!! - jinak se smaže nastavení z configu
+//Wemos D1 R2 & mini
 */
 
 /*TODO
-vyresit chybu teplomeru
 */
 
 #include "Configuration.h"
@@ -89,22 +88,8 @@ unsigned int displayType                    = DISPLAY_MAIN;
 unsigned long showInfo                      = 0; //zobrazeni 4 radky na displeji
 
 
-LiquidCrystal_I2C lcd(LCDADDRESS,LCDCOLS,LCDROWS);  // set the LCD
-
-// const byte ROWS = 4; //four rows
-// const byte COLS = 4; //three columns
-// char keys[ROWS][COLS]                       = {
-                                            // {'1','2','3','A'},
-                                            // {'4','5','6','B'},
-                                            // {'7','8','9','C'},
-                                            // {'*','0','#','D'}
-// };
-// byte rowPins[ROWS]                          = {7,6,5,4}; //connect to the row pinouts of the keypad
-// byte colPins[COLS]                          = {3,2,1,0}; //connect to the column pinouts of the keypad
-
-//Keypad_I2C keypad = Keypad_I2C( makeKeymap(keys), rowPins, colPins, ROWS, COLS, I2CADDR );
-//Keypad_I2C keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS, I2CADDR); 
-// #endif
+//LiquidCrystal_I2C lcd(LCDADDRESS,LCDCOLS,LCDROWS);  // set the LCD
+LCD_I2C lcd(LCDADDRESS, LCDCOLS, LCDROWS); // Default address of most PCF8574 modules, change according
 
 //promenne ulozene v pameti (viz CFGFILE "/config.json")
 byte            tDiffON                    = 5; //rozdil vystupni teploty panelu 1 tP1Out nebo panelu 2 tP2Out proti teplote bojleru1 pri kterem dojde ke spusteni cerpadla
@@ -117,13 +102,11 @@ byte sunAngle[12]                           = {17,23,32,44,55,62,63,58,48,37,26,
 
 //MQTT callback
 void callback(char* topic, byte* payload, unsigned int length) {
-  char * pEnd;
-  long int valL;
   String val =  String();
   DEBUG_PRINT("Message arrived [");
   DEBUG_PRINT(topic);
   DEBUG_PRINT("] ");
-  for (int i=0;i<length;i++) {
+  for (unsigned int i=0;i<length;i++) {
     DEBUG_PRINT((char)payload[i]);
     val += (char)payload[i];
   }
@@ -175,7 +158,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
 }
 
 #ifdef flowSensor
-void ICACHE_RAM_ATTR flow();
+void IRAM_ATTR flow();
 #endif
 //----------------------------------------------------- S E T U P -----------------------------------------------------------
 void setup() {
@@ -184,9 +167,9 @@ void setup() {
   pinMode(RELAYPIN, OUTPUT);
   digitalWrite(RELAYPIN, RELAY_ON);
 
-  lcd.init();               // initialize the lcd 
+  lcd.begin();               // initialize the lcd 
   lcd.backlight();
-  lcd.home();                   
+  //lcd.home();                   
   lcd.print(SW_NAME);  
   PRINT_SPACE
   lcd.print(VERSION);
@@ -273,7 +256,7 @@ void setup() {
   
   ticker.detach();
   //keep LED on
-  digitalWrite(BUILTIN_LED, HIGH);
+  digitalWrite(LED_BUILTIN, HIGH);
 
   drd.stop();
 
@@ -400,7 +383,7 @@ void handleRoot() {
   printSystemTime();
 #endif
   DEBUG_PRINTLN(" Client request");
-  digitalWrite(BUILTIN_LED, LOW);
+  digitalWrite(LED_BUILTIN, LOW);
   
 	snprintf ( temp, TEXTLEN,
       "<html>\
@@ -472,21 +455,21 @@ void handleRoot() {
       // abs((tRoom - (int)tRoom) * 100)
 );
 	server.send ( 200, "text/html", temp );
-  digitalWrite(BUILTIN_LED, HIGH);
+  digitalWrite(LED_BUILTIN, HIGH);
 }
 #endif
 
 bool saveConfig() {
   DEBUG_PRINTLN(F("Saving config..."));
 
-  // if SPIFFS is not usable
-  if (!SPIFFS.begin() || !SPIFFS.exists(CFGFILE) ||
-      !SPIFFS.open(CFGFILE, "w"))
+  // if LittleFS is not usable
+  if (!LittleFS.begin() || !LittleFS.exists(CFGFILE) ||
+      !LittleFS.open(CFGFILE, "w"))
   {
-    DEBUG_PRINTLN(F("Need to format SPIFFS: "));
-    SPIFFS.end();
-    SPIFFS.begin();
-    DEBUG_PRINTLN(SPIFFS.format());
+    DEBUG_PRINTLN(F("Need to format LittleFS: "));
+    LittleFS.end();
+    LittleFS.begin();
+    DEBUG_PRINTLN(LittleFS.format());
   }
 
   StaticJsonDocument<1024> doc;
@@ -511,22 +494,22 @@ bool saveConfig() {
 
   lcd.clear();
  
-  File configFile = SPIFFS.open(CFGFILE, "w+");
+  File configFile = LittleFS.open(CFGFILE, "w+");
   if (!configFile) {
     DEBUG_PRINTLN(F("Failed to open config file for writing"));
-    SPIFFS.end();
+    LittleFS.end();
     lcd.print("Failed to open config file for writing");
     delay(2000);
     lcd.clear();
     return false;
   } else {
-    if (isDebugEnabled) {
+    if (isDebugEnabled()) {
       serializeJson(doc, Serial);
     }
     serializeJson(doc, configFile);
     //json.printTo(configFile);
     configFile.close();
-    SPIFFS.end();
+    LittleFS.end();
     DEBUG_PRINTLN(F("\nSaved successfully"));
     lcd.print("Config saved.");
     delay(2000);
@@ -538,12 +521,12 @@ bool saveConfig() {
 bool readConfig() {
   DEBUG_PRINT(F("Mounting FS..."));
 
-  if (SPIFFS.begin()) {
+  if (LittleFS.begin()) {
     DEBUG_PRINTLN(F(" mounted!"));
-    if (SPIFFS.exists(CFGFILE)) {
+    if (LittleFS.exists(CFGFILE)) {
       // file exists, reading and loading
       DEBUG_PRINTLN(F("Reading config file"));
-      File configFile = SPIFFS.open(CFGFILE, "r");
+      File configFile = LittleFS.open(CFGFILE, "r");
       if (configFile) {
         DEBUG_PRINTLN(F("Opened config file"));
 
@@ -575,28 +558,28 @@ bool readConfig() {
 }
 
 void sendRelayMQTT(byte akce) {
-  digitalWrite(BUILTIN_LED, LOW);
+  digitalWrite(LED_BUILTIN, LOW);
   client.publish((String(mqtt_base) + "/relayChange").c_str(), String(akce).c_str());
   delay(1000);
   void * a;
   calcFlow(a);
   client.publish((String(mqtt_base) + "/prutok").c_str(), String(lMin).c_str());
-  digitalWrite(BUILTIN_LED, HIGH);
+  digitalWrite(LED_BUILTIN, HIGH);
 }
 
 
 bool sendSOMQTT(void *) {
-  digitalWrite(BUILTIN_LED, LOW);
+  digitalWrite(LED_BUILTIN, LOW);
   DEBUG_PRINTLN(F("Sensor order"));
   for (int i=0; i<NUMBER_OF_DEVICES; i++) {
     client.publish((String(mqtt_base) + "/so" + String(i)).c_str(), String(sensorOrder[i]).c_str());
   }
-  digitalWrite(BUILTIN_LED, HIGH);
+  digitalWrite(LED_BUILTIN, HIGH);
   return true;
 }
 
 bool sendDataMQTT(void *) {
-  digitalWrite(BUILTIN_LED, LOW);
+  digitalWrite(LED_BUILTIN, LOW);
   DEBUG_PRINTLN(F("Data"));
 
   client.publish((String(mqtt_base) + "/tP1IN").c_str(), String(tP1In).c_str());
@@ -610,7 +593,7 @@ bool sendDataMQTT(void *) {
   client.publish((String(mqtt_base) + "/tBojlerIN").c_str(), String(tBojlerIn).c_str());
   client.publish((String(mqtt_base) + "/tBojlerOUT").c_str(), String(tBojlerOut).c_str());
  
-  digitalWrite(BUILTIN_LED, HIGH);
+  digitalWrite(LED_BUILTIN, HIGH);
   return true;
 }
 
@@ -921,7 +904,7 @@ void dsInit(void) {
   dsSensors.setWaitForConversion(false);
   dsSensors.requestTemperatures(); // Send the command to get temperatures
   
-  for(int i=0;i<numberOfDevices; i++) {
+  for(unsigned int i=0;i<numberOfDevices; i++) {
     // Search the wire for address
     if(dsSensors.getAddress(tempDeviceAddress, i)) {
       Serial.print("Found device ");
